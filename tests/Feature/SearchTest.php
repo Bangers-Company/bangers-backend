@@ -17,8 +17,8 @@ test('can search by name', function () {
     $response = $this->getJson(route('api.search', ['query' => 'Tomorrow']));
 
     $response->assertStatus(200)
-        ->assertJsonCount(1, 'festivals')
-        ->assertJsonPath('festivals.0.name', 'Tomorrowland');
+        ->assertJsonCount(1, 'data.festivals')
+        ->assertJsonPath('data.festivals.0.name', 'Tomorrowland');
 });
 
 test('can filter by entities', function () {
@@ -29,15 +29,15 @@ test('can filter by entities', function () {
     ]));
 
     $response->assertStatus(200)
-        ->assertJsonCount(1, 'artists')
-        ->assertJsonMissingPath('festivals')
-        ->assertJsonMissingPath('acts');
+        ->assertJsonCount(1, 'data.artists')
+        ->assertJsonMissingPath('data.festivals')
+        ->assertJsonMissingPath('data.acts');
 });
 
 test('can search by location', function () {
     $response = $this->getJson(route('api.search', ['location' => 'Belgium']));
 
     $response->assertStatus(200)
-        ->assertJsonCount(1, 'festivals')
-        ->assertJsonPath('festivals.0.location', 'Belgium');
+        ->assertJsonCount(1, 'data.festivals')
+        ->assertJsonPath('data.festivals.0.location', 'Belgium');
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Act;
+use App\Http\Resources\ActResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,7 +12,7 @@ class ActController extends Controller
 {
     public function index()
     {
-        return response()->json(Act::all());
+        return ActResource::collection(Act::all());
     }
 
     public function store(Request $request)
@@ -27,12 +28,12 @@ class ActController extends Controller
 
         $act = Act::create($validator->validated());
 
-        return response()->json($act, 201);
+        return new ActResource($act);
     }
 
     public function show(Act $act)
     {
-        return response()->json($act->load('artists', 'festivals'));
+        return new ActResource($act->load('artists', 'festivals'));
     }
 
     public function update(Request $request, Act $act)
@@ -48,7 +49,7 @@ class ActController extends Controller
 
         $act->update($validator->validated());
 
-        return response()->json($act);
+        return new ActResource($act);
     }
 
     public function destroy(Act $act)

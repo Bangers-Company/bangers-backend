@@ -12,7 +12,7 @@ test('can list festivals', function () {
     $response = $this->getJson(route('api.festivals.index'));
 
     $response->assertStatus(200)
-        ->assertJsonCount(3);
+        ->assertJsonCount(3, 'data');
 });
 
 test('can create a festival', function () {
@@ -29,7 +29,7 @@ test('can create a festival', function () {
     $response = $this->postJson(route('api.festivals.store'), $data);
 
     $response->assertStatus(201)
-        ->assertJsonPath('name', 'Test Festival');
+        ->assertJsonPath('data.name', 'Test Festival');
 
     $this->assertDatabaseHas('festivals', ['name' => 'Test Festival']);
 });
@@ -40,7 +40,7 @@ test('can show a festival', function () {
     $response = $this->getJson(route('api.festivals.show', $festival));
 
     $response->assertStatus(200)
-        ->assertJsonPath('id', $festival->id);
+        ->assertJsonPath('data.id', $festival->id);
 });
 
 test('can update a festival', function () {
@@ -51,7 +51,7 @@ test('can update a festival', function () {
     ]);
 
     $response->assertStatus(200)
-        ->assertJsonPath('name', 'New Name');
+        ->assertJsonPath('data.name', 'New Name');
 
     $this->assertDatabaseHas('festivals', ['id' => $festival->id, 'name' => 'New Name']);
 });

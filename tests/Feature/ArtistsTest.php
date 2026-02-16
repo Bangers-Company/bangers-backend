@@ -12,7 +12,7 @@ test('can list artists', function () {
     $response = $this->getJson(route('api.artists.index'));
 
     $response->assertStatus(200)
-        ->assertJsonCount(3);
+        ->assertJsonCount(3, 'data');
 });
 
 test('can create an artist', function () {
@@ -27,7 +27,7 @@ test('can create an artist', function () {
     $response = $this->postJson(route('api.artists.store'), $data);
 
     $response->assertStatus(201)
-        ->assertJsonPath('name', 'Test Artist');
+        ->assertJsonPath('data.name', 'Test Artist');
 
     $this->assertDatabaseHas('artists', ['name' => 'Test Artist']);
 });
@@ -38,7 +38,7 @@ test('can show an artist', function () {
     $response = $this->getJson(route('api.artists.show', $artist));
 
     $response->assertStatus(200)
-        ->assertJsonPath('id', $artist->id);
+        ->assertJsonPath('data.id', $artist->id);
 });
 
 test('can update an artist', function () {
@@ -49,7 +49,7 @@ test('can update an artist', function () {
     ]);
 
     $response->assertStatus(200)
-        ->assertJsonPath('name', 'New Artist');
+        ->assertJsonPath('data.name', 'New Artist');
 
     $this->assertDatabaseHas('artists', ['id' => $artist->id, 'name' => 'New Artist']);
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Artist;
+use App\Http\Resources\ArtistResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,7 +12,7 @@ class ArtistController extends Controller
 {
     public function index()
     {
-        return response()->json(Artist::all());
+        return ArtistResource::collection(Artist::all());
     }
 
     public function store(Request $request)
@@ -29,12 +30,12 @@ class ArtistController extends Controller
 
         $artist = Artist::create($validator->validated());
 
-        return response()->json($artist, 201);
+        return new ArtistResource($artist);
     }
 
     public function show(Artist $artist)
     {
-        return response()->json($artist->load('acts', 'image'));
+        return new ArtistResource($artist->load('acts', 'image'));
     }
 
     public function update(Request $request, Artist $artist)
@@ -52,7 +53,7 @@ class ArtistController extends Controller
 
         $artist->update($validator->validated());
 
-        return response()->json($artist);
+        return new ArtistResource($artist);
     }
 
     public function destroy(Artist $artist)

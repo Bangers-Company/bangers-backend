@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Festival;
+use App\Http\Resources\FestivalResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,7 +12,7 @@ class FestivalController extends Controller
 {
     public function index()
     {
-        return response()->json(Festival::all());
+        return FestivalResource::collection(Festival::all());
     }
 
     public function store(Request $request)
@@ -31,12 +32,12 @@ class FestivalController extends Controller
 
         $festival = Festival::create($validator->validated());
 
-        return response()->json($festival, 201);
+        return new FestivalResource($festival);
     }
 
     public function show(Festival $festival)
     {
-        return response()->json($festival->load('stages', 'banner'));
+        return new FestivalResource($festival->load('stages', 'banner'));
     }
 
     public function update(Request $request, Festival $festival)
@@ -56,7 +57,7 @@ class FestivalController extends Controller
 
         $festival->update($validator->validated());
 
-        return response()->json($festival);
+        return new FestivalResource($festival);
     }
 
     public function destroy(Festival $festival)

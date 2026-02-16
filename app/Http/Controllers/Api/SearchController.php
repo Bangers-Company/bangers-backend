@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Act;
 use App\Models\Artist;
 use App\Models\Festival;
+use App\Http\Resources\SearchResource;
 use Illuminate\Http\Request;
 
 class SearchController extends Controller
@@ -60,6 +61,6 @@ class SearchController extends Controller
             $results['acts'] = $actQuery->get();
         }
 
-        return response()->json($results);
+        return new SearchResource($results);
     }
 }

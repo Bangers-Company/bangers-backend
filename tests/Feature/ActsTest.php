@@ -13,7 +13,7 @@ test('can list acts', function () {
     $response = $this->getJson(route('api.acts.index'));
 
     $response->assertStatus(200)
-        ->assertJsonCount(3);
+        ->assertJsonCount(3, 'data');
 });
 
 test('can create an act', function () {
@@ -25,7 +25,7 @@ test('can create an act', function () {
     $response = $this->postJson(route('api.acts.store'), $data);
 
     $response->assertStatus(201)
-        ->assertJsonPath('name', 'The Big Show');
+        ->assertJsonPath('data.name', 'The Big Show');
 
     $this->assertDatabaseHas('acts', ['name' => 'The Big Show']);
 });
