@@ -12,21 +12,28 @@ class Act extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'description',
-        'version',
-    ];
+    protected $fillable = ["name", "description"];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Act $act) {
+            if ($act->isForceDeleting()) {
+                return;
+            }
+            $act->artists()->detach();
+            $act->festivals()->detach();
+        });
+    }
 
     public function artists()
     {
-        return $this->belongsToMany(Artist::class, 'act_artists');
+        return $this->belongsToMany(Artist::class, "act_artists");
     }
 
     public function festivals()
     {
-        return $this->belongsToMany(Festival::class, 'festival_acts')
-            ->withPivot('announcement_date')
+        return $this->belongsToMany(Festival::class, "festival_acts")
+            ->withPivot("announcement_date")
             ->withTimestamps();
     }
 }

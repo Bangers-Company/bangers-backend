@@ -12,12 +12,7 @@ class Stage extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = [
-        'festival_id',
-        'name',
-        'description',
-        'version',
-    ];
+    protected $fillable = ["festival_id", "name", "description"];
 
     public function festival()
     {
