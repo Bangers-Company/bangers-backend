@@ -14,11 +14,35 @@ class SearchResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // This resource expects a structured array from SearchController
-        return [
-            'festivals' => FestivalResource::collection($this->resource['festivals'] ?? []),
-            'artists' => ArtistResource::collection($this->resource['artists'] ?? []),
-            'acts' => ActResource::collection($this->resource['acts'] ?? []),
-        ];
+        $response = [];
+
+        foreach (['festivals', 'artists', 'acts'] as $entity) {
+            if (isset($this->resource[$entity])) {
+                $paginator = $this->resource[$entity];
+                $resourceClass = match ($entity) {
+                    'festivals' => FestivalResource::class,
+                    'artists' => ArtistResource::class,
+                    'acts' => ActResource::class,
+                };
+
+                $response[$entity] = [
+                    'data' => $resourceClass::collection($paginator->items()),
+                    'meta' => [
+                        'current_page' => $paginator->currentPage(),
+                        'last_page' => $paginator->lastPage(),
+                        'per_page' => $paginator->perPage(),
+                        'total' => $paginator->total(),
+                    ],
+                    'links' => [
+                        'first' => $paginator->url(1),
+                        'last' => $paginator->url($paginator->lastPage()),
+                        'prev' => $paginator->previousPageUrl(),
+                        'next' => $paginator->nextPageUrl(),
+                    ],
+                ];
+            }
+        }
+
+        return $response;
     }
 }
