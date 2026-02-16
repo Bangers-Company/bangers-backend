@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Artist extends Model
+{
+    use HasUuids, SoftDeletes;
+
+    protected $fillable = [
+        'name',
+        'bio',
+        'genre',
+        'image_media_id',
+        'version',
+    ];
+
+    public function image()
+    {
+        return $this->belongsTo(Media::class, 'image_media_id');
+    }
+
+    public function acts()
+    {
+        return $this->belongsToMany(Act::class, 'act_artists');
+    }
+}

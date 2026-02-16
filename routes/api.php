@@ -1,0 +1,18 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::name('api.')->group(function () {
+    require __DIR__.'/api/FestivalsRoutes.php';
+    require __DIR__.'/api/ArtistsRoutes.php';
+    require __DIR__.'/api/StagesRoutes.php';
+    require __DIR__.'/api/ActsRoutes.php';
+    require __DIR__.'/api/MediaRoutes.php';
+    require __DIR__.'/api/SearchRoutes.php';
+});

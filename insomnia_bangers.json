@@ -1,0 +1,466 @@
+{
+    "_type": "export",
+    "__export_format": 4,
+    "__export_date": "2026-02-16T10:45:00.000Z",
+    "__export_source": "insomnia.desktop.app:v2023.5.8",
+    "resources": [
+        {
+            "_id": "wrk_bangers",
+            "parentId": null,
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "name": "Bangers API",
+            "description": "API Collection for Bangers Backend Iteration 2.1",
+            "contents": "",
+            "contentType": "yaml",
+            "_type": "workspace"
+        },
+        {
+            "_id": "env_local",
+            "parentId": "wrk_bangers",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "name": "Base Environment",
+            "data": {
+                "base_url": "http://localhost:8000/api"
+            },
+            "dataPropertyOrder": {
+                "&": [
+                    "base_url"
+                ]
+            },
+            "color": null,
+            "isPrivate": false,
+            "metaSortKey": 1739702700000,
+            "_type": "environment"
+        },
+        {
+            "_id": "fld_festivals",
+            "parentId": "wrk_bangers",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "name": "Festivals",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -1000000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_festivals_index",
+            "parentId": "fld_festivals",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/festivals",
+            "name": "api.festivals.index",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1000000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_festivals_store",
+            "parentId": "fld_festivals",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/festivals",
+            "name": "api.festivals.store",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"name\": \"Tomorrowland\",\n  \"description\": \"The biggest EDM festival.\",\n  \"location\": \"Boom, Belgium\",\n  \"start_date\": \"2026-07-20\",\n  \"end_date\": \"2026-07-27\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -900000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_festivals_show",
+            "parentId": "fld_festivals",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/festivals/{id}",
+            "name": "api.festivals.show",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -800000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_festivals_update",
+            "parentId": "fld_festivals",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/festivals/{id}",
+            "name": "api.festivals.update",
+            "description": "",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"name\": \"Tomorrowland (Updated)\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -700000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_festivals_destroy",
+            "parentId": "fld_festivals",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/festivals/{id}",
+            "name": "api.festivals.destroy",
+            "description": "",
+            "method": "DELETE",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -600000000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_artists",
+            "parentId": "wrk_bangers",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "name": "Artists",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -900000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_artists_index",
+            "parentId": "fld_artists",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/artists",
+            "name": "api.artists.index",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1000000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_artists_store",
+            "parentId": "fld_artists",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/artists",
+            "name": "api.artists.store",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"name\": \"Martin Garrix\",\n  \"bio\": \"Dutch DJ and record producer.\",\n  \"genre\": \"Progressive House\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -900000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_artists_show",
+            "parentId": "fld_artists",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/artists/{id}",
+            "name": "api.artists.show",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -800000000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_acts",
+            "parentId": "wrk_bangers",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "name": "Acts",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -800000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_acts_store",
+            "parentId": "fld_acts",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/acts",
+            "name": "api.acts.store",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"name\": \"The Garrix Show\",\n  \"description\": \"Special closing set.\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1000000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_acts_artists_attach",
+            "parentId": "fld_acts",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/acts/{act_id}/artists",
+            "name": "api.acts.artists.attach",
+            "description": "Replace {act_id} in URL and provide artist_id in body",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"artist_id\": \"PASTE_ARTIST_UUID_HERE\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -900000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_acts_festivals_attach",
+            "parentId": "fld_acts",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/acts/{act_id}/festivals",
+            "name": "api.acts.festivals.attach",
+            "description": "Replace {act_id} in URL and provide festival_id in body",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"festival_id\": \"PASTE_FESTIVAL_UUID_HERE\",\n  \"announcement_date\": \"2026-03-01 12:00:00\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -800000000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_stages",
+            "parentId": "wrk_bangers",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "name": "Stages",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -700000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_stages_store",
+            "parentId": "fld_stages",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/stages",
+            "name": "api.stages.store",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"festival_id\": \"PASTE_FESTIVAL_UUID_HERE\",\n  \"name\": \"Main Stage\",\n  \"description\": \"Outdoor arena\"\n}"
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                },
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1000000000,
+            "_type": "request"
+        },
+        {
+            "_id": "fld_media",
+            "parentId": "wrk_bangers",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "name": "Media",
+            "description": "",
+            "environment": {},
+            "environmentPropertyOrder": null,
+            "metaSortKey": -600000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_media_store",
+            "parentId": "fld_media",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/media",
+            "name": "api.media.store",
+            "description": "",
+            "method": "POST",
+            "body": {
+                "mimeType": "multipart/form-data",
+                "params": [
+                    {
+                        "name": "file",
+                        "value": "",
+                        "type": "file"
+                    },
+                    {
+                        "name": "type",
+                        "value": "festival_banner",
+                        "type": "text"
+                    }
+                ]
+            },
+            "parameters": [],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -1000000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_search",
+            "parentId": "wrk_bangers",
+            "modified": 1739702700000,
+            "created": 1739702700000,
+            "url": "{{ base_url }}/search",
+            "name": "api.search",
+            "description": "",
+            "method": "GET",
+            "body": {},
+            "parameters": [
+                {
+                    "name": "query",
+                    "value": "Tomorrow",
+                    "disabled": false
+                },
+                {
+                    "name": "entities",
+                    "value": "festivals,artists",
+                    "disabled": false
+                }
+            ],
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "authentication": {},
+            "metaSortKey": -500000000,
+            "_type": "request"
+        }
+    ]
+}
