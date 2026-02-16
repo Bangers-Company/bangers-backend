@@ -1,4 +1,26 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: bangers
+        uid: 1000
+    container_name: bangers_app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SERVER_NAME: ":80"
+      CADDY_GLOBAL_OPTIONS: "local_certs"
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - bangers_network
+
   database:
     image: postgres:15-alpine
     container_name: bangers_db
@@ -8,9 +30,15 @@ services:
     environment:
       POSTGRES_DB: "${DB_DATABASE:-bangers_backend}"
       POSTGRES_USER: "${DB_USERNAME:-root}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD:-}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD:-secret}"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - bangers_network
+
+networks:
+  bangers_network:
+    driver: bridge
 
 volumes:
   pgdata:

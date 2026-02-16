@@ -26,8 +26,56 @@ This is the backend API for the Bangers app, built with Laravel. It manages fest
 > PostgreSQL integration for the automated test environment (RefreshDatabase) is scheduled for a later iteration. Current implementation handles pdo_pgsql for runtime operations.
 
 ## Setup
-1. Clone the repository.
-2. Run `composer install`.
-3. Configure your `.env` file with your database credentials.
-4. Run `php artisan migrate`.
-5. Run `php artisan serve`.
+
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+### Installation
+1.  **Clone the repository**:
+    ```bash
+    git clone <repository-url>
+    cd bangers-backend
+    ```
+
+2.  **Environment Setup**:
+    Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+
+3.  **Spin up the environment**:
+    This will build and start the application and database containers:
+    ```bash
+    docker compose up -d --build
+    ```
+
+4.  **Install Dependencies**:
+    Install Composer packages inside the container:
+    ```bash
+    docker compose exec app composer install
+    ```
+
+5.  **Generate App Key**:
+    ```bash
+    docker compose exec app php artisan key:generate
+    ```
+
+6.  **Run Migrations**:
+    ```bash
+    docker compose exec app php artisan migrate
+    ```
+
+### Usage
+- **API Access**: The API is available at `http://localhost:8080`.
+- **Artisan Commands**: Run any Artisan command using: `docker compose exec app php artisan <command>`.
+- **Stopping**: To stop the containers, run `docker compose stop`.
+- **Logs**: View application logs with `docker compose logs -f app`.
+
+## Testing
+Run the test suite using Pest:
+```bash
+docker compose exec app php artisan test
+```
+
+## API Documentation
+An Insomnia collection for testing all endpoints is available in `insomnia_bangers.json`.
