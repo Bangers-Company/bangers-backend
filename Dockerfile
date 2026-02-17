@@ -35,6 +35,7 @@ RUN mkdir -p /home/$user/.composer && \
 WORKDIR /var/www
 
 # Use the default FrankenPHP configuration
-ENV FRANKENPHP_CONFIG="worker ./public/index.php"
+# Note: worker mode requires Laravel Octane. Running in standard mode.
+ENV FRANKENPHP_CONFIG=""
 
 USER $user

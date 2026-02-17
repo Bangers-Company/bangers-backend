@@ -12,16 +12,16 @@ class ArtistController extends Controller
 {
     public function index()
     {
-        return ArtistResource::collection(Artist::all());
+        return ArtistResource::collection(Artist::paginate(15));
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'bio' => 'nullable|string',
-            'genre' => 'nullable|string|max:255',
-            'image_media_id' => 'nullable|uuid|exists:media,id',
+            "name" => "required|string|max:255",
+            "bio" => "nullable|string",
+            "genre" => "nullable|string|max:255",
+            "image_media_id" => "nullable|uuid|exists:media,id",
         ]);
 
         if ($validator->fails()) {
@@ -30,21 +30,21 @@ class ArtistController extends Controller
 
         $artist = Artist::create($validator->validated());
 
-        return new ArtistResource($artist);
+        return new ArtistResource($artist)->response()->setStatusCode(201);
     }
 
     public function show(Artist $artist)
     {
-        return new ArtistResource($artist->load('acts', 'image'));
+        return new ArtistResource($artist->load("acts", "image"));
     }
 
     public function update(Request $request, Artist $artist)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string|max:255',
-            'bio' => 'nullable|string',
-            'genre' => 'nullable|string|max:255',
-            'image_media_id' => 'nullable|uuid|exists:media,id',
+            "name" => "sometimes|required|string|max:255",
+            "bio" => "nullable|string",
+            "genre" => "nullable|string|max:255",
+            "image_media_id" => "nullable|uuid|exists:media,id",
         ]);
 
         if ($validator->fails()) {

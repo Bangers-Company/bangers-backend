@@ -16,47 +16,71 @@ class SearchController extends Controller
      */
     public function search(Request $request)
     {
-        $queryText = $request->input('query');
-        $date = $request->input('date');
-        $location = $request->input('location');
-        $entities = $request->input('entities', ['festivals', 'artists', 'acts']);
-        $perPage = $request->input('per_page', 15);
+        $queryText = $request->input("query");
+        $date = $request->input("date");
+        $location = $request->input("location");
+        $entities = $request->input("entities", [
+            "festivals",
+            "artists",
+            "acts",
+        ]);
+        $perPage = min(max((int) $request->input("per_page", 15), 1), 100);
+
+        if ($queryText) {
+            $queryText = str_replace(["%", "_"], ["\\%", "\\_"], $queryText);
+        }
+        if ($location) {
+            $location = str_replace(["%", "_"], ["\\%", "\\_"], $location);
+        }
 
         if (is_string($entities)) {
-            $entities = explode(',', $entities);
+            $entities = explode(",", $entities);
         }
 
         $results = [];
 
-        if (in_array('festivals', $entities)) {
+        if (in_array("festivals", $entities)) {
             $festivalQuery = Festival::query();
             if ($queryText) {
-                $festivalQuery->where('name', 'like', "%{$queryText}%");
+                $festivalQuery->where("name", "like", "%{$queryText}%");
             }
             if ($date) {
-                $festivalQuery->whereDate('start_date', '<=', $date)
-                    ->whereDate('end_date', '>=', $date);
+                $festivalQuery
+                    ->whereDate("start_date", "<=", $date)
+                    ->whereDate("end_date", ">=", $date);
             }
             if ($location) {
-                $festivalQuery->where('location', 'like', "%{$location}%");
+                $festivalQuery->where("location", "like", "%{$location}%");
             }
-            $results['festivals'] = $festivalQuery->paginate($perPage, ['*'], 'festivals_page');
+            $results["festivals"] = $festivalQuery->paginate(
+                $perPage,
+                ["*"],
+                "festivals_page",
+            );
         }
 
-        if (in_array('artists', $entities)) {
+        if (in_array("artists", $entities)) {
             $artistQuery = Artist::query();
             if ($queryText) {
-                $artistQuery->where('name', 'like', "%{$queryText}%");
+                $artistQuery->where("name", "like", "%{$queryText}%");
             }
-            $results['artists'] = $artistQuery->paginate($perPage, ['*'], 'artists_page');
+            $results["artists"] = $artistQuery->paginate(
+                $perPage,
+                ["*"],
+                "artists_page",
+            );
         }
 
-        if (in_array('acts', $entities)) {
+        if (in_array("acts", $entities)) {
             $actQuery = Act::query();
             if ($queryText) {
-                $actQuery->where('name', 'like', "%{$queryText}%");
+                $actQuery->where("name", "like", "%{$queryText}%");
             }
-            $results['acts'] = $actQuery->paginate($perPage, ['*'], 'acts_page');
+            $results["acts"] = $actQuery->paginate(
+                $perPage,
+                ["*"],
+                "acts_page",
+            );
         }
 
         return new SearchResource($results);
