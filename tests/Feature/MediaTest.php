@@ -14,7 +14,7 @@ test("can upload media", function () {
 
     $response = $this->postJson(route("api.media.store"), [
         "file" => $file,
-        "type" => "festival_banner",
+        "type" => "event_banner",
     ]);
 
     $response->assertStatus(201);
@@ -25,7 +25,7 @@ test("can upload media", function () {
     Storage::disk("public")->assertExists($media->storage_key);
     $this->assertDatabaseHas("media", [
         "id" => $id,
-        "type" => "festival_banner",
+        "type" => "event_banner",
     ]);
 });
 

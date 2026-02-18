@@ -18,7 +18,7 @@ class StageController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            "festival_id" => "required|uuid|exists:festivals,id",
+            "event_id" => "required|uuid|exists:events,id",
             "name" => "required|string|max:255",
             "description" => "nullable|string",
         ]);
@@ -34,13 +34,13 @@ class StageController extends Controller
 
     public function show(Stage $stage)
     {
-        return new StageResource($stage->load("festival"));
+        return new StageResource($stage->load("event"));
     }
 
     public function update(Request $request, Stage $stage)
     {
         $validator = Validator::make($request->all(), [
-            "festival_id" => "sometimes|required|uuid|exists:festivals,id",
+            "event_id" => "sometimes|required|uuid|exists:events,id",
             "name" => "sometimes|required|string|max:255",
             "description" => "nullable|string",
         ]);

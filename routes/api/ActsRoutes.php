@@ -7,5 +7,5 @@ Route::apiResource('acts', ActController::class);
 
 Route::post('acts/{act}/artists', [ActController::class, 'attachArtist'])->name('acts.artists.attach');
 Route::delete('acts/{act}/artists', [ActController::class, 'detachArtist'])->name('acts.artists.detach');
-Route::post('acts/{act}/festivals', [ActController::class, 'attachFestival'])->name('acts.festivals.attach');
-Route::delete('acts/{act}/festivals', [ActController::class, 'detachFestival'])->name('acts.festivals.detach');
+Route::post('acts/{act}/stages', [ActController::class, 'attachStage'])->name('acts.stages.attach');
+Route::delete('acts/{act}/stages', [ActController::class, 'detachStage'])->name('acts.stages.detach');

@@ -2,7 +2,7 @@
 
 use App\Models\Act;
 use App\Models\Artist;
-use App\Models\Festival;
+use App\Models\Stage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -55,21 +55,35 @@ test('can unlink an artist from an act', function () {
     $this->assertFalse($act->artists()->where('artist_id', $artist->id)->exists());
 });
 
-test('can link an act to a festival', function () {
+test('can link an act to a stage', function () {
     $act = Act::factory()->create();
-    $festival = Festival::factory()->create();
-    $date = now()->addMonth()->toDateTimeString();
+    $stage = Stage::factory()->create();
 
-    $response = $this->postJson(route('api.acts.festivals.attach', $act), [
-        'festival_id' => $festival->id,
-        'announcement_date' => $date
+    $response = $this->postJson(route('api.acts.stages.attach', $act), [
+        'stage_id' => $stage->id,
     ]);
 
     $response->assertStatus(200);
-    $this->assertTrue($act->festivals()->where('festival_id', $festival->id)->exists());
-    $this->assertDatabaseHas('festival_acts', [
+    $this->assertTrue($act->stages()->where('stage_id', $stage->id)->exists());
+    $this->assertDatabaseHas('stage_acts', [
         'act_id' => $act->id,
-        'festival_id' => $festival->id,
-        'announcement_date' => $date
+        'stage_id' => $stage->id,
+    ]);
+});
+
+test('can unlink an act from a stage', function () {
+    $act = Act::factory()->create();
+    $stage = Stage::factory()->create();
+    $act->stages()->attach($stage->id);
+
+    $response = $this->deleteJson(route('api.acts.stages.detach', $act), [
+        'stage_id' => $stage->id,
+    ]);
+
+    $response->assertStatus(200);
+    $this->assertFalse($act->stages()->where('stage_id', $stage->id)->exists());
+    $this->assertDatabaseMissing('stage_acts', [
+        'act_id' => $act->id,
+        'stage_id' => $stage->id,
     ]);
 });

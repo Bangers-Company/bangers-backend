@@ -12,10 +12,16 @@ class Stage extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = ["festival_id", "name", "description"];
+    protected $fillable = ["event_id", "name", "description"];
 
-    public function festival()
+    public function event()
     {
-        return $this->belongsTo(Festival::class);
+        return $this->belongsTo(Event::class);
+    }
+
+    public function acts()
+    {
+        return $this->belongsToMany(Act::class, "stage_acts")
+            ->withPivot('created_at');
     }
 }

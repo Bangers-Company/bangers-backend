@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Festival;
-use App\Http\Resources\FestivalResource;
+use App\Models\Event;
+use App\Http\Resources\EventResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class FestivalController extends Controller
+class EventController extends Controller
 {
     public function index()
     {
-        return FestivalResource::collection(Festival::paginate(15));
+        return EventResource::collection(Event::paginate(15));
     }
 
     public function store(Request $request)
@@ -30,17 +30,17 @@ class FestivalController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $festival = Festival::create($validator->validated());
+        $event = Event::create($validator->validated());
 
-        return new FestivalResource($festival)->response()->setStatusCode(201);
+        return new EventResource($event)->response()->setStatusCode(201);
     }
 
-    public function show(Festival $festival)
+    public function show(Event $event)
     {
-        return new FestivalResource($festival->load("stages", "banner"));
+        return new EventResource($event->load("stages", "banner"));
     }
 
-    public function update(Request $request, Festival $festival)
+    public function update(Request $request, Event $event)
     {
         $validator = Validator::make($request->all(), [
             "name" => "sometimes|required|string|max:255",
@@ -55,14 +55,14 @@ class FestivalController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $festival->update($validator->validated());
+        $event->update($validator->validated());
 
-        return new FestivalResource($festival);
+        return new EventResource($event);
     }
 
-    public function destroy(Festival $festival)
+    public function destroy(Event $event)
     {
-        $festival->delete();
+        $event->delete();
 
         return response()->json(null, 204);
     }

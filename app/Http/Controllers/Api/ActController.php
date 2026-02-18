@@ -33,7 +33,7 @@ class ActController extends Controller
 
     public function show(Act $act)
     {
-        return new ActResource($act->load("artists", "festivals"));
+        return new ActResource($act->load("artists", "stages"));
     }
 
     public function update(Request $request, Act $act)
@@ -93,42 +93,37 @@ class ActController extends Controller
         ]);
     }
 
-    public function attachFestival(Request $request, Act $act)
+    public function attachStage(Request $request, Act $act)
     {
         $validator = Validator::make($request->all(), [
-            "festival_id" => "required|uuid|exists:festivals,id",
-            "announcement_date" => "nullable|date",
+            "stage_id" => "required|uuid|exists:stages,id",
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $act->festivals()->syncWithoutDetaching([
-            $request->festival_id => [
-                "announcement_date" => $request->announcement_date,
-            ],
-        ]);
+        $act->stages()->syncWithoutDetaching([$request->stage_id]);
 
         return response()->json([
-            "message" => "Act attached to festival successfully.",
+            "message" => "Act attached to stage successfully.",
         ]);
     }
 
-    public function detachFestival(Request $request, Act $act)
+    public function detachStage(Request $request, Act $act)
     {
         $validator = Validator::make($request->all(), [
-            "festival_id" => "required|uuid|exists:festivals,id",
+            "stage_id" => "required|uuid|exists:stages,id",
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $act->festivals()->detach($request->festival_id);
+        $act->stages()->detach($request->stage_id);
 
         return response()->json([
-            "message" => "Act detached from festival successfully.",
+            "message" => "Act detached from stage successfully.",
         ]);
     }
 }

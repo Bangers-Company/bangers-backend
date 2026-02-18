@@ -17,7 +17,7 @@ class StageFactory extends Factory
     public function definition(): array
     {
         return [
-            'festival_id' => \App\Models\Festival::factory(),
+            'event_id' => \App\Models\Event::factory(),
             'name' => $this->faker->word() . ' Stage',
             'description' => $this->faker->sentence(),
         ];

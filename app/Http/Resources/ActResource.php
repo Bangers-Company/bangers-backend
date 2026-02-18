@@ -20,7 +20,7 @@ class ActResource extends JsonResource
             'description' => $this->description,
             'version' => $this->version,
             'artists' => ArtistResource::collection($this->whenLoaded('artists')),
-            'festivals' => FestivalResource::collection($this->whenLoaded('festivals')),
+            'stages' => StageResource::collection($this->whenLoaded('stages')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

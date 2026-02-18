@@ -20,7 +20,7 @@ class MediaController extends Controller
         $validator = Validator::make($request->all(), [
             "file" => "required|file|image|max:5120", // Max 5MB
             "type" =>
-                "required|string|in:profile_picture,artist_image,festival_banner",
+                "required|string|in:profile_picture,artist_image,event_banner",
             "is_public" => "boolean",
         ]);
 

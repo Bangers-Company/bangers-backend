@@ -16,11 +16,11 @@ class SearchResource extends JsonResource
     {
         $response = [];
 
-        foreach (['festivals', 'artists', 'acts'] as $entity) {
+        foreach (['events', 'artists', 'acts'] as $entity) {
             if (isset($this->resource[$entity])) {
                 $paginator = $this->resource[$entity];
                 $resourceClass = match ($entity) {
-                    'festivals' => FestivalResource::class,
+                    'events' => EventResource::class,
                     'artists' => ArtistResource::class,
                     'acts' => ActResource::class,
                 };

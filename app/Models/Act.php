@@ -21,7 +21,7 @@ class Act extends Model
                 return;
             }
             $act->artists()->detach();
-            $act->festivals()->detach();
+            $act->stages()->detach();
         });
     }
 
@@ -30,10 +30,9 @@ class Act extends Model
         return $this->belongsToMany(Artist::class, "act_artists");
     }
 
-    public function festivals()
+    public function stages()
     {
-        return $this->belongsToMany(Festival::class, "festival_acts")
-            ->withPivot("announcement_date")
-            ->withTimestamps();
+        return $this->belongsToMany(Stage::class, "stage_acts")
+            ->withPivot('created_at');
     }
 }

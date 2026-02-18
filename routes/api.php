@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::name('api.')->group(function () {
-    require __DIR__.'/api/FestivalsRoutes.php';
+    require __DIR__.'/api/EventsRoutes.php';
     require __DIR__.'/api/ArtistsRoutes.php';
     require __DIR__.'/api/StagesRoutes.php';
     require __DIR__.'/api/ActsRoutes.php';

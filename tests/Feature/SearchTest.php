@@ -2,13 +2,13 @@
 
 use App\Models\Act;
 use App\Models\Artist;
-use App\Models\Festival;
+use App\Models\Event;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    Festival::factory()->create(['name' => 'Tomorrowland', 'location' => 'Belgium']);
+    Event::factory()->create(['name' => 'Tomorrowland', 'location' => 'Belgium']);
     Artist::factory()->create(['name' => 'Martin Garrix']);
     Act::factory()->create(['name' => 'The Garrix Show']);
 });
@@ -17,11 +17,11 @@ test('can search by name', function () {
     $response = $this->getJson(route('api.search', ['query' => 'Tomorrow']));
 
     $response->assertStatus(200)
-        ->assertJsonCount(1, 'data.festivals.data')
-        ->assertJsonPath('data.festivals.data.0.name', 'Tomorrowland')
+        ->assertJsonCount(1, 'data.events.data')
+        ->assertJsonPath('data.events.data.0.name', 'Tomorrowland')
         ->assertJsonStructure([
             'data' => [
-                'festivals' => ['data', 'meta', 'links']
+                'events' => ['data', 'meta', 'links']
             ]
         ]);
 });
@@ -35,7 +35,7 @@ test('can filter by entities', function () {
 
     $response->assertStatus(200)
         ->assertJsonCount(1, 'data.artists.data')
-        ->assertJsonMissingPath('data.festivals')
+        ->assertJsonMissingPath('data.events')
         ->assertJsonMissingPath('data.acts');
 });
 
@@ -43,6 +43,6 @@ test('can search by location', function () {
     $response = $this->getJson(route('api.search', ['location' => 'Belgium']));
 
     $response->assertStatus(200)
-        ->assertJsonCount(1, 'data.festivals.data')
-        ->assertJsonPath('data.festivals.data.0.location', 'Belgium');
+        ->assertJsonCount(1, 'data.events.data')
+        ->assertJsonPath('data.events.data.0.location', 'Belgium');
 });

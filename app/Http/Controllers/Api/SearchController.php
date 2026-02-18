@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Act;
 use App\Models\Artist;
-use App\Models\Festival;
+use App\Models\Event;
 use App\Http\Resources\SearchResource;
 use Illuminate\Http\Request;
 
@@ -20,7 +20,7 @@ class SearchController extends Controller
         $date = $request->input("date");
         $location = $request->input("location");
         $entities = $request->input("entities", [
-            "festivals",
+            "events",
             "artists",
             "acts",
         ]);
@@ -39,23 +39,23 @@ class SearchController extends Controller
 
         $results = [];
 
-        if (in_array("festivals", $entities)) {
-            $festivalQuery = Festival::query();
+        if (in_array("events", $entities)) {
+            $eventQuery = Event::query();
             if ($queryText) {
-                $festivalQuery->where("name", "like", "%{$queryText}%");
+                $eventQuery->where("name", "like", "%{$queryText}%");
             }
             if ($date) {
-                $festivalQuery
+                $eventQuery
                     ->whereDate("start_date", "<=", $date)
                     ->whereDate("end_date", ">=", $date);
             }
             if ($location) {
-                $festivalQuery->where("location", "like", "%{$location}%");
+                $eventQuery->where("location", "like", "%{$location}%");
             }
-            $results["festivals"] = $festivalQuery->paginate(
+            $results["events"] = $eventQuery->paginate(
                 $perPage,
                 ["*"],
-                "festivals_page",
+                "events_page",
             );
         }
 

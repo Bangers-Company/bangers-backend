@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Festival;
+use App\Models\Event;
 use App\Models\Stage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -15,9 +15,9 @@ test("can list stages", function () {
 });
 
 test("can create a stage", function () {
-    $festival = Festival::factory()->create();
+    $event = Event::factory()->create();
     $data = [
-        "festival_id" => $festival->id,
+        "event_id" => $event->id,
         "name" => "Main Stage",
         "description" => "The biggest arena",
     ];
@@ -28,7 +28,7 @@ test("can create a stage", function () {
 
     $this->assertDatabaseHas("stages", [
         "name" => "Main Stage",
-        "festival_id" => $festival->id,
+        "event_id" => $event->id,
     ]);
 });
 

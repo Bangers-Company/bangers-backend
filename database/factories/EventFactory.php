@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Festival>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Event>
  */
-class FestivalFactory extends Factory
+class EventFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,7 +17,7 @@ class FestivalFactory extends Factory
     public function definition(): array
     {
         return [
-            "name" => $this->faker->company() . " Festival",
+            "name" => $this->faker->company() . " Event",
             "description" => $this->faker->paragraph(),
             "location" => $this->faker->city(),
             "start_date" => $this->faker->dateTimeBetween(

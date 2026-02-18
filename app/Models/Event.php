@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Festival extends Model
+class Event extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
@@ -29,11 +29,12 @@ class Festival extends Model
 
     protected static function booted(): void
     {
-        static::deleting(function (Festival $festival) {
-            if ($festival->isForceDeleting()) {
+        static::deleting(function (Event $event) {
+            if ($event->isForceDeleting()) {
                 return;
             }
-            $festival->acts()->detach();
+            // Logic for cascading deletes to stages/acts can be handled here if needed,
+            // but database cascades are already in place.
         });
     }
 
@@ -44,13 +45,6 @@ class Festival extends Model
 
     public function stages()
     {
-        return $this->hasMany(Stage::class);
-    }
-
-    public function acts()
-    {
-        return $this->belongsToMany(Act::class, "festival_acts")
-            ->withPivot("announcement_date")
-            ->withTimestamps();
+        return $this->hasMany(Stage::class, 'event_id');
     }
 }
