@@ -10,7 +10,7 @@
             "modified": 1739702700000,
             "created": 1739702700000,
             "name": "Bangers API",
-            "description": "API Collection for Bangers Backend Iteration 2.2 (Laravel Resources)",
+            "description": "API Collection for Bangers Backend Iteration 2.3 (Explicit Routes)",
             "contents": "",
             "contentType": "yaml",
             "_type": "workspace"
@@ -35,11 +35,11 @@
             "_type": "environment"
         },
         {
-            "_id": "fld_festivals",
+            "_id": "fld_events",
             "parentId": "wrk_bangers",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "name": "Festivals",
+            "name": "Events",
             "description": "",
             "environment": {},
             "environmentPropertyOrder": null,
@@ -48,11 +48,11 @@
         },
         {
             "_id": "req_festivals_index",
-            "parentId": "fld_festivals",
+            "parentId": "fld_events",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/festivals",
-            "name": "api.festivals.index",
+            "url": "{{ base_url }}/events",
+            "name": "api.events.index",
             "description": "",
             "method": "GET",
             "body": {},
@@ -69,11 +69,11 @@
         },
         {
             "_id": "req_festivals_store",
-            "parentId": "fld_festivals",
+            "parentId": "fld_events",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/festivals",
-            "name": "api.festivals.store",
+            "url": "{{ base_url }}/events",
+            "name": "api.events.store",
             "description": "",
             "method": "POST",
             "body": {
@@ -97,11 +97,11 @@
         },
         {
             "_id": "req_festivals_show",
-            "parentId": "fld_festivals",
+            "parentId": "fld_events",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/festivals/{id}",
-            "name": "api.festivals.show",
+            "url": "{{ base_url }}/events/{id}",
+            "name": "api.events.show",
             "description": "",
             "method": "GET",
             "body": {},
@@ -118,11 +118,11 @@
         },
         {
             "_id": "req_festivals_update",
-            "parentId": "fld_festivals",
+            "parentId": "fld_events",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/festivals/{id}",
-            "name": "api.festivals.update",
+            "url": "{{ base_url }}/events/{id}",
+            "name": "api.events.update",
             "description": "",
             "method": "PUT",
             "body": {
@@ -146,11 +146,11 @@
         },
         {
             "_id": "req_festivals_destroy",
-            "parentId": "fld_festivals",
+            "parentId": "fld_events",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/festivals/{id}",
-            "name": "api.festivals.destroy",
+            "url": "{{ base_url }}/events/{id}",
+            "name": "api.events.destroy",
             "description": "",
             "method": "DELETE",
             "body": {},
@@ -316,17 +316,17 @@
             "_type": "request"
         },
         {
-            "_id": "req_acts_festivals_attach",
+            "_id": "req_acts_stages_attach",
             "parentId": "fld_acts",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/acts/{act_id}/festivals",
-            "name": "api.acts.festivals.attach",
-            "description": "Replace {act_id} in URL and provide festival_id in body",
+            "url": "{{ base_url }}/acts/{act_id}/stages",
+            "name": "api.acts.stages.attach",
+            "description": "Replace {act_id} in URL and provide stage_id in body",
             "method": "POST",
             "body": {
                 "mimeType": "application/json",
-                "text": "{\n  \"festival_id\": \"PASTE_FESTIVAL_UUID_HERE\",\n  \"announcement_date\": \"2026-03-01 12:00:00\"\n}"
+                "text": "{\n  \"stage_id\": \"PASTE_STAGE_UUID_HERE\"\n}"
             },
             "parameters": [],
             "headers": [
