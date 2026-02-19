@@ -12,7 +12,7 @@ class ArtistController extends Controller
 {
     public function index()
     {
-        return ArtistResource::collection(Artist::paginate(15));
+        return ArtistResource::collection(Artist::with('acts', 'image')->paginate(15));
     }
 
     public function store(Request $request)

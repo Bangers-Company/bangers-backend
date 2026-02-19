@@ -13,6 +13,14 @@ use Illuminate\Support\Str;
 class MediaController extends Controller
 {
     /**
+     * Display a listing of media.
+     */
+    public function index()
+    {
+        return MediaResource::collection(Media::paginate(15));
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

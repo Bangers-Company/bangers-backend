@@ -12,7 +12,7 @@ class StageController extends Controller
 {
     public function index()
     {
-        return StageResource::collection(Stage::paginate(15));
+        return StageResource::collection(Stage::with('event')->paginate(15));
     }
 
     public function store(Request $request)

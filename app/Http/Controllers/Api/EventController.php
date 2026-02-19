@@ -12,7 +12,7 @@ class EventController extends Controller
 {
     public function index()
     {
-        return EventResource::collection(Event::paginate(15));
+        return EventResource::collection(Event::with('stages', 'banner')->paginate(15));
     }
 
     public function store(Request $request)
