@@ -104,6 +104,17 @@ class FestivalSeeder extends Seeder
             ['name' => 'Omnya', 'genre' => 'Rawstyle'],
             ['name' => 'Element', 'genre' => 'Rawstyle'],
             ['name' => 'BMBERJCK', 'genre' => 'Rawstyle'],
+
+            // Rock & Metal
+            ['name' => 'Metallica', 'genre' => 'Heavy Metal'],
+            ['name' => 'Iron Maiden', 'genre' => 'Heavy Metal'],
+            ['name' => 'Slipknot', 'genre' => 'Nu Metal'],
+            ['name' => 'Rammstein', 'genre' => 'Industrial Metal'],
+            ['name' => 'Bring Me The Horizon', 'genre' => 'Metalcore'],
+            ['name' => 'Architects', 'genre' => 'Metalcore'],
+            ['name' => 'Parkway Drive', 'genre' => 'Metalcore'],
+            ['name' => 'Lorna Shore', 'genre' => 'Deathcore'],
+            ['name' => 'Sleep Token', 'genre' => 'Alternative Metal'],
         ];
 
         $artistModels = [];
@@ -133,6 +144,8 @@ class FestivalSeeder extends Seeder
             ['name' => 'Angerfist LIVE', 'artists' => ['Angerfist']],
             ['name' => 'The Prophet: The Last Show', 'artists' => ['The Prophet']],
             ['name' => 'D-Block & S-te-Fan (Ghost Stories Live)', 'artists' => ['D-Block & S-te-Fan']],
+            ['name' => 'Rammstein (Pyrotechnics Mix)', 'artists' => ['Rammstein']],
+            ['name' => 'Slipknot (Masked Up)', 'artists' => ['Slipknot']],
         ];
 
         // Add regular acts for each artist
@@ -168,6 +181,8 @@ class FestivalSeeder extends Seeder
             ['name' => 'Spectacular Festival', 'loc' => 'Oisterwijk, Netherlands', 'start' => '2025-05-30', 'end' => '2025-06-01'],
             ['name' => 'Coachella 2025', 'loc' => 'Indio, California', 'start' => '2025-04-11', 'end' => '2025-04-20'],
             ['name' => 'EDC Las Vegas 2025', 'loc' => 'Motor Speedway, LV', 'start' => '2025-05-16', 'end' => '2025-05-18'],
+            ['name' => 'Wacken Open Air 2025', 'loc' => 'Wacken, Germany', 'start' => '2025-07-30', 'end' => '2025-08-02'],
+            ['name' => 'Download Festival UK 2025', 'loc' => 'Donington Park, UK', 'start' => '2025-06-13', 'end' => '2025-06-15'],
         ];
 
         $eventModels = [];
@@ -207,6 +222,11 @@ class FestivalSeeder extends Seeder
             'KARNAVAL FESTIVAL' => 'The fun side of the festival.',
             'UITJE' => 'A small but crazy stage.',
             'INTENTSCITY' => 'The heart of the campsite.',
+            'Faster Stage' => 'The holy ground of Wacken.',
+            'Harder Stage' => 'Heavy riffs and hard hits.',
+            'Louder Stage' => 'Where it truly gets loud.',
+            'Apex Stage' => 'Download Festival main arena.',
+            'Opus Stage' => 'Alternative and extreme metal heaven.',
         ];
 
         $stageModels = [];
@@ -226,6 +246,8 @@ class FestivalSeeder extends Seeder
             'Mysteryland 2024' => ['Mainstage', 'Library', 'Atmosphere'],
             'EDC Las Vegas 2024' => ['Kinetic FIELD', 'Circuit GROUNDS', 'MegaStructure'],
             'Spectacular Festival' => ['Mainstage', 'DYNAMITE', 'FANATICZ', 'REVIVE', 'BOOMBOX'],
+            'Wacken Open Air 2025' => ['Faster Stage', 'Harder Stage', 'Louder Stage'],
+            'Download Festival UK 2025' => ['Apex Stage', 'Opus Stage'],
         ];
 
         foreach ($eventStages as $eventName => $stageNames) {
@@ -409,6 +431,15 @@ class FestivalSeeder extends Seeder
             'EDC Las Vegas 2025' => [
                 'Kinetic FIELD' => ['Martin Garrix', 'David Guetta', 'Armin van Buuren'],
                 'Circuit GROUNDS' => ['Sub Zero Project', 'Hardwell'],
+            ],
+            'Wacken Open Air 2025' => [
+                'Faster Stage' => ['Metallica', 'Iron Maiden', 'Slipknot'],
+                'Harder Stage' => ['Rammstein', 'Parkway Drive'],
+                'Louder Stage' => ['Lorna Shore', 'Sleep Token'],
+            ],
+            'Download Festival UK 2025' => [
+                'Apex Stage' => ['Bring Me The Horizon', 'Architects'],
+                'Opus Stage' => ['Slipknot (Masked Up)', 'Lorna Shore'],
             ],
         ];
 
