@@ -112,6 +112,7 @@ class ActController extends Controller
         $validator = Validator::make($request->all(), [
             "stage_id" => "required|uuid|exists:stages,id",
             "event_id" => "required|uuid|exists:events,id",
+            "date" => "nullable|date",
         ]);
 
         if ($validator->fails()) {
@@ -119,7 +120,10 @@ class ActController extends Controller
         }
 
         $act->stages()->syncWithoutDetaching([
-            $request->stage_id => ['event_id' => $request->event_id]
+            $request->stage_id => [
+                'event_id' => $request->event_id,
+                'date' => $request->date,
+            ]
         ]);
 
         return response()->json([
@@ -132,6 +136,7 @@ class ActController extends Controller
         $validator = Validator::make($request->all(), [
             "stage_id" => "required|uuid|exists:stages,id",
             "event_id" => "required|uuid|exists:events,id",
+            "date" => "nullable|date",
         ]);
 
         if ($validator->fails()) {
@@ -143,6 +148,9 @@ class ActController extends Controller
             ->where('act_id', $act->id)
             ->where('stage_id', $request->stage_id)
             ->where('event_id', $request->event_id)
+            ->when($request->has('date'), function($q) use ($request) {
+                return $q->where('date', $request->date);
+            })
             ->delete();
 
         return response()->json([
@@ -154,6 +162,7 @@ class ActController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "event_id" => "required|uuid|exists:events,id",
+            "date" => "nullable|date",
         ]);
 
         if ($validator->fails()) {
@@ -161,7 +170,10 @@ class ActController extends Controller
         }
 
         $act->events()->syncWithoutDetaching([
-            $request->event_id => ['stage_id' => null]
+            $request->event_id => [
+                'stage_id' => null,
+                'date' => $request->date,
+            ]
         ]);
 
         return response()->json([
@@ -173,13 +185,21 @@ class ActController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "event_id" => "required|uuid|exists:events,id",
+            "date" => "nullable|date",
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $act->events()->detach($request->event_id);
+        \DB::table('event_stage_acts')
+            ->where('act_id', $act->id)
+            ->where('event_id', $request->event_id)
+            ->whereNull('stage_id')
+            ->when($request->has('date'), function($q) use ($request) {
+                return $q->where('date', $request->date);
+            })
+            ->delete();
 
         return response()->json([
             "message" => "Act detached from event successfully.",

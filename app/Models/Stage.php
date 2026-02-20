@@ -22,6 +22,7 @@ class Stage extends Model
     public function acts()
     {
         return $this->belongsToMany(Act::class, "event_stage_acts")
-            ->withPivot('event_id', 'created_at');
+            ->withPivot('event_id', 'date')
+            ->withTimestamps();
     }
 }
