@@ -45,7 +45,7 @@ class Event extends Model
 
     public function stages()
     {
-        return $this->hasMany(Stage::class, 'event_id');
+        return $this->belongsToMany(Stage::class, 'event_stages');
     }
 
     public function acts()

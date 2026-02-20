@@ -37,7 +37,7 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        return new EventResource($event->load("stages", "banner"));
+        return new EventResource($event->load("stages.events", "banner"));
     }
 
     public function update(Request $request, Event $event)

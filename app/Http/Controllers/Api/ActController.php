@@ -33,7 +33,7 @@ class ActController extends Controller
 
     public function show(Act $act)
     {
-        return new ActResource($act->load("artists", "stages", "events"));
+        return new ActResource($act->load("artists", "stages.events", "events"));
     }
 
     public function update(Request $request, Act $act)
@@ -97,16 +97,15 @@ class ActController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "stage_id" => "required|uuid|exists:stages,id",
+            "event_id" => "required|uuid|exists:events,id",
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $stage = \App\Models\Stage::findOrFail($request->stage_id);
-
         $act->stages()->syncWithoutDetaching([
-            $request->stage_id => ['event_id' => $stage->event_id]
+            $request->stage_id => ['event_id' => $request->event_id]
         ]);
 
         return response()->json([
@@ -118,13 +117,19 @@ class ActController extends Controller
     {
         $validator = Validator::make($request->all(), [
             "stage_id" => "required|uuid|exists:stages,id",
+            "event_id" => "required|uuid|exists:events,id",
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $act->stages()->detach($request->stage_id);
+        // We use DB to delete specific pivot record to be safe with many-to-many-to-many
+        \DB::table('event_stage_acts')
+            ->where('act_id', $act->id)
+            ->where('stage_id', $request->stage_id)
+            ->where('event_id', $request->event_id)
+            ->delete();
 
         return response()->json([
             "message" => "Act detached from stage successfully.",

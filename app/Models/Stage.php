@@ -14,9 +14,9 @@ class Stage extends Model
 
     protected $fillable = ["event_id", "name", "description"];
 
-    public function event()
+    public function events()
     {
-        return $this->belongsTo(Event::class);
+        return $this->belongsToMany(Event::class, 'event_stages');
     }
 
     public function acts()
