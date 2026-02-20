@@ -64,6 +64,46 @@ class FestivalSeeder extends Seeder
             ['name' => 'Miss K8', 'genre' => 'Hardcore'],
             ['name' => 'N-Vitral', 'genre' => 'Hardcore'],
             ['name' => 'The Prophet', 'genre' => 'Hardstyle'],
+            ['name' => 'Da Tweekaz', 'genre' => 'Hardstyle'],
+            ['name' => 'The Purge', 'genre' => 'Rawstyle'],
+            ['name' => 'Mutilator', 'genre' => 'Rawstyle'],
+            ['name' => 'Unresolved', 'genre' => 'Rawstyle'],
+            ['name' => 'Regain', 'genre' => 'Rawstyle'],
+            ['name' => 'Radical Redemption', 'genre' => 'Rawstyle'],
+            ['name' => 'Dual Damage', 'genre' => 'Rawstyle'],
+            ['name' => 'Mish', 'genre' => 'Rawstyle'],
+            ['name' => 'Adjuzt', 'genre' => 'Rawstyle'],
+            ['name' => 'Paul Elstak', 'genre' => 'Hardcore/Classics'],
+            ['name' => 'Partyraiser', 'genre' => 'Uptempo'],
+            ['name' => 'Dimitri K', 'genre' => 'Uptempo'],
+            ['name' => 'Spitnoise', 'genre' => 'Uptempo'],
+            ['name' => 'Major Conspiracy', 'genre' => 'Uptempo'],
+            ['name' => 'Aversion', 'genre' => 'Rawstyle'],
+            ['name' => 'Krowdexx', 'genre' => 'Rawstyle'],
+            ['name' => 'Rejecta', 'genre' => 'Rawstyle'],
+            ['name' => 'Act of Rage', 'genre' => 'Rawstyle'],
+            ['name' => 'Hard Driver', 'genre' => 'Hardstyle'],
+            ['name' => 'Adaro', 'genre' => 'Hardstyle'],
+            ['name' => 'Crypsis', 'genre' => 'Rawstyle/Classics'],
+            ['name' => 'Frequencerz', 'genre' => 'Hardstyle'],
+            ['name' => 'Zany', 'genre' => 'Hardstyle/Classics'],
+            ['name' => 'Brennan Heart', 'genre' => 'Hardstyle'],
+            ['name' => 'Wildstylez', 'genre' => 'Hardstyle'],
+            ['name' => 'Headhunterz', 'genre' => 'Hardstyle'],
+            ['name' => 'Jones', 'genre' => 'Hardstyle'],
+            ['name' => 'Thera', 'genre' => 'Hardstyle'],
+            ['name' => 'Geck-O', 'genre' => 'Hardstyle'],
+            ['name' => 'B-Front', 'genre' => 'Hardstyle'],
+            ['name' => 'Phuture Noize', 'genre' => 'Hardstyle'],
+            ['name' => 'Ecstatic', 'genre' => 'Hardstyle'],
+            ['name' => 'Jay Reeve', 'genre' => 'Hardstyle'],
+            ['name' => 'Solstice', 'genre' => 'Hardstyle'],
+            ['name' => 'Deezl', 'genre' => 'Rawstyle'],
+            ['name' => 'Sparkz', 'genre' => 'Rawstyle'],
+            ['name' => 'Kruelty', 'genre' => 'Rawstyle'],
+            ['name' => 'Omnya', 'genre' => 'Rawstyle'],
+            ['name' => 'Element', 'genre' => 'Rawstyle'],
+            ['name' => 'BMBERJCK', 'genre' => 'Rawstyle'],
         ];
 
         $artistModels = [];
@@ -125,6 +165,9 @@ class FestivalSeeder extends Seeder
             ['name' => 'Creamfields UK 2024', 'loc' => 'Daresbury, UK', 'start' => '2024-08-22', 'end' => '2024-08-25'],
             ['name' => 'Mysteryland 2024', 'loc' => 'Haarlemmermeer, Netherlands', 'start' => '2024-08-30', 'end' => '2024-09-01'],
             ['name' => 'EDC Las Vegas 2024', 'loc' => 'Motor Speedway, LV', 'start' => '2024-05-17', 'end' => '2024-05-19'],
+            ['name' => 'Spectacular Festival', 'loc' => 'Oisterwijk, Netherlands', 'start' => '2025-05-30', 'end' => '2025-06-01'],
+            ['name' => 'Coachella 2025', 'loc' => 'Indio, California', 'start' => '2025-04-11', 'end' => '2025-04-20'],
+            ['name' => 'EDC Las Vegas 2025', 'loc' => 'Motor Speedway, LV', 'start' => '2025-05-16', 'end' => '2025-05-18'],
         ];
 
         $eventModels = [];
@@ -154,6 +197,16 @@ class FestivalSeeder extends Seeder
             'Arcadia Spider' => 'Fire-breathing mechanical spider.',
             'Kinetic FIELD' => 'The heart of EDC.',
             'Circuit GROUNDS' => 'Surrounding LED towers.',
+            'DYNAMITE' => 'High energy uptempo and hardcore.',
+            'FANATICZ' => 'The rawstyle sanctuary.',
+            'REVIVE' => 'Classic hardstyle and raw energy.',
+            'BOOMBOX' => 'Fresh talent and experimental sounds.',
+            'RELIVE' => 'Nostalgic classics and oldschool gems.',
+            'INDOOR MAINSTAGE' => 'Massive indoor experience.',
+            'OUTRAGEOUS!' => 'Pure party madness.',
+            'KARNAVAL FESTIVAL' => 'The fun side of the festival.',
+            'UITJE' => 'A small but crazy stage.',
+            'INTENTSCITY' => 'The heart of the campsite.',
         ];
 
         $stageModels = [];
@@ -172,6 +225,7 @@ class FestivalSeeder extends Seeder
             'Creamfields UK 2024' => ['Mainstage', 'MegaStructure', 'Circuit GROUNDS'],
             'Mysteryland 2024' => ['Mainstage', 'Library', 'Atmosphere'],
             'EDC Las Vegas 2024' => ['Kinetic FIELD', 'Circuit GROUNDS', 'MegaStructure'],
+            'Spectacular Festival' => ['Mainstage', 'DYNAMITE', 'FANATICZ', 'REVIVE', 'BOOMBOX'],
         ];
 
         foreach ($eventStages as $eventName => $stageNames) {
@@ -214,18 +268,197 @@ class FestivalSeeder extends Seeder
                 'Mainstage' => ['The Gang', 'Sub Zero Project', 'Rebelion'],
                 'RED Stage' => ['D-Block & S-te-Fan (Ghost Stories Live)', 'Sound Rush'],
             ],
+            'Spectacular Festival' => [
+                '2025-05-30' => [ // Friday
+                    'Mainstage' => [
+                        'Doors to Mainstage open',
+                        'The Opening Ceremony',
+                        'D-Block & S-te-Fan',
+                        'Da Tweekaz',
+                        'Rooler',
+                        'Vertile',
+                        'The Purge presents HYTRIP',
+                        'Warface vs Mutilator',
+                        'Unresolved vs Regain',
+                        'Radical Redemption',
+                    ],
+                    'DYNAMITE' => [
+                        'UDOW vs Missy vs Svenergy',
+                        'Aalst vs Tharoza vs Screecher',
+                        'Unproven - 10 years',
+                        'Soulblast vs Abaddon',
+                        'Odium',
+                        'Gezellige Uptempo pres: Crapital of Craziness openingsshow',
+                        'G3Z3LLIG3 BOUNC3 by Rosbeek & Kili & Akimbo',
+                        'Gezellige Uptempo pres: The Ass-Assins',
+                        'Major Conspiracy Uptempo Karaoke',
+                        'Spitnoise vs N-Vitral',
+                        'Gezellige Uptempo vs Dimitri K vs Partyraiser',
+                    ],
+                    'FANATICZ' => [
+                        'D-Venn vs Incult',
+                        'Faceless vs Infliction',
+                        'Dual Damage - Opening',
+                        'Dual Damage vs Cardination',
+                        'Collusion vs Revelation',
+                        'Heavy Resistance LIVE',
+                        'Hard Destiny LIVE',
+                        'Element vs Unload',
+                        'Dual Damage vs The Straikerz',
+                        'BMBERJCK LIVE',
+                        'Deezl vs Sparkz',
+                        'Kruelty vs Omnya',
+                    ],
+                    'REVIVE' => [
+                        'Jones - The Mind of A Lunatick',
+                        'Nightcraft',
+                        'Thera vs Geck-O Classics',
+                        'Sub Sonik',
+                        'Wolv',
+                        'Rejecta',
+                        'E-Force',
+                        'Crypsis - 15 years',
+                        'Adaro vs Deluzion',
+                        'D-Verze vs Main Concern - Classics',
+                        'Jason Payne - Goldschool',
+                    ],
+                    'BOOMBOX' => [
+                        'Miss Isa',
+                        'SVANE',
+                        'Josha',
+                        'Repeller vs Amduscias',
+                        'Royalistiq',
+                        'Dark Individual',
+                        'Break the Rules Showcase',
+                        'Nexor',
+                        'Wheelhatz vs Disphaze',
+                        'DJ Contest',
+                    ],
+                ],
+                '2025-05-31' => [ // Saturday
+                    'Mainstage' => [
+                        'Wildstylez', 'Headhunterz', 'D-Block & S-te-Fan', 'Sound Rush',
+                        'Da Tweekaz', 'Sub Zero Project', 'Rebelion', 'Vertile', 'D-Sturb', 'Warface'
+                    ],
+                    'DYNAMITE' => [
+                        'Angerfist', 'Miss K8', 'N-Vitral', 'Partyraiser',
+                        'Dimitri K', 'Spitnoise', 'Major Conspiracy', 'Paul Elstak'
+                    ],
+                    'FANATICZ' => [
+                        'Aversion', 'Sickmode', 'Rooler', 'Mutilator', 'The Purge',
+                        'Adjuzt', 'Mish', 'Dual Damage', 'Deezl', 'Sparkz'
+                    ],
+                    'REVIVE' => [
+                        'Crypsis', 'Adaro', 'Zany', 'Brennan Heart',
+                        'B-Front', 'Frequencerz', 'Thera', 'Geck-O'
+                    ],
+                    'BOOMBOX' => [
+                        'Ecstatic', 'Jay Reeve', 'Solstice', 'Rejecta', 'Act of Rage'
+                    ],
+                    'INDOOR MAINSTAGE' => [
+                        'Hard Driver', 'Phuture Noize', 'Krowdexx', 'Kruelty',
+                        'Omnya', 'Element', 'BMBERJCK'
+                    ],
+                ],
+                '2025-06-01' => [ // Sunday
+                    'Mainstage' => [
+                        'DJ Contest',
+                        'Ecstatic vs Jay Reeve vs Solstice',
+                        'Hard Driver vs Sound Rush',
+                        'B-Front vs Phuture Noize',
+                        'Act of Rage vs Rejecta LIVE',
+                        'D-Sturb vs E-Force LIVE',
+                        'Rebelion vs Aversion',
+                        'Sickmode & Krowdexx New Live Act',
+                        'Mish vs The Straikerz LIVE',
+                        'Adjuzt vs Mutilator LIVE',
+                        'Marshals of Mayhem LIVE',
+                        'Element vs BMBERJCK vs The Saints',
+                        'Warface - Electric Dreams',
+                        'Paul Elstak',
+                        'Sunday Endshow',
+                    ],
+                    'INDOOR MAINSTAGE' => [
+                        'Lunaticz',
+                        'Bass Chaserz vs Ginia',
+                        'Outsiders vs Pat B',
+                        'John West',
+                        'Altijd Larstig & Rob Gasd\'rop',
+                        'Gezellige Uptempo & Unlocked',
+                        'The Darkraver & Freddy Moreira',
+                        'Outsiders',
+                        'Django Wagner',
+                        'Mental Theo',
+                        'Outsiders & Partyraiser',
+                    ],
+                    'RELIVE' => [
+                        'Zany vs Jones',
+                        'Adrenalize vs Atmozfears',
+                        'Brennan Heart',
+                        'Frequencerz',
+                        'B-Front',
+                        'Regain Classics',
+                        'E-Force vs Unresolved',
+                    ],
+                ],
+            ],
+            'Coachella 2025' => [
+                'Mainstage' => ['Calvin Harris', 'Charlotte de Witte', 'Tiësto'],
+                'Sahara' => ['Anyma'],
+            ],
+            'EDC Las Vegas 2025' => [
+                'Kinetic FIELD' => ['Martin Garrix', 'David Guetta', 'Armin van Buuren'],
+                'Circuit GROUNDS' => ['Sub Zero Project', 'Hardwell'],
+            ],
         ];
 
-        foreach ($lineups as $eventName => $stages) {
+        foreach ($lineups as $eventName => $stagesOrDates) {
             $event = $eventModels[$eventName];
-            foreach ($stages as $stageName => $actNames) {
-                $stage = $stageModels[$stageName];
-                foreach ($actNames as $aName) {
-                    if (isset($actModels[$aName])) {
-                        $event->acts()->attach($actModels[$aName]->id, ['stage_id' => $stage->id]);
+
+            // Check if this is a multi-day structure
+            reset($stagesOrDates);
+            $firstKey = key($stagesOrDates);
+
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $firstKey)) {
+                // Multi-day structure: [date => [stage => [act, ...]]]
+                foreach ($stagesOrDates as $date => $stages) {
+                    foreach ($stages as $stageName => $actNames) {
+                        $stage = $stageModels[$stageName] ?? Stage::firstOrCreate(['name' => $stageName]);
+                        foreach ($actNames as $aName) {
+                            $act = $actModels[$aName] ?? Act::firstOrCreate(['name' => $aName]);
+                            $event->acts()->attach($act->id, ['stage_id' => $stage->id, 'date' => $date]);
+                            $actModels[$aName] = $act;
+                        }
+                    }
+                }
+            } else {
+                // Regular structure: [stage => [act, ...]]
+                foreach ($stagesOrDates as $stageName => $actNames) {
+                    $stage = $stageModels[$stageName] ?? Stage::firstOrCreate(['name' => $stageName]);
+                    foreach ($actNames as $aName) {
+                        $act = $actModels[$aName] ?? Act::firstOrCreate(['name' => $aName]);
+
+                        $pivotData = ['stage_id' => $stage->id];
+                        // Assign a random date between start and end if it's not the Spectacular Festival
+                        if ($eventName !== 'Spectacular Festival') {
+                            $start = Carbon::parse($event->start_date);
+                            $end = Carbon::parse($event->end_date);
+                            $diff = $start->diffInDays($end);
+                            $randomDate = $start->copy()->addDays(rand(0, $diff))->format('Y-m-d');
+                            $pivotData['date'] = $randomDate;
+                        }
+
+                        $event->acts()->attach($act->id, $pivotData);
+                        $actModels[$aName] = $act;
                     }
                 }
             }
         }
+
+        // 7. Uncategorized Acts (attached to event but no stage)
+        $eventModels['Tomorrowland 2024']->acts()->attach([
+            $actModels['Alesso']->id => ['stage_id' => null],
+            $actModels['Steve Aoki']->id => ['stage_id' => null],
+        ]);
     }
 }

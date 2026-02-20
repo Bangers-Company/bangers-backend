@@ -10,9 +10,24 @@ use Illuminate\Support\Facades\Validator;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return EventResource::collection(Event::with('stages', 'banner', 'acts')->paginate(15));
+        $query = Event::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+        }
+
+        $perPage = $request->query('per_page', 15);
+        $query->orderBy('start_date', 'desc');
+
+        if ($perPage == -1) {
+            return EventResource::collection($query->with('stages', 'banner', 'acts')->get());
+        }
+
+        return EventResource::collection($query->with('stages', 'banner', 'acts')->paginate($perPage));
     }
 
     public function store(Request $request)
@@ -37,7 +52,7 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        return new EventResource($event->load("stages.events", "banner"));
+        return new EventResource($event->load("stages", "acts.artists", "banner"));
     }
 
     public function update(Request $request, Event $event)
