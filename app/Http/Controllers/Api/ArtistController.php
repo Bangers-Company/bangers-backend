@@ -16,8 +16,8 @@ class ArtistController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('genre', 'like', "%{$search}%");
+            $query->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('genre', 'ilike', "%{$search}%");
         }
 
         $perPage = $request->query('per_page', 15);

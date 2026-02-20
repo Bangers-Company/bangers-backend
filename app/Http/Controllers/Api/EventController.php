@@ -16,8 +16,8 @@ class EventController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('location', 'like', "%{$search}%");
+            $query->where('name', 'ilike', "%{$search}%")
+                  ->orWhere('location', 'ilike', "%{$search}%");
         }
 
         $perPage = $request->query('per_page', 15);
