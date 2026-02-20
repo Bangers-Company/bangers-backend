@@ -47,4 +47,10 @@ class Event extends Model
     {
         return $this->hasMany(Stage::class, 'event_id');
     }
+
+    public function acts()
+    {
+        return $this->belongsToMany(Act::class, 'event_stage_acts')
+            ->withPivot('stage_id', 'created_at');
+    }
 }

@@ -103,7 +103,11 @@ class ActController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $act->stages()->syncWithoutDetaching([$request->stage_id]);
+        $stage = \App\Models\Stage::findOrFail($request->stage_id);
+
+        $act->stages()->syncWithoutDetaching([
+            $request->stage_id => ['event_id' => $stage->event_id]
+        ]);
 
         return response()->json([
             "message" => "Act attached to stage successfully.",
@@ -124,6 +128,42 @@ class ActController extends Controller
 
         return response()->json([
             "message" => "Act detached from stage successfully.",
+        ]);
+    }
+
+    public function attachEvent(Request $request, Act $act)
+    {
+        $validator = Validator::make($request->all(), [
+            "event_id" => "required|uuid|exists:events,id",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $act->events()->syncWithoutDetaching([
+            $request->event_id => ['stage_id' => null]
+        ]);
+
+        return response()->json([
+            "message" => "Act attached to event successfully.",
+        ]);
+    }
+
+    public function detachEvent(Request $request, Act $act)
+    {
+        $validator = Validator::make($request->all(), [
+            "event_id" => "required|uuid|exists:events,id",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $act->events()->detach($request->event_id);
+
+        return response()->json([
+            "message" => "Act detached from event successfully.",
         ]);
     }
 }

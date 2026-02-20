@@ -13,3 +13,6 @@ Route::post('acts/{act}/artists', [ActController::class, 'attachArtist'])->name(
 Route::delete('acts/{act}/artists', [ActController::class, 'detachArtist'])->name('acts.artists.detach');
 Route::post('acts/{act}/stages', [ActController::class, 'attachStage'])->name('acts.stages.attach');
 Route::delete('acts/{act}/stages', [ActController::class, 'detachStage'])->name('acts.stages.detach');
+
+Route::post('acts/{act}/events', [ActController::class, 'attachEvent'])->name('acts.events.attach');
+Route::delete('acts/{act}/events', [ActController::class, 'detachEvent'])->name('acts.events.detach');
