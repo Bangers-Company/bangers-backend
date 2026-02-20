@@ -10,9 +10,23 @@ use Illuminate\Support\Facades\Validator;
 
 class ActController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return ActResource::collection(Act::with('artists', 'stages.events', 'events')->paginate(15));
+        $query = Act::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+
+        $perPage = $request->query('per_page', 15);
+
+        if ($perPage == -1) {
+            return ActResource::collection($query->with('artists', 'stages.events', 'events')->get());
+        }
+
+        return ActResource::collection($query->with('artists', 'stages.events', 'events')->paginate($perPage));
     }
 
     public function store(Request $request)

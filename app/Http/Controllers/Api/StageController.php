@@ -16,11 +16,17 @@ class StageController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('events', function($eq) use ($search) {
+                      $eq->where('name', 'like', "%{$search}%");
+                  });
+            });
         }
 
         $perPage = $request->query('per_page', 15);
+        $query->orderBy('name', 'asc');
 
         if ($perPage == -1) {
             return StageResource::collection($query->with('events')->get());

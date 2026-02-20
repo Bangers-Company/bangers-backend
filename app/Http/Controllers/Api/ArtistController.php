@@ -10,9 +10,24 @@ use Illuminate\Support\Facades\Validator;
 
 class ArtistController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return ArtistResource::collection(Artist::with('acts', 'image')->paginate(15));
+        $query = Artist::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('genre', 'like', "%{$search}%");
+        }
+
+        $perPage = $request->query('per_page', 15);
+        $query->orderBy('name', 'asc');
+
+        if ($perPage == -1) {
+            return ArtistResource::collection($query->with('acts', 'image')->get());
+        }
+
+        return ArtistResource::collection($query->with('acts', 'image')->paginate($perPage));
     }
 
     public function store(Request $request)
