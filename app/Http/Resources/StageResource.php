@@ -16,8 +16,8 @@ class StageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'event_id' => $this->event_id,
-            'event' => new EventResource($this->whenLoaded('event')),
+            'event_id' => $this->pivot?->event_id,
+            'events' => EventResource::collection($this->whenLoaded('events')),
             'name' => $this->name,
             'description' => $this->description,
             'version' => $this->version,

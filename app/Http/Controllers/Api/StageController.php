@@ -10,9 +10,29 @@ use Illuminate\Support\Facades\Validator;
 
 class StageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return StageResource::collection(Stage::with('event')->paginate(15));
+        $query = Stage::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('events', function($eq) use ($search) {
+                      $eq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $perPage = $request->query('per_page', 15);
+        $query->orderBy('name', 'asc');
+
+        if ($perPage == -1) {
+            return StageResource::collection($query->with('events')->get());
+        }
+
+        return StageResource::collection($query->with('events')->paginate($perPage));
     }
 
     public function store(Request $request)
@@ -21,26 +41,37 @@ class StageController extends Controller
             "event_id" => "required|uuid|exists:events,id",
             "name" => "required|string|max:255",
             "description" => "nullable|string",
+            "stage_id" => "nullable|uuid|exists:stages,id",
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $stage = Stage::create($validator->validated());
+        $validated = $validator->validated();
 
-        return new StageResource($stage)->response()->setStatusCode(201);
+        if (isset($validated['stage_id'])) {
+            $stage = Stage::findOrFail($validated['stage_id']);
+        } else {
+            $stage = Stage::create([
+                "name" => $validated['name'],
+                "description" => $validated['description'] ?? null,
+            ]);
+        }
+
+        $stage->events()->syncWithoutDetaching([$validated['event_id']]);
+
+        return new StageResource($stage->load('events'))->response()->setStatusCode(201);
     }
 
     public function show(Stage $stage)
     {
-        return new StageResource($stage->load("event"));
+        return new StageResource($stage->load("events"));
     }
 
     public function update(Request $request, Stage $stage)
     {
         $validator = Validator::make($request->all(), [
-            "event_id" => "sometimes|required|uuid|exists:events,id",
             "name" => "sometimes|required|string|max:255",
             "description" => "nullable|string",
         ]);
@@ -51,7 +82,7 @@ class StageController extends Controller
 
         $stage->update($validator->validated());
 
-        return new StageResource($stage);
+        return new StageResource($stage->load('events'));
     }
 
     public function destroy(Stage $stage)
