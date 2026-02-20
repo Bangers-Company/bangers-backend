@@ -19,6 +19,7 @@ class ActResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'version' => $this->version,
+            'stage_id' => $this->pivot?->stage_id,
             'artists' => ArtistResource::collection($this->whenLoaded('artists')),
             'stages' => StageResource::collection($this->whenLoaded('stages')),
             'events' => EventResource::collection($this->whenLoaded('events')),

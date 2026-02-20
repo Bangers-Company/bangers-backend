@@ -227,5 +227,11 @@ class FestivalSeeder extends Seeder
                 }
             }
         }
+
+        // 7. Uncategorized Acts (attached to event but no stage)
+        $eventModels['Tomorrowland 2024']->acts()->attach([
+            $actModels['Alesso']->id => ['stage_id' => null],
+            $actModels['Steve Aoki']->id => ['stage_id' => null],
+        ]);
     }
 }

@@ -10,9 +10,23 @@ use Illuminate\Support\Facades\Validator;
 
 class StageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return StageResource::collection(Stage::with('events')->paginate(15));
+        $query = Stage::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+
+        $perPage = $request->query('per_page', 15);
+
+        if ($perPage == -1) {
+            return StageResource::collection($query->with('events')->get());
+        }
+
+        return StageResource::collection($query->with('events')->paginate($perPage));
     }
 
     public function store(Request $request)
