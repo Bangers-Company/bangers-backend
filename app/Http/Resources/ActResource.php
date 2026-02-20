@@ -21,6 +21,7 @@ class ActResource extends JsonResource
             'version' => $this->version,
             'artists' => ArtistResource::collection($this->whenLoaded('artists')),
             'stages' => StageResource::collection($this->whenLoaded('stages')),
+            'events' => EventResource::collection($this->whenLoaded('events')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

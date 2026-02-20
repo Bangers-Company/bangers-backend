@@ -12,7 +12,7 @@ class ActController extends Controller
 {
     public function index()
     {
-        return ActResource::collection(Act::with('artists', 'stages')->paginate(15));
+        return ActResource::collection(Act::with('artists', 'stages', 'events')->paginate(15));
     }
 
     public function store(Request $request)
@@ -33,7 +33,7 @@ class ActController extends Controller
 
     public function show(Act $act)
     {
-        return new ActResource($act->load("artists", "stages"));
+        return new ActResource($act->load("artists", "stages", "events"));
     }
 
     public function update(Request $request, Act $act)
