@@ -42,7 +42,7 @@ class SearchController extends Controller
         if (in_array("events", $entities)) {
             $eventQuery = Event::query();
             if ($queryText) {
-                $eventQuery->where("name", "like", "%{$queryText}%");
+                $eventQuery->where("name", "ilike", "%{$queryText}%");
             }
             if ($date) {
                 $eventQuery
@@ -50,7 +50,7 @@ class SearchController extends Controller
                     ->whereDate("end_date", ">=", $date);
             }
             if ($location) {
-                $eventQuery->where("location", "like", "%{$location}%");
+                $eventQuery->where("location", "ilike", "%{$location}%");
             }
             $results["events"] = $eventQuery->paginate(
                 $perPage,
@@ -62,7 +62,7 @@ class SearchController extends Controller
         if (in_array("artists", $entities)) {
             $artistQuery = Artist::query();
             if ($queryText) {
-                $artistQuery->where("name", "like", "%{$queryText}%");
+                $artistQuery->where("name", "ilike", "%{$queryText}%");
             }
             $results["artists"] = $artistQuery->paginate(
                 $perPage,
@@ -74,7 +74,7 @@ class SearchController extends Controller
         if (in_array("acts", $entities)) {
             $actQuery = Act::query();
             if ($queryText) {
-                $actQuery->where("name", "like", "%{$queryText}%");
+                $actQuery->where("name", "ilike", "%{$queryText}%");
             }
             $results["acts"] = $actQuery->paginate(
                 $perPage,
