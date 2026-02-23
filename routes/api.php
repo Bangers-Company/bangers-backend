@@ -17,3 +17,7 @@ Route::name('api.')->group(function () {
     require __DIR__.'/api/SearchRoutes.php';
     require __DIR__.'/api/DashboardRoutes.php';
 });
+
+Route::name('api.mobile.')->group(function () {
+
+});
