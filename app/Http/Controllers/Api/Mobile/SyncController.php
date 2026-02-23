@@ -22,6 +22,11 @@ class SyncController extends Controller
         $query = Event::with(['banner', 'stages', 'acts.artists'])->withTrashed();
 
         if ($since) {
+            if (is_numeric($since)) {
+                $since = strlen((string)$since) >= 13
+                    ? \Illuminate\Support\Carbon::createFromTimestampMs($since)
+                    : \Illuminate\Support\Carbon::createFromTimestamp($since);
+            }
             $query->where('updated_at', '>', $since);
         }
 
@@ -37,6 +42,11 @@ class SyncController extends Controller
         $query = Artist::with(['image'])->withTrashed();
 
         if ($since) {
+            if (is_numeric($since)) {
+                $since = strlen((string)$since) >= 13
+                    ? \Illuminate\Support\Carbon::createFromTimestampMs($since)
+                    : \Illuminate\Support\Carbon::createFromTimestamp($since);
+            }
             $query->where('updated_at', '>', $since);
         }
 
@@ -52,6 +62,11 @@ class SyncController extends Controller
         $query = Act::with(['artists.image'])->withTrashed();
 
         if ($since) {
+            if (is_numeric($since)) {
+                $since = strlen((string)$since) >= 13
+                    ? \Illuminate\Support\Carbon::createFromTimestampMs($since)
+                    : \Illuminate\Support\Carbon::createFromTimestamp($since);
+            }
             $query->where('updated_at', '>', $since);
         }
 
