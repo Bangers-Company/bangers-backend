@@ -19,5 +19,8 @@ Route::name('api.')->group(function () {
 });
 
 Route::name('api.mobile.')->group(function () {
-
+    require __DIR__.'/mobile/EventsRoutes.php';
+    require __DIR__.'/mobile/ActsRoutes.php';
+    require __DIR__.'/mobile/SearchRoutes.php';
+    require __DIR__.'/mobile/DashboardRoutes.php';
 });

@@ -31,4 +31,15 @@ class DashboardController extends Controller
             ],
         ]);
     }
+
+    public function MobileDashboard()
+    {
+        return response()->json([
+            'events' => [
+                'events' => EventResource::collection(Event::with('banner')->orderBy('start_date', 'desc')->latest()->take(10)->get()),
+                'artists' => ArtistResource::collection(Artist::with('image')->latest()->take(10)->get()),
+                'acts' => ActResource::collection(Act::with('artists', 'stages')->latest()->take(10)->get()),
+            ],
+        ]);
+    }
 }
