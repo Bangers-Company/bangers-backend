@@ -52,7 +52,7 @@ class DashboardController extends Controller
          */
         return response()->json([
             'response' => [
-                'events' => EventResource::collection(Event::with('banner')->orderBy('start_date', 'desc')->latest()->take(10)->get())
+                'events' => EventResource::collection(Event::with(['banner', 'stages', 'acts.artists'])->orderBy('start_date', 'desc')->latest()->take(10)->get())
             ],
         ]);
     }
