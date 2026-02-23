@@ -34,11 +34,25 @@ class DashboardController extends Controller
 
     public function MobileDashboard()
     {
+        /**
+         * will later be in format:
+         * 'response' => [
+         *      'attending_events' => EventResource::collection(Event::with('banner')->orderBy('start_date', 'desc')->get()),
+         *      'suggested_events' => ArtistResource::collection(Event::with('banner')->latest()->take(10)->get()),
+         *      'events_from_friends' => ActResource::collection(Event::with('banner')->latest()->take(10)->get()),'
+         * ];
+         *
+         * Should later implement pagination; NOT USING THIS FUNCTION
+         * Pagination is based on row EventController.
+         * scrolling for example suggested should call /events/suggested
+         * scrolling for example attending should call /events/attending
+         * scrolling for example events_from_friends should call /events/events_from_friends
+         *
+         * Dashboard is only for initial data
+         */
         return response()->json([
-            'events' => [
-                'events' => EventResource::collection(Event::with('banner')->orderBy('start_date', 'desc')->latest()->take(10)->get()),
-                'artists' => ArtistResource::collection(Artist::with('image')->latest()->take(10)->get()),
-                'acts' => ActResource::collection(Act::with('artists', 'stages')->latest()->take(10)->get()),
+            'response' => [
+                'events' => EventResource::collection(Event::with('banner')->orderBy('start_date', 'desc')->latest()->take(10)->get())
             ],
         ]);
     }
