@@ -148,4 +148,22 @@ class FriendshipController extends Controller
 
         return FriendshipResource::collection($requests);
     }
+
+    /**
+     * GET /friends/users/{id}/friends
+     */
+    public function userFriends(Request $request, $id)
+    {
+        $user = $request->user();
+
+        $friends = Friendship::with(['user1', 'user2'])
+            ->where('status', 'accepted')
+            ->where(function($q) use ($user) {
+                $q->where('user_id_1', $user->id)->orWhere('user_id_2', $user->id);
+            })
+            ->get()
+            ->map(fn($f) => $f->getFriendOf($user->id));
+
+        return UserResource::collection($friends);
+    }
 }

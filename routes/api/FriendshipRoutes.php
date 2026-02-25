@@ -15,3 +15,7 @@ Route::middleware('auth:sanctum')->prefix('friends')->group(function () {
     Route::put('{userId}/block', [FriendshipController::class, 'block']);
     Route::delete('{userId}', [FriendshipController::class, 'destroy']);
 });
+
+Route::middleware('auth:sanctum')->prefix('users')->group(function () {
+    Route::get('{id}/friends', [FriendshipController::class, 'userFriends']);
+});
