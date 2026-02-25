@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\Mobile\SyncController;
+use App\Http\Controllers\Mobile\SyncController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('sync')->name('sync.')->group(function () {

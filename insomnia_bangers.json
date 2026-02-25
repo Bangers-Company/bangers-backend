@@ -56,7 +56,16 @@
             "description": "",
             "method": "GET",
             "body": {},
-            "parameters": [],
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                },
+                {
+                    "name": "page",
+                    "value": "1"
+                }
+            ],
             "headers": [
                 {
                     "name": "Accept",
@@ -166,6 +175,23 @@
             "_type": "request"
         },
         {
+            "_id": "req_events_lineup_sync",
+            "parentId": "fld_events",
+            "url": "{{ base_url }}/events/{eventId}/lineup-sync",
+            "name": "Lineup Sync (Batch)",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"acts\": [\n    {\n      \"act_id\": \"uuid\",\n      \"stage_id\": \"uuid\",\n      \"date\": \"2026-07-20\"\n    }\n  ]\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+
+        {
             "_id": "fld_artists",
             "parentId": "wrk_bangers",
             "modified": 1739702700000,
@@ -187,14 +213,22 @@
             "description": "",
             "method": "GET",
             "body": {},
-            "parameters": [],
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                }
+            ],
             "headers": [
                 {
                     "name": "Accept",
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -1000000000,
             "_type": "request"
         },
@@ -259,6 +293,25 @@
             "metaSortKey": -800000000,
             "_type": "request_group"
         },
+        {
+            "_id": "req_acts_index",
+            "parentId": "fld_acts",
+            "url": "{{ base_url }}/acts",
+            "name": "api.acts.index",
+            "method": "GET",
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+
         {
             "_id": "req_acts_store",
             "parentId": "fld_acts",
@@ -354,6 +407,24 @@
             "environmentPropertyOrder": null,
             "metaSortKey": -700000000,
             "_type": "request_group"
+        },
+        {
+            "_id": "req_stages_index",
+            "parentId": "fld_stages",
+            "url": "{{ base_url }}/stages",
+            "name": "api.stages.index",
+            "method": "GET",
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                }
+            ],
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
         },
         {
             "_id": "req_stages_store",
@@ -458,7 +529,10 @@
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -500000000,
             "_type": "request"
         },
@@ -498,71 +572,69 @@
         {
             "_id": "req_mobile_search",
             "parentId": "fld_mobile",
-            "modified": 1740327600000,
-            "created": 1740327600000,
             "url": "{{ base_url }}/mobile/search",
             "name": "api.mobile.search",
-            "description": "",
             "method": "GET",
-            "body": {},
             "parameters": [
                 {
                     "name": "query",
                     "value": "Martin"
-                }
-            ],
-            "headers": [
+                },
                 {
-                    "name": "Accept",
-                    "value": "application/json"
+                    "name": "entities",
+                    "value": "events,artists,acts"
                 }
             ],
-            "authentication": {},
-            "metaSortKey": -900000000,
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "_type": "request"
         },
+
+
         {
             "_id": "req_mobile_events_suggested",
             "parentId": "fld_mobile",
-            "modified": 1740327600000,
-            "created": 1740327600000,
             "url": "{{ base_url }}/mobile/events/suggested",
             "name": "api.mobile.events.suggested",
-            "description": "",
             "method": "GET",
-            "body": {},
-            "parameters": [],
-            "headers": [
+            "parameters": [
                 {
-                    "name": "Accept",
-                    "value": "application/json"
+                    "name": "per_page",
+                    "value": "10"
                 }
             ],
-            "authentication": {},
-            "metaSortKey": -850000000,
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "_type": "request"
         },
+
         {
             "_id": "req_mobile_events_friends",
             "parentId": "fld_mobile",
-            "modified": 1740327600000,
-            "created": 1740327600000,
             "url": "{{ base_url }}/mobile/events/friends",
             "name": "api.mobile.events.friends",
-            "description": "",
             "method": "GET",
-            "body": {},
-            "parameters": [],
-            "headers": [
+            "parameters": [
                 {
-                    "name": "Accept",
-                    "value": "application/json"
+                    "name": "per_page",
+                    "value": "10"
+                },
+                {
+                    "name": "page",
+                    "value": "1"
                 }
             ],
-            "authentication": {},
-            "metaSortKey": -825000000,
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "_type": "request"
         },
+
         {
             "_id": "req_mobile_events_show",
             "parentId": "fld_mobile",
@@ -580,7 +652,10 @@
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -800000000,
             "_type": "request"
         },
@@ -601,7 +676,10 @@
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -700000000,
             "_type": "request"
         },
@@ -622,7 +700,10 @@
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -600000000,
             "_type": "request"
         },
@@ -660,7 +741,10 @@
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -1000000000,
             "_type": "request"
         },
@@ -686,7 +770,10 @@
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -900000000,
             "_type": "request"
         },
@@ -712,9 +799,333 @@
                     "value": "application/json"
                 }
             ],
-            "authentication": {},
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "metaSortKey": -800000000,
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_auth_login",
+            "parentId": "fld_mobile",
+            "url": "{{ base_url }}/mobile/auth/login",
+            "name": "api.mobile.auth.login",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"email\": \"admin@bangers.nl\",\n  \"password\": \"bangers2026\"\n}"
+            },
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_auth_register",
+            "parentId": "fld_mobile",
+            "url": "{{ base_url }}/mobile/auth/register",
+            "name": "api.mobile.auth.register",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"email\": \"mobile_user@example.com\",\n  \"username\": \"mobiler\",\n  \"password\": \"password123\",\n  \"first_name\": \"Mobile\",\n  \"last_name\": \"User\",\n  \"dob\": \"1995-05-05\"\n}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_users_me",
+            "parentId": "fld_mobile",
+            "url": "{{ base_url }}/mobile/users/me",
+            "name": "api.mobile.users.me",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_friends_request",
+            "parentId": "fld_mobile",
+            "url": "{{ base_url }}/mobile/friends/{userId}",
+            "name": "api.mobile.friends.request",
+            "method": "POST",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_friends_index",
+            "parentId": "fld_mobile",
+            "url": "{{ base_url }}/mobile/friends",
+            "name": "api.mobile.friends.index",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                }
+            ],
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_attendance_update",
+            "parentId": "fld_mobile",
+            "url": "{{ base_url }}/mobile/events/{eventId}/attendance",
+            "name": "api.mobile.events.attendance.update",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"status\": \"going\"\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "fld_auth",
+            "parentId": "wrk_bangers",
+            "name": "Auth",
+            "metaSortKey": -450000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_auth_login",
+            "parentId": "fld_auth",
+            "url": "{{ base_url }}/auth/login",
+            "name": "Login",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"email\": \"admin@bangers.nl\",\n  \"password\": \"bangers2026\"\n}"
+            },
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "_type": "request"
+        },
+        {
+            "_id": "req_auth_register",
+            "parentId": "fld_auth",
+            "url": "{{ base_url }}/auth/register",
+            "name": "Register",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"email\": \"user@example.com\",\n  \"username\": \"johndoe\",\n  \"password\": \"password123\",\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"dob\": \"1990-01-01\"\n}"
+            },
+            "headers": [
+                {
+                    "name": "Accept",
+                    "value": "application/json"
+                }
+            ],
+            "_type": "request"
+        },
+        {
+            "_id": "req_auth_logout",
+            "parentId": "fld_auth",
+            "url": "{{ base_url }}/auth/logout",
+            "name": "Logout",
+            "method": "POST",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+
+
+        {
+            "_id": "fld_users",
+            "parentId": "wrk_bangers",
+            "name": "Users",
+            "metaSortKey": -440000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_users_me",
+            "parentId": "fld_users",
+            "url": "{{ base_url }}/users/me",
+            "name": "Get Me",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_users_index",
+            "parentId": "fld_users",
+            "url": "{{ base_url }}/users",
+            "name": "List All (Admin)",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                },
+                {
+                    "name": "page",
+                    "value": "1"
+                }
+            ],
+            "_type": "request"
+        },
+
+        {
+            "_id": "req_users_roles_assign",
+            "parentId": "fld_users",
+            "url": "{{ base_url }}/users/{id}/roles/{roleId}",
+            "name": "Assign Role (Admin)",
+            "method": "POST",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "fld_friends",
+            "parentId": "wrk_bangers",
+            "name": "Friends",
+            "metaSortKey": -430000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_friends_index",
+            "parentId": "fld_friends",
+            "url": "{{ base_url }}/friends",
+            "name": "List Friends",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                }
+            ],
+            "_type": "request"
+        },
+        {
+            "_id": "req_friends_requests",
+            "parentId": "fld_friends",
+            "url": "{{ base_url }}/friends/requests",
+            "name": "Friend Requests",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "parameters": [
+                {
+                    "name": "per_page",
+                    "value": "20"
+                }
+            ],
+            "_type": "request"
+        },
+        {
+            "_id": "req_friends_store",
+            "parentId": "fld_friends",
+            "url": "{{ base_url }}/friends/{userId}",
+            "name": "Add Friend / Request",
+            "method": "POST",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "fld_attendance",
+            "parentId": "wrk_bangers",
+            "name": "Attendance",
+            "metaSortKey": -420000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_attendance_update",
+            "parentId": "fld_attendance",
+            "url": "{{ base_url }}/events/{eventId}/attendance",
+            "name": "Update Attendance",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"status\": \"going\"\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_event_attendees",
+            "parentId": "fld_attendance",
+            "url": "{{ base_url }}/events/{eventId}/attendees",
+            "name": "Event Attendees",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "fld_rbac",
+            "parentId": "wrk_bangers",
+            "name": "RBAC (Admin)",
+            "metaSortKey": -410000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_roles_index",
+            "parentId": "fld_rbac",
+            "url": "{{ base_url }}/roles",
+            "name": "List Roles",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_permissions_index",
+            "parentId": "fld_rbac",
+            "url": "{{ base_url }}/permissions",
+            "name": "List Permissions",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
             "_type": "request"
         }
     ]
 }
+

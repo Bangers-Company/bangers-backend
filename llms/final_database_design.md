@@ -1,13 +1,15 @@
-``` SQL
+```SQL
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
-    display_name VARCHAR(100),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
     bio TEXT,
     profile_media_id UUID,
     is_verified BOOLEAN DEFAULT FALSE,
+    is_public BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMP,
@@ -26,10 +28,22 @@ CREATE TABLE user_roles (
     PRIMARY KEY (user_id, role_id)
 );
 
+CREATE TABLE permissions (
+    id UUID PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE role_permissions {
+    role_id UUID REFERENCES roles(id) ON DELETE CASCADE,
+    permission_id UUID REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_id)
+}
+
 CREATE TABLE media (
     id UUID PRIMARY KEY,
     owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    type VARCHAR(50) NOT NULL, -- profile_picture, artist_image, festival_banner
+    type VARCHAR(50) NOT NULL, -- profile_picture, artist_image, event_banner
     storage_key TEXT NOT NULL,
     url TEXT NOT NULL,
     mime_type VARCHAR(100),
@@ -57,22 +71,17 @@ FOREIGN KEY (profile_media_id)
 REFERENCES media(id)
 ON DELETE SET NULL;
 
-CREATE TABLE user_follows (
-    follower_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    following_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (follower_id, following_id)
-);
-
 CREATE TABLE friendships (
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    friend_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    user_id_1 UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id_2 UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     status VARCHAR(20) NOT NULL, -- pending, accepted, blocked
+    requested_by UUID NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, friend_id)
+    PRIMARY KEY (user_id_1, user_id_2),
+    CHECK (user_id_1 < user_id_2)
 );
 
-CREATE TABLE festivals (
+CREATE TABLE events (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -88,7 +97,7 @@ CREATE TABLE festivals (
 
 CREATE TABLE stages (
     id UUID PRIMARY KEY,
-    festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
+    event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -125,18 +134,18 @@ CREATE TABLE act_artists (
     PRIMARY KEY (act_id, artist_id)
 );
 
-CREATE TABLE festival_acts (
-    festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
+CREATE TABLE events_acts (
+    event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     act_id UUID REFERENCES acts(id) ON DELETE CASCADE,
     announcement_date TIMESTAMP,
     is_headliner BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (festival_id, act_id)
+    PRIMARY KEY (event_id, act_id)
 );
 
 CREATE TABLE timetable_entries (
     id UUID PRIMARY KEY,
-    festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
+    event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     stage_id UUID REFERENCES stages(id) ON DELETE CASCADE,
     act_id UUID REFERENCES acts(id),
     start_time TIMESTAMP NOT NULL,
@@ -147,12 +156,12 @@ CREATE TABLE timetable_entries (
     version INTEGER NOT NULL DEFAULT 1
 );
 
-CREATE TABLE user_festival_attendance (
+CREATE TABLE user_event_attendance (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
+    event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     status VARCHAR(20) NOT NULL, -- going, interested
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, festival_id)
+    PRIMARY KEY (user_id, event_id)
 );
 
 CREATE TABLE user_timetable_favorites (
@@ -165,7 +174,7 @@ CREATE TABLE user_timetable_favorites (
 CREATE TABLE personal_timetables (
     id UUID PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
+    event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     is_public BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -198,7 +207,7 @@ CREATE TABLE group_members (
 CREATE TABLE group_timetables (
     id UUID PRIMARY KEY,
     group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
-    festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
+    event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
