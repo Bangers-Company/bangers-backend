@@ -22,7 +22,8 @@ class UserResource extends JsonResource
             'last_name' => $this->last_name,
             'dob' => $this->dob,
             'bio' => $this->bio,
-            'profile_picture_id' => $this->profile_picture_id,
+            'profile_media_id' => $this->profile_media_id,
+            'profile_media_url' => $this->profileMedia?->url,
             'roles' => RoleResource::collection($this->whenLoaded('roles')),
             'permissions' => $this->whenLoaded('roles', function() {
                 return $this->roles->flatMap->permissions->pluck('name')->unique()->values();

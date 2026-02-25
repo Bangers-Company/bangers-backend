@@ -38,7 +38,7 @@ class UserController extends Controller
 
         // If profile is private and not self/admin, maybe hide some info
         // For now returning basic user info
-        return new UserResource($user);
+        return new UserResource($user->load(['roles.permissions', 'profileMedia']));
     }
 
     /**
@@ -54,13 +54,25 @@ class UserController extends Controller
 
         $request->validate([
             'email' => 'email|unique:users,email,' . $user->id,
+            'username' => 'string|unique:users,username,' . $user->id,
             'first_name' => 'string|max:100',
             'last_name' => 'string|max:100',
+            'dob' => 'nullable|date',
             'bio' => 'nullable|string',
             'is_public' => 'boolean',
+            'profile_media_id' => 'nullable|uuid|exists:media,id',
         ]);
 
-        $user->update($request->only(['email', 'first_name', 'last_name', 'bio', 'is_public']));
+        $user->update($request->only([
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'dob',
+            'bio',
+            'is_public',
+            'profile_media_id'
+        ]));
 
         return new UserResource($user->load('roles.permissions'));
     }

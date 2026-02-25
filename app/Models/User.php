@@ -78,4 +78,9 @@ class User extends Authenticatable
             ->withPivot('status')
             ->withTimestamps();
     }
+
+    public function profileMedia(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'profile_media_id');
+    }
 }
