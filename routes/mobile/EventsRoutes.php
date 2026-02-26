@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\Mobile\EventController;
-use App\Http\Controllers\Api\Mobile\EventDiscoveryController;
+use App\Http\Controllers\Mobile\EventController;
+use App\Http\Controllers\Mobile\EventDiscoveryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('events/suggested', [EventDiscoveryController::class, 'suggested'])->name('events.suggested');
