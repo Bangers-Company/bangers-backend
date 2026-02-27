@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::name('api.')->group(function () {
-    // Public Auth Routes
+    // Public Auth Routes (Admin Login Only)
     require __DIR__.'/api/AuthRoutes.php';
 
     // Restricted Admin Routes
-    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
         require __DIR__.'/api/EventsRoutes.php';
         require __DIR__.'/api/ArtistsRoutes.php';
         require __DIR__.'/api/StagesRoutes.php';
@@ -25,18 +25,25 @@ Route::name('api.')->group(function () {
         require __DIR__.'/api/FriendshipRoutes.php';
         require __DIR__.'/api/AttendanceRoutes.php';
         require __DIR__.'/api/RbacRoutes.php';
+        require __DIR__.'/api/TimetableRoutes.php';
     });
 });
 
 Route::prefix('mobile')->name('api.mobile.')->group(function () {
-    require __DIR__.'/mobile/DashboardRoutes.php';
-    require __DIR__.'/mobile/SearchRoutes.php';
-    require __DIR__.'/mobile/EventsRoutes.php';
-    require __DIR__.'/mobile/ArtistsRoutes.php';
-    require __DIR__.'/mobile/ActsRoutes.php';
-    require __DIR__.'/mobile/SyncRoutes.php';
     require __DIR__.'/mobile/AuthRoutes.php';
-    require __DIR__.'/mobile/UserRoutes.php';
-    require __DIR__.'/mobile/FriendshipRoutes.php';
-    require __DIR__.'/mobile/AttendanceRoutes.php';
+
+    Route::middleware('auth:sanctum')->group(function () {
+        require __DIR__.'/mobile/DashboardRoutes.php';
+        require __DIR__.'/mobile/SearchRoutes.php';
+        require __DIR__.'/mobile/EventsRoutes.php';
+        require __DIR__.'/mobile/ArtistsRoutes.php';
+        require __DIR__.'/mobile/ActsRoutes.php';
+        require __DIR__.'/mobile/SyncRoutes.php';
+        require __DIR__.'/mobile/UserRoutes.php';
+        require __DIR__.'/mobile/FriendshipRoutes.php';
+        require __DIR__.'/mobile/AttendanceRoutes.php';
+        require __DIR__.'/mobile/TimetableRoutes.php';
+        require __DIR__.'/mobile/FavoriteRoutes.php';
+        require __DIR__.'/mobile/GroupRoutes.php';
+    });
 });
