@@ -72,11 +72,14 @@ Requires `auth:sanctum` and `role:admin`.
 
 ### Timetable Administration
 
-| Method       | Endpoint                   | Description                        |
-| :----------- | :------------------------- | :--------------------------------- |
-| `GET/POST`   | `/timetables`              | List or Create official timetables |
-| `PUT/DELETE` | `/timetables/{id}`         | Update entries or delete schedule  |
-| `PATCH`      | `/timetables/{id}/publish` | Toggle public visibility           |
+| Method   | Endpoint                   | Controller                          | Description                         |
+| :------- | :------------------------- | :---------------------------------- | :---------------------------------- |
+| `GET`    | `/timetables`              | `Admin\TimetableController@index`   | List all timetables                 |
+| `GET`    | `/timetables/{id}`         | `Admin\TimetableController@show`    | Get detailed timetable with entries |
+| `POST`   | `/timetables`              | `Admin\TimetableController@store`   | Create a new official timetable     |
+| `PUT`    | `/timetables/{id}`         | `Admin\TimetableController@update`  | Update metadata and batch entries   |
+| `PATCH`  | `/timetables/{id}/publish` | `Admin\TimetableController@publish` | Toggle public visibility            |
+| `DELETE` | `/timetables/{id}`         | `Admin\TimetableController@destroy` | Delete a timetable                  |
 
 ---
 
@@ -93,6 +96,7 @@ Requires `auth:sanctum`.
 | `GET`  | `/events/suggested` | Personalized event suggestions           |
 | `GET`  | `/sync/events`      | Delta-sync for offline support (Events)  |
 | `GET`  | `/sync/artists`     | Delta-sync for offline support (Artists) |
+| `GET`  | `/sync/acts`        | Delta-sync for offline support (Acts)    |
 
 ### Social & Friends
 
@@ -106,13 +110,21 @@ Requires `auth:sanctum`.
 
 ### Personal & Group Planning
 
-| Method     | Endpoint                            | Description                         |
-| :--------- | :---------------------------------- | :---------------------------------- |
-| `GET`      | `/events/{id}/timetable`            | View official event schedule        |
-| `POST`     | `/personal-timetables`              | Create personal plan for event      |
-| `PUT`      | `/personal-timetables/{id}/entries` | Sync selected acts to personal plan |
-| `POST/GET` | `/groups`                           | Create or View planning groups      |
-| `POST`     | `/groups/{id}/timetables`           | Create shared group schedule        |
+| Method | Endpoint                            | Description                                  |
+| :----- | :---------------------------------- | :------------------------------------------- |
+| `GET`  | `/events/{event_id}/timetable`      | Get official event schedule                  |
+| `POST` | `/personal-timetables`              | Create personal schedule for event           |
+| `GET`  | `/personal-timetables/{event_id}`   | View personal schedule                       |
+| `PUT`  | `/personal-timetables/{id}/entries` | Batch update entries (Overlap check enabled) |
+
+### Groups
+
+| Method | Endpoint                        | Description                            |
+| :----- | :------------------------------ | :------------------------------------- |
+| `POST` | `/groups`                       | Create a new planning group            |
+| `GET`  | `/groups`                       | List user's groups                     |
+| `POST` | `/groups/{id}/members`          | Add member to group (owner/admin only) |
+| `POST` | `/groups/{group_id}/timetables` | Create shared group timetable          |
 
 ### Favorites & Attendance
 
@@ -120,3 +132,42 @@ Requires `auth:sanctum`.
 | :------------ | :------------------------ | :------------------------ |
 | `POST/DELETE` | `/favorites/{entry_id}`   | Bookmark/Unbookmark act   |
 | `PUT/DELETE`  | `/events/{id}/attendance` | Mark as "Going" or remove |
+
+---
+
+## 4. Mobile Delta Sync Guide
+
+The mobile application uses a **Delta Sync** mechanism to ensure data is available offline while minimizing bandwidth usage.
+
+### How it works
+
+The backend exposes sync endpoints (Events, Artists, Acts) that accept a `since` parameter (a Unix timestamp in seconds or milliseconds).
+
+- **Full Sync**: If `since` is omitted, the API returns all active records.
+- **Delta Sync**: If `since` is provided, the API returns only records that have been **updated or (soft) deleted** after that timestamp.
+
+### Implementation Checklist
+
+1. **Initial Load**: Perform a full sync on application start if no local data exists. Store the current server time (or the highest `updated_at` from the results).
+2. **Background Sync**: Trigger a delta sync when:
+    - The app comes to the foreground.
+    - The user pulls to refresh on the Dashboard, Events, or Artist pages.
+    - A push notification indicates a schedule change.
+3. **Data Handling**:
+    - **Upsert**: If the record exists locally, update it. If not, insert it.
+    - **Delete**: If a record in the payload has a `deleted_at` timestamp, remove it from the local database.
+
+### Necessary Mobile Checks
+
+- **Timestamp Integrity**: Always use the timestamp returned by the _previous_ sync as the `since` value for the _next_ sync.
+- **Conflict Resolution**: Local user data (like `personal-timetables`) should refer to the sync'd IDs (`event_id`, etc.). If a sync indicates an event was deleted, clean up associated local plans.
+- **Media Caching**: The sync payload contains media URLs. The mobile app should lazily cache these images to prevent re-downloads.
+
+---
+
+## 5. Technical Notes
+
+- **UUIDs**: All IDs (`event_id`, `stage_id`, `act_id`, `entry_id`) must be valid UUIDs.
+- **Overlap Validation**: Personal and Admin timetables strictly enforce no overlaps for the same stage/schedule at the database level.
+- **Headers**: Always include `Accept: application/json` to ensure the backend returns JSON even on errors.
+- **Pagination**: Admin listing routes (Events, Users, etc.) support Laravel's standard `?page=X` pagination.
