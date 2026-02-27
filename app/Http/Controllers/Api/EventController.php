@@ -21,7 +21,21 @@ class EventController extends Controller
         }
 
         $perPage = $request->query('per_page', 15);
-        $query->orderBy('start_date', 'desc');
+
+        $sortBy = $request->query('sort_by', 'start_date');
+        $sortOrder = $request->query('sort_order', 'desc');
+
+        // Whitelist sortable columns to prevent SQL injection
+        $allowedSorts = ['name', 'start_date', 'end_date', 'location'];
+        if (!in_array($sortBy, $allowedSorts)) {
+            $sortBy = 'start_date';
+        }
+
+        if (!in_array(strtolower($sortOrder), ['asc', 'desc'])) {
+            $sortOrder = 'desc';
+        }
+
+        $query->orderBy($sortBy, $sortOrder);
 
         if ($perPage == -1) {
             return EventResource::collection($query->with('stages', 'banner', 'acts')->get());
