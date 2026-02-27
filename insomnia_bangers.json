@@ -51,7 +51,7 @@
             "parentId": "fld_events",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/events",
+            "url": "{{ base_url }}/admin/events",
             "name": "api.events.index",
             "description": "",
             "method": "GET",
@@ -81,7 +81,7 @@
             "parentId": "fld_events",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/events",
+            "url": "{{ base_url }}/admin/events",
             "name": "api.events.store",
             "description": "",
             "method": "POST",
@@ -208,7 +208,7 @@
             "parentId": "fld_artists",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/artists",
+            "url": "{{ base_url }}/admin/artists",
             "name": "api.artists.index",
             "description": "",
             "method": "GET",
@@ -237,7 +237,7 @@
             "parentId": "fld_artists",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/artists",
+            "url": "{{ base_url }}/admin/artists",
             "name": "api.artists.store",
             "description": "",
             "method": "POST",
@@ -296,7 +296,7 @@
         {
             "_id": "req_acts_index",
             "parentId": "fld_acts",
-            "url": "{{ base_url }}/acts",
+            "url": "{{ base_url }}/admin/acts",
             "name": "api.acts.index",
             "method": "GET",
             "parameters": [
@@ -317,7 +317,7 @@
             "parentId": "fld_acts",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/acts",
+            "url": "{{ base_url }}/admin/acts",
             "name": "api.acts.store",
             "description": "",
             "method": "POST",
@@ -411,7 +411,7 @@
         {
             "_id": "req_stages_index",
             "parentId": "fld_stages",
-            "url": "{{ base_url }}/stages",
+            "url": "{{ base_url }}/admin/stages",
             "name": "api.stages.index",
             "method": "GET",
             "parameters": [
@@ -431,7 +431,7 @@
             "parentId": "fld_stages",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/stages",
+            "url": "{{ base_url }}/admin/stages",
             "name": "api.stages.store",
             "description": "",
             "method": "POST",
@@ -471,7 +471,7 @@
             "parentId": "fld_media",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/media",
+            "url": "{{ base_url }}/admin/media",
             "name": "api.media.store",
             "description": "",
             "method": "POST",
@@ -506,7 +506,7 @@
             "parentId": "wrk_bangers",
             "modified": 1739702700000,
             "created": 1739702700000,
-            "url": "{{ base_url }}/search",
+            "url": "{{ base_url }}/admin/search",
             "name": "api.search",
             "description": "",
             "method": "GET",
@@ -973,7 +973,7 @@
         {
             "_id": "req_users_index",
             "parentId": "fld_users",
-            "url": "{{ base_url }}/users",
+            "url": "{{ base_url }}/admin/users",
             "name": "List All (Admin)",
             "method": "GET",
             "authentication": {
@@ -1015,7 +1015,7 @@
         {
             "_id": "req_friends_index",
             "parentId": "fld_friends",
-            "url": "{{ base_url }}/friends",
+            "url": "{{ base_url }}/admin/friends",
             "name": "List Friends",
             "method": "GET",
             "authentication": {
@@ -1105,7 +1105,7 @@
         {
             "_id": "req_roles_index",
             "parentId": "fld_rbac",
-            "url": "{{ base_url }}/roles",
+            "url": "{{ base_url }}/admin/roles",
             "name": "List Roles",
             "method": "GET",
             "authentication": {
@@ -1117,9 +1117,218 @@
         {
             "_id": "req_permissions_index",
             "parentId": "fld_rbac",
-            "url": "{{ base_url }}/permissions",
+            "url": "{{ base_url }}/admin/permissions",
             "name": "List Permissions",
             "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "fld_admin_timetables",
+            "parentId": "wrk_bangers",
+            "name": "Admin Timetables",
+            "metaSortKey": -350000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_admin_timetables_index",
+            "parentId": "fld_admin_timetables",
+            "url": "{{ base_url }}/admin/timetables",
+            "name": "List Timetables",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_admin_timetables_store",
+            "parentId": "fld_admin_timetables",
+            "url": "{{ base_url }}/admin/timetables",
+            "name": "Create Timetable",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"event_id\": \"uuid\",\n  \"name\": \"Official Timetable\",\n  \"is_official\": true,\n  \"is_public\": false\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_admin_timetables_update",
+            "parentId": "fld_admin_timetables",
+            "url": "{{ base_url }}/admin/timetables/{id}",
+            "name": "Update Timetable (Batch)",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"name\": \"Updated Name\",\n  \"entries\": [\n    {\n      \"stage_id\": \"uuid\",\n      \"act_id\": \"uuid\",\n      \"start_time\": \"2026-07-24 14:00:00\",\n      \"end_time\": \"2026-07-24 15:30:00\"\n    }\n  ]\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_admin_timetables_publish",
+            "parentId": "fld_admin_timetables",
+            "url": "{{ base_url }}/admin/timetables/{id}/publish",
+            "name": "Publish Timetable",
+            "method": "PATCH",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"is_public\": true\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "fld_mobile_planning",
+            "parentId": "fld_mobile",
+            "name": "Personal & Group Planning",
+            "metaSortKey": -500000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_mobile_timetable_official",
+            "parentId": "fld_mobile_planning",
+            "url": "{{ base_url }}/mobile/events/{eventId}/timetable",
+            "name": "View Official Timetable",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_personal_timetable_store",
+            "parentId": "fld_mobile_planning",
+            "url": "{{ base_url }}/mobile/personal-timetables",
+            "name": "Create Personal Timetable",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"event_id\": \"uuid\",\n  \"name\": \"My Weekend\"\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_personal_timetable_update",
+            "parentId": "fld_mobile_planning",
+            "url": "{{ base_url }}/mobile/personal-timetables/{id}/entries",
+            "name": "Sync Personal Entries",
+            "method": "PUT",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"entry_ids\": [\"uuid1\", \"uuid2\"]\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_favorites_index",
+            "parentId": "fld_mobile_planning",
+            "url": "{{ base_url }}/mobile/favorites",
+            "name": "List Favorites",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_favorites_store",
+            "parentId": "fld_mobile_planning",
+            "url": "{{ base_url }}/mobile/favorites/{entryId}",
+            "name": "Add Favorite",
+            "method": "POST",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "fld_mobile_groups",
+            "parentId": "fld_mobile",
+            "name": "Groups",
+            "metaSortKey": -450000000,
+            "_type": "request_group"
+        },
+        {
+            "_id": "req_mobile_groups_store",
+            "parentId": "fld_mobile_groups",
+            "url": "{{ base_url }}/mobile/groups",
+            "name": "Create Group",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"name\": \"The Squad\",\n  \"description\": \"Summer festivals\"\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_groups_index",
+            "parentId": "fld_mobile_groups",
+            "url": "{{ base_url }}/mobile/groups",
+            "name": "List My Groups",
+            "method": "GET",
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_groups_add_member",
+            "parentId": "fld_mobile_groups",
+            "url": "{{ base_url }}/mobile/groups/{id}/members",
+            "name": "Add Member",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"user_id\": \"uuid\",\n  \"role\": \"member\"\n}"
+            },
+            "authentication": {
+                "type": "bearer",
+                "token": "{{ _.api_token }}"
+            },
+            "_type": "request"
+        },
+        {
+            "_id": "req_mobile_group_timetables_store",
+            "parentId": "fld_mobile_groups",
+            "url": "{{ base_url }}/mobile/groups/{groupId}/timetables",
+            "name": "Create Group Timetable",
+            "method": "POST",
+            "body": {
+                "mimeType": "application/json",
+                "text": "{\n  \"event_id\": \"uuid\",\n  \"name\": \"Squad Plan\"\n}"
+            },
             "authentication": {
                 "type": "bearer",
                 "token": "{{ _.api_token }}"
@@ -1128,4 +1337,3 @@
         }
     ]
 }
-
