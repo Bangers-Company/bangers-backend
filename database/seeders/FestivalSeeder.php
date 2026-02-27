@@ -253,11 +253,14 @@ class FestivalSeeder extends Seeder
 
         foreach ($eventStages as $eventName => $stageNames) {
             $event = $eventModels[$eventName];
+            $event->stages()->detach(); // Clear old stages for this event
+            $stageIds = [];
             foreach ($stageNames as $sName) {
                 if (isset($stageModels[$sName])) {
-                    $event->stages()->attach($stageModels[$sName]->id);
+                    $stageIds[] = $stageModels[$sName]->id;
                 }
             }
+            $event->stages()->sync($stageIds);
         }
 
         // 6. Massive Lineup (Edition specific, reusing acts)
@@ -446,6 +449,7 @@ class FestivalSeeder extends Seeder
 
         foreach ($lineups as $eventName => $stagesOrDates) {
             $event = $eventModels[$eventName];
+            $event->acts()->detach(); // Clear old lineup for this event
 
             // Check if this is a multi-day structure
             reset($stagesOrDates);
@@ -495,28 +499,51 @@ class FestivalSeeder extends Seeder
 
         // 8. Official Timetable for Spectacular Festival (3 Days)
         $spectacularEvent = $eventModels['Spectacular Festival'];
-        $officialTimetable = EventTimetable::create([
-            'event_id' => $spectacularEvent->id,
-            'name' => 'Official Timetable',
-            'is_official' => true,
-            'is_public' => true,
-        ]);
+        $officialTimetable = EventTimetable::updateOrCreate(
+            [
+                'event_id' => $spectacularEvent->id,
+                'is_official' => true,
+            ],
+            [
+                'name' => 'Official Timetable',
+                'is_public' => true,
+            ]
+        );
+
+        // Clear existing entries to avoid duplicates/overlaps on re-seed
+        $officialTimetable->entries()->delete();
 
         foreach ($lineups['Spectacular Festival'] as $date => $stages) {
             foreach ($stages as $stageName => $actNames) {
+                if (!isset($stageModels[$stageName])) continue;
+
                 $stage = $stageModels[$stageName];
-                $startTime = Carbon::parse($date)->setHour(14)->setMinute(0); // Starts at 14:00
+                // Starts at 09:00
+                $startTime = Carbon::parse($date)->setHour(9)->setMinute(0);
 
                 foreach ($actNames as $aName) {
-                    $act = $actModels[$aName];
-                    $duration = 90; // Default 90 minutes
+                    $act = $actModels[$aName] ?? null;
+                    if (!$act) continue;
+
+                    $duration = 60; // Default 60 minutes
 
                     // Special cases for longer sets or specific names
-                    if (str_contains($aName, 'Closing Set')) $duration = 120;
-                    if (str_contains($aName, 'The Hum')) $duration = 60;
-                    if ($aName === 'The Opening Ceremony') $duration = 30;
+                    if (str_contains($aName, 'Closing Set')) $duration = 90;
+                    if (str_contains($aName, 'Endshow')) $duration = 30;
+                    if (str_contains($aName, 'Opening Ceremony')) $duration = 30;
+                    if (str_contains($aName, 'Doors to Mainstage')) $duration = 30;
+
+                    // Ensure we don't exceed 2:00 AM next day (1020 minutes from 9 AM)
+                    $baseTime = Carbon::parse($date)->setHour(9)->setMinute(0);
+                    $maxEndTime = $baseTime->copy()->addHours(17); // 9:00 + 17h = 02:00 next day
 
                     $endTime = $startTime->copy()->addMinutes($duration);
+
+                    if ($endTime->gt($maxEndTime)) {
+                        $duration = $startTime->diffInMinutes($maxEndTime);
+                        if ($duration < 15) break; // Skip if no time left
+                        $endTime = $maxEndTime->copy();
+                    }
 
                     TimetableEntry::create([
                         'timetable_id' => $officialTimetable->id,

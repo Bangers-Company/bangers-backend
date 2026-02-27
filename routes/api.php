@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Route;
 Route::name('api.')->group(function () {
     // Public Auth Routes (Admin Login Only)
     require __DIR__.'/api/AuthRoutes.php';
-
     // Restricted Admin Routes
     Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
         require __DIR__.'/api/EventsRoutes.php';
