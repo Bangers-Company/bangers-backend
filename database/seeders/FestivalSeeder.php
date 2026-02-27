@@ -6,6 +6,8 @@ use App\Models\Act;
 use App\Models\Artist;
 use App\Models\Event;
 use App\Models\Stage;
+use App\Models\EventTimetable;
+use App\Models\TimetableEntry;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
@@ -87,9 +89,6 @@ class FestivalSeeder extends Seeder
             ['name' => 'Crypsis', 'genre' => 'Rawstyle/Classics'],
             ['name' => 'Frequencerz', 'genre' => 'Hardstyle'],
             ['name' => 'Zany', 'genre' => 'Hardstyle/Classics'],
-            ['name' => 'Brennan Heart', 'genre' => 'Hardstyle'],
-            ['name' => 'Wildstylez', 'genre' => 'Hardstyle'],
-            ['name' => 'Headhunterz', 'genre' => 'Hardstyle'],
             ['name' => 'Jones', 'genre' => 'Hardstyle'],
             ['name' => 'Thera', 'genre' => 'Hardstyle'],
             ['name' => 'Geck-O', 'genre' => 'Hardstyle'],
@@ -119,7 +118,7 @@ class FestivalSeeder extends Seeder
 
         $artistModels = [];
         foreach ($artistsData as $data) {
-            $artistModels[$data['name']] = Artist::create($data);
+            $artistModels[$data['name']] = Artist::updateOrCreate(['name' => $data['name']], $data);
         }
 
         // 2. Specialized Acts
@@ -158,10 +157,10 @@ class FestivalSeeder extends Seeder
             // Check if act name already exists to avoid duplicates from regular acts loop
             if (isset($actModels[$data['name']])) continue;
 
-            $act = Act::create(['name' => $data['name']]);
+            $act = Act::updateOrCreate(['name' => $data['name']], []);
             foreach ($data['artists'] as $artistName) {
                 if (isset($artistModels[$artistName])) {
-                    $act->artists()->attach($artistModels[$artistName]->id);
+                    $act->artists()->syncWithoutDetaching([$artistModels[$artistName]->id]);
                 }
             }
             $actModels[$data['name']] = $act;
@@ -187,12 +186,14 @@ class FestivalSeeder extends Seeder
 
         $eventModels = [];
         foreach ($eventsData as $data) {
-            $eventModels[$data['name']] = Event::create([
-                'name' => $data['name'],
-                'location' => $data['loc'],
-                'start_date' => Carbon::parse($data['start']),
-                'end_date' => Carbon::parse($data['end']),
-            ]);
+            $eventModels[$data['name']] = Event::updateOrCreate(
+                ['name' => $data['name']],
+                [
+                    'location' => $data['loc'],
+                    'start_date' => Carbon::parse($data['start']),
+                    'end_date' => Carbon::parse($data['end']),
+                ]
+            );
         }
 
         // 4. Iconic Stages
@@ -231,7 +232,7 @@ class FestivalSeeder extends Seeder
 
         $stageModels = [];
         foreach ($stagesData as $name => $desc) {
-            $stageModels[$name] = Stage::create(['name' => $name, 'description' => $desc]);
+            $stageModels[$name] = Stage::updateOrCreate(['name' => $name], ['description' => $desc]);
         }
 
         // 5. Associating Stages to Events
@@ -491,5 +492,43 @@ class FestivalSeeder extends Seeder
             $actModels['Alesso']->id => ['stage_id' => null],
             $actModels['Steve Aoki']->id => ['stage_id' => null],
         ]);
+
+        // 8. Official Timetable for Spectacular Festival (3 Days)
+        $spectacularEvent = $eventModels['Spectacular Festival'];
+        $officialTimetable = EventTimetable::create([
+            'event_id' => $spectacularEvent->id,
+            'name' => 'Official Timetable',
+            'is_official' => true,
+            'is_public' => true,
+        ]);
+
+        foreach ($lineups['Spectacular Festival'] as $date => $stages) {
+            foreach ($stages as $stageName => $actNames) {
+                $stage = $stageModels[$stageName];
+                $startTime = Carbon::parse($date)->setHour(14)->setMinute(0); // Starts at 14:00
+
+                foreach ($actNames as $aName) {
+                    $act = $actModels[$aName];
+                    $duration = 90; // Default 90 minutes
+
+                    // Special cases for longer sets or specific names
+                    if (str_contains($aName, 'Closing Set')) $duration = 120;
+                    if (str_contains($aName, 'The Hum')) $duration = 60;
+                    if ($aName === 'The Opening Ceremony') $duration = 30;
+
+                    $endTime = $startTime->copy()->addMinutes($duration);
+
+                    TimetableEntry::create([
+                        'timetable_id' => $officialTimetable->id,
+                        'stage_id' => $stage->id,
+                        'act_id' => $act->id,
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                    ]);
+
+                    $startTime = $endTime->copy()->addMinutes(15); // 15 min break between sets
+                }
+            }
+        }
     }
 }
