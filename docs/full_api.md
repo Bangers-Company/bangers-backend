@@ -9,18 +9,104 @@ This document provides a single source of truth for all available API endpoints 
 ### Admin Authentication
 
 Admin login is restricted to users with the `admin` role.
-| Method | Endpoint | Controller | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/login` | `Api\AuthController@adminLogin` | Login for administrators |
+
+| Method | Endpoint          | Description              |
+| :----- | :---------------- | :----------------------- |
+| `POST` | `/api/auth/login` | Login for administrators |
+
+**Request Body**
+
+```json
+{
+    "email": "admin@bangers.com",
+    "password": "password"
+}
+```
+
+**Response Body (200 OK)**
+
+```json
+{
+    "accessToken": "1|token...",
+    "refreshToken": "2|token...",
+    "expiresAt": "2026-03-01T20:20:41+01:00",
+    "user": {
+        "id": "uuid",
+        "email": "admin@bangers.com",
+        "username": "admin",
+        "first_name": "Admin",
+        "last_name": "User",
+        "dob": "1990-01-01",
+        "bio": "System administrator",
+        "is_public": true,
+        "roles": ["admin"],
+        "permissions": ["manage_users", "manage_events"],
+        "profile_media": null,
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z"
+    }
+}
+```
 
 ### Mobile Authentication
 
-| Method | Endpoint                    | Controller                       | Description              |
-| :----- | :-------------------------- | :------------------------------- | :----------------------- |
-| `POST` | `/api/mobile/auth/register` | `Mobile\AuthController@register` | Register new mobile user |
-| `POST` | `/api/mobile/auth/login`    | `Mobile\AuthController@login`    | Standard user login      |
-| `POST` | `/api/mobile/auth/refresh`  | `Mobile\AuthController@refresh`  | Refresh access token     |
-| `POST` | `/api/mobile/auth/logout`   | `Mobile\AuthController@logout`   | Revoke current token     |
+| Method | Endpoint                    | Description              |
+| :----- | :-------------------------- | :----------------------- |
+| `POST` | `/api/mobile/auth/register` | Register new mobile user |
+| `POST` | `/api/mobile/auth/login`    | Standard user login      |
+| `POST` | `/api/mobile/auth/refresh`  | Refresh access token     |
+| `POST` | `/api/mobile/auth/logout`   | Revoke current token     |
+
+**Register Request Body**
+
+```json
+{
+    "email": "user@example.com",
+    "username": "johndoe",
+    "password": "password123",
+    "first_name": "John",
+    "last_name": "Doe",
+    "dob": "1990-01-01"
+}
+```
+
+**Login Request Body**
+
+```json
+{
+    "email": "user@example.com",
+    "password": "password123"
+}
+```
+
+**Response Body (200 OK / 201 Created)**
+
+```json
+{
+    "accessToken": "1|token...",
+    "refreshToken": "2|token...",
+    "expiresAt": "2026-03-01T20:20:41+01:00",
+    "user": {
+        "id": "uuid",
+        "email": "user@example.com",
+        "username": "johndoe",
+        "first_name": "John",
+        "last_name": "Doe",
+        "dob": "1990-01-01",
+        "bio": "I love festivals!",
+        "is_public": true,
+        "roles": ["user"],
+        "permissions": [],
+        "profile_media": {
+            "id": "uuid",
+            "url": "https://...",
+            "type": "profile_picture"
+        },
+        "created_at": "2026-02-01T12:00:00Z",
+        "updated_at": "2026-02-01T12:00:00Z"
+    }
+}
+```
 
 ---
 
@@ -39,6 +125,56 @@ Requires `auth:sanctum` and `role:admin`.
 | `DELETE` | `/events/{id}`             | Delete event                                 |
 | `POST`   | `/events/{id}/lineup-sync` | Batch sync entire lineup for an event        |
 
+**Create/Update Request Body**
+
+```json
+{
+    "name": "Summer Festival 2026",
+    "description": "The biggest event of the year.",
+    "location": "Central Park, NY",
+    "start_date": "2026-07-01T12:00:00Z",
+    "end_date": "2026-07-03T23:59:59Z",
+    "banner_media_id": "uuid-optional"
+}
+```
+
+**Lineup Sync Request Body**
+
+```json
+{
+    "lineup": [
+        {
+            "act_id": "uuid",
+            "stage_id": "uuid-optional",
+            "date": "2026-07-01"
+        }
+    ]
+}
+```
+
+**Response Body (Event Object)**
+
+```json
+{
+    "id": "uuid",
+    "name": "Summer Festival 2026",
+    "description": "The biggest event of the year.",
+    "location": "Central Park, NY",
+    "start_date": "2026-07-01",
+    "end_date": "2026-07-03",
+    "version": 1,
+    "banner": {
+        "id": "uuid",
+        "url": "https://...",
+        "type": "event_banner"
+    },
+    "stages": [{ "id": "uuid", "name": "Main Stage" }],
+    "acts": [{ "id": "uuid", "name": "Opening Set", "version": 1 }],
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-03-01T20:20:41Z"
+}
+```
+
 ### Artist & Act Management
 
 | Method           | Endpoint             | Description                       |
@@ -51,6 +187,42 @@ Requires `auth:sanctum` and `role:admin`.
 | `POST/DELETE`    | `/acts/{id}/stages`  | Associate/Remove stages from act  |
 | `POST/DELETE`    | `/acts/{id}/events`  | Associate/Remove events from act  |
 
+**Artist Response Body**
+
+```json
+{
+    "id": "uuid",
+    "name": "The Bangers",
+    "bio": "Best electronic duo.",
+    "genre": "Electronic",
+    "version": 1,
+    "image": {
+        "id": "uuid",
+        "url": "https://...",
+        "type": "artist_image"
+    },
+    "acts": [],
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-01-01T00:00:00Z"
+}
+```
+
+**Act Response Body**
+
+```json
+{
+    "id": "uuid",
+    "name": "Opening Set",
+    "description": "Chill vibes for the opening.",
+    "version": 1,
+    "stage_id": "uuid-from-pivot",
+    "date": "2026-07-01",
+    "artists": [{ "id": "uuid", "name": "The Bangers" }],
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-01-01T00:00:00Z"
+}
+```
+
 ### Stage & Media Management
 
 | Method           | Endpoint       | Description                    |
@@ -59,6 +231,36 @@ Requires `auth:sanctum` and `role:admin`.
 | `GET/PUT/DELETE` | `/stages/{id}` | Stage CRUD                     |
 | `GET/POST`       | `/media`       | List or Upload media files     |
 | `DELETE`         | `/media/{id}`  | Remove media                   |
+
+**Stage Response Body**
+
+```json
+{
+    "id": "uuid",
+    "name": "Main Stage",
+    "description": "The largest outdoor stage.",
+    "version": 1,
+    "event_id": "uuid-from-pivot",
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-01-01T00:00:00Z"
+}
+```
+
+**Media Response Body**
+
+```json
+{
+    "id": "uuid",
+    "url": "https://...",
+    "type": "event_banner",
+    "mime_type": "image/jpeg",
+    "size_bytes": 102456,
+    "width": 1920,
+    "height": 1080,
+    "is_public": true,
+    "created_at": "2026-01-01T00:00:00Z"
+}
+```
 
 ### User & RBAC Management
 
@@ -70,16 +272,87 @@ Requires `auth:sanctum` and `role:admin`.
 | `GET`            | `/roles`                     | List available roles       |
 | `GET`            | `/permissions`               | List available permissions |
 
+**Update User Request Body**
+
+```json
+{
+    "email": "user@example.com",
+    "username": "johndoe_updated",
+    "first_name": "John",
+    "last_name": "Doe",
+    "dob": "1990-01-01",
+    "bio": "Electronic music lover.",
+    "is_public": true,
+    "profile_media_id": "uuid"
+}
+```
+
+**Role Response Body**
+
+```json
+{
+    "id": "uuid",
+    "name": "admin",
+    "description": "System Administrator",
+    "permissions": [
+        { "id": "uuid", "name": "Manage Users", "slug": "manage_users" }
+    ]
+}
+```
+
+### Social & Friendship (Admin)
+
+| Method   | Endpoint        | Description             |
+| :------- | :-------------- | :---------------------- |
+| `GET`    | `/friends`      | List all friendships    |
+| `POST`   | `/friends/{id}` | Force create friendship |
+| `DELETE` | `/friends/{id}` | Delete friendship       |
+
+### Attendance & Engagement (Admin)
+
+| Method | Endpoint                  | Description                      |
+| :----- | :------------------------ | :------------------------------- |
+| `GET`  | `/events/{id}/attendees`  | List all users going to event    |
+| `GET`  | `/users/{id}/events`      | List all events user is going to |
+| `PUT`  | `/events/{id}/attendance` | Force update user attendance     |
+
 ### Timetable Administration
 
-| Method   | Endpoint                   | Controller                          | Description                         |
-| :------- | :------------------------- | :---------------------------------- | :---------------------------------- |
-| `GET`    | `/timetables`              | `Admin\TimetableController@index`   | List all timetables                 |
-| `GET`    | `/timetables/{id}`         | `Admin\TimetableController@show`    | Get detailed timetable with entries |
-| `POST`   | `/timetables`              | `Admin\TimetableController@store`   | Create a new official timetable     |
-| `PUT`    | `/timetables/{id}`         | `Admin\TimetableController@update`  | Update metadata and batch entries   |
-| `PATCH`  | `/timetables/{id}/publish` | `Admin\TimetableController@publish` | Toggle public visibility            |
-| `DELETE` | `/timetables/{id}`         | `Admin\TimetableController@destroy` | Delete a timetable                  |
+| Method   | Endpoint                   | Description                         |
+| :------- | :------------------------- | :---------------------------------- |
+| `GET`    | `/timetables`              | List all timetables                 |
+| `GET`    | `/timetables/{id}`         | Get detailed timetable with entries |
+| `POST`   | `/timetables`              | Create a new official timetable     |
+| `PUT`    | `/timetables/{id}`         | Update metadata and batch entries   |
+| `PATCH`  | `/timetables/{id}/publish` | Toggle public visibility            |
+| `DELETE` | `/timetables/{id}`         | Delete a timetable                  |
+
+**Create Timetable Request Body**
+
+```json
+{
+    "event_id": "uuid",
+    "name": "Official Schedule",
+    "is_official": true,
+    "is_public": false
+}
+```
+
+**Update Timetable Entries Request Body**
+
+```json
+{
+    "name": "Updated Schedule",
+    "entries": [
+        {
+            "stage_id": "uuid",
+            "act_id": "uuid",
+            "start_time": "2026-07-01T14:00:00Z",
+            "end_time": "2026-07-01T15:30:00Z"
+        }
+    ]
+}
+```
 
 ---
 
@@ -98,6 +371,53 @@ Requires `auth:sanctum`.
 | `GET`  | `/sync/artists`     | Delta-sync for offline support (Artists) |
 | `GET`  | `/sync/acts`        | Delta-sync for offline support (Acts)    |
 
+**Dashboard Response Body**
+
+```json
+{
+    "data": {
+        "attending_events": [],
+        "upcoming_events": [
+            {
+                "id": "uuid",
+                "name": "Summer Festival",
+                "banner": { "id": "uuid", "url": "https://..." }
+            }
+        ],
+        "sync_timestamp": "2026-03-01T20:20:41Z"
+    },
+    "meta": {
+        "discovery_endpoints": {
+            "suggested": "/api/mobile/events/suggested",
+            "friends": "/api/mobile/events/friends"
+        }
+    }
+}
+```
+
+**Search Response Body**
+
+```json
+{
+  "events": {
+    "data": [
+      { "id": "uuid", "name": "Event Name", "banner": { "url": "..." } }
+    ],
+    "meta": { "current_page": 1, "last_page": 1, "per_page": 10, "total": 1 },
+    "links": { "first": "...", "last": "...", "prev": null, "next": null }
+  },
+  "artists": { "data": [], "meta": {...}, "links": {...} },
+  "acts": { "data": [], "meta": {...}, "links": {...} }
+}
+```
+
+**Sync Response Body**
+Returns a collection of Resources:
+
+- `/sync/events`: `EventResource[]`
+- `/sync/artists`: `ArtistResource[]`
+- `/sync/acts`: `ActResource[]`
+
 ### Social & Friends
 
 | Method   | Endpoint                    | Description             |
@@ -108,6 +428,20 @@ Requires `auth:sanctum`.
 | `PUT`    | `/friends/{user_id}/accept` | Accept request          |
 | `DELETE` | `/friends/{user_id}`        | Unfriend                |
 
+**Friendship Response Body**
+
+```json
+{
+    "id": "uuid",
+    "status": "accepted",
+    "requester_id": "uuid",
+    "user1": { "id": "uuid", "username": "alice" },
+    "user2": { "id": "uuid", "username": "bob" },
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-01-01T00:00:00Z"
+}
+```
+
 ### Personal & Group Planning
 
 | Method | Endpoint                            | Description                                  |
@@ -116,6 +450,23 @@ Requires `auth:sanctum`.
 | `POST` | `/personal-timetables`              | Create personal schedule for event           |
 | `GET`  | `/personal-timetables/{event_id}`   | View personal schedule                       |
 | `PUT`  | `/personal-timetables/{id}/entries` | Batch update entries (Overlap check enabled) |
+
+**Create Personal Timetable Request Body**
+
+```json
+{
+    "event_id": "uuid",
+    "name": "My Weekend Plan"
+}
+```
+
+**Update Timetable Entries Request Body**
+
+```json
+{
+    "entry_ids": ["uuid1", "uuid2"]
+}
+```
 
 ### Groups
 
@@ -126,12 +477,61 @@ Requires `auth:sanctum`.
 | `POST` | `/groups/{id}/members`          | Add member to group (owner/admin only) |
 | `POST` | `/groups/{group_id}/timetables` | Create shared group timetable          |
 
+**Create Group Request Body**
+
+```json
+{
+    "name": "The Festival Crew",
+    "description": "Planning for Summer Fest."
+}
+```
+
+**Add Member Request Body**
+
+```json
+{
+    "user_id": "uuid",
+    "role": "member"
+}
+```
+
 ### Favorites & Attendance
 
 | Method        | Endpoint                  | Description               |
 | :------------ | :------------------------ | :------------------------ |
 | `POST/DELETE` | `/favorites/{entry_id}`   | Bookmark/Unbookmark act   |
 | `PUT/DELETE`  | `/events/{id}/attendance` | Mark as "Going" or remove |
+
+**Personal Timetable Response Body**
+
+```json
+{
+    "id": "uuid",
+    "user_id": "uuid",
+    "event_id": "uuid",
+    "name": "My Weekend Plan",
+    "entries": [
+        {
+            "id": "uuid",
+            "start_time": "2026-07-01T14:00:00Z",
+            "end_time": "2026-07-01T15:30:00Z",
+            "act": { "id": "uuid", "name": "Artist Name" },
+            "stage": { "id": "uuid", "name": "Main Stage" }
+        }
+    ]
+}
+```
+
+**Attendance Response Body**
+
+```json
+{
+    "event_id": "uuid",
+    "user_id": "uuid",
+    "status": "going",
+    "updated_at": "2026-03-01T20:20:41Z"
+}
+```
 
 ---
 
