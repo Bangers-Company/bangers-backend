@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
-
+use App\Http\Controllers\Mobile\FriendshipController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->prefix('friends')->group(function () {
+Route::prefix('friends')->group(function () {
     Route::get('/', [FriendshipController::class, 'index']);
     Route::get('requests', [FriendshipController::class, 'requests']);
     Route::post('{userId}', [FriendshipController::class, 'store']);
