@@ -136,15 +136,26 @@ class FestivalSeeder extends Seeder
             ['name' => 'Gunz for Hire', 'artists' => ['Ran-D']],
             ['name' => 'Charlotte de Witte (KNTXT Stage Host)', 'artists' => ['Charlotte de Witte']],
             ['name' => 'Anyma presents Genesys', 'artists' => ['Anyma']],
-            ['name' => 'Reinier Zonneveld (Live)', 'artists' => ['Reinier Zonneveld']],
+            ['name' => 'Reinier Zonneveld', 'artists' => ['Reinier Zonneveld'], 'is_live' => true],
             ['name' => 'Dr. Peacock: Peacock in Concert', 'artists' => ['Dr. Peacock']],
             ['name' => 'D-Sturb: Through My Veins', 'artists' => ['D-Sturb']],
             ['name' => 'Martin Garrix (Closing Set)', 'artists' => ['Martin Garrix']],
-            ['name' => 'Angerfist LIVE', 'artists' => ['Angerfist']],
+            ['name' => 'Angerfist', 'artists' => ['Angerfist'], 'is_live' => true],
             ['name' => 'The Prophet: The Last Show', 'artists' => ['The Prophet']],
-            ['name' => 'D-Block & S-te-Fan (Ghost Stories Live)', 'artists' => ['D-Block & S-te-Fan']],
+            ['name' => 'D-Block & S-te-Fan (Ghost Stories)', 'artists' => ['D-Block & S-te-Fan'], 'is_live' => true],
             ['name' => 'Rammstein (Pyrotechnics Mix)', 'artists' => ['Rammstein']],
             ['name' => 'Slipknot (Masked Up)', 'artists' => ['Slipknot']],
+            
+            // Additional acts explicitly marked as live
+            ['name' => 'Heavy Resistance', 'artists' => [], 'is_live' => true],
+            ['name' => 'Hard Destiny', 'artists' => [], 'is_live' => true],
+            ['name' => 'BMBERJCK', 'artists' => [], 'is_live' => true],
+            ['name' => 'Act of Rage vs Rejecta', 'artists' => ['Act of Rage', 'Rejecta'], 'is_live' => true],
+            ['name' => 'D-Sturb vs E-Force', 'artists' => ['D-Sturb', 'E-Force'], 'is_live' => true],
+            ['name' => 'Sickmode & Krowdexx New Act', 'artists' => ['Sickmode', 'Krowdexx'], 'is_live' => true],
+            ['name' => 'Mish vs The Straikerz', 'artists' => ['Mish'], 'is_live' => true],
+            ['name' => 'Adjuzt vs Mutilator', 'artists' => ['Adjuzt', 'Mutilator'], 'is_live' => true],
+            ['name' => 'Marshals of Mayhem', 'artists' => [], 'is_live' => true],
         ];
 
         // Add regular acts for each artist
@@ -157,7 +168,7 @@ class FestivalSeeder extends Seeder
             // Check if act name already exists to avoid duplicates from regular acts loop
             if (isset($actModels[$data['name']])) continue;
 
-            $isLive = stripos($data['name'], 'live') !== false;
+            $isLive = $data['is_live'] ?? false;
 
             $act = Act::updateOrCreate(
                 ['name' => $data['name']],
@@ -273,7 +284,7 @@ class FestivalSeeder extends Seeder
             'Tomorrowland 2024' => [
                 'Mainstage' => ['Dimitri Vegas & Like Mike Presents: The Hum', 'Armin van Buuren', 'Martin Garrix (Closing Set)', 'David Guetta', 'Tiësto'],
                 'Freedom Stage' => ['Eric Prydz presents HOLO', 'Sebastian Ingrosso', 'Steve Angello'],
-                'Atmosphere' => ['Charlotte de Witte (KNTXT Stage Host)', 'Amelie Lens', 'Carl Cox', 'Reinier Zonneveld (Live)'],
+                'Atmosphere' => ['Charlotte de Witte (KNTXT Stage Host)', 'Amelie Lens', 'Carl Cox', 'Reinier Zonneveld'],
                 'Core' => ['Tale Of Us', 'Anyma presents Genesys'],
             ],
             'Tomorrowland 2025' => [
@@ -284,7 +295,7 @@ class FestivalSeeder extends Seeder
             'Defqon.1 2024' => [
                 'RED Stage' => ['Headhunterz vs Wildstylez', 'Sub Zero Project: Robot Heritage', 'Ran-D: Illuminate', 'The Prophet: The Last Show'],
                 'BLUE Stage' => ['Rebelion: The Second Dose', 'Warface: Rest in Pieces', 'D-Sturb: Through My Veins', 'Vertile'],
-                'BLACK Stage' => ['Angerfist LIVE', 'Miss K8', 'Sefa: This is Sefa'],
+                'BLACK Stage' => ['Angerfist', 'Miss K8', 'Sefa: This is Sefa'],
                 'YELLOW Stage' => ['Dr. Peacock: Peacock in Concert', 'N-Vitral'],
             ],
             'Ultra Music Festival Miami 2024' => [
@@ -297,7 +308,7 @@ class FestivalSeeder extends Seeder
             ],
             'Intents Festival 2025' => [
                 'Mainstage' => ['The Gang', 'Sub Zero Project', 'Rebelion'],
-                'RED Stage' => ['D-Block & S-te-Fan (Ghost Stories Live)', 'Sound Rush'],
+                'RED Stage' => ['D-Block & S-te-Fan (Ghost Stories)', 'Sound Rush'],
             ],
             'Spectacular Festival' => [
                 '2025-05-30' => [ // Friday
@@ -332,11 +343,11 @@ class FestivalSeeder extends Seeder
                         'Dual Damage - Opening',
                         'Dual Damage vs Cardination',
                         'Collusion vs Revelation',
-                        'Heavy Resistance LIVE',
-                        'Hard Destiny LIVE',
+                        'Heavy Resistance',
+                        'Hard Destiny',
                         'Element vs Unload',
                         'Dual Damage vs The Straikerz',
-                        'BMBERJCK LIVE',
+                        'BMBERJCK',
                         'Deezl vs Sparkz',
                         'Kruelty vs Omnya',
                     ],
@@ -397,13 +408,13 @@ class FestivalSeeder extends Seeder
                         'Ecstatic vs Jay Reeve vs Solstice',
                         'Hard Driver vs Sound Rush',
                         'B-Front vs Phuture Noize',
-                        'Act of Rage vs Rejecta LIVE',
-                        'D-Sturb vs E-Force LIVE',
+                        'Act of Rage vs Rejecta',
+                        'D-Sturb vs E-Force',
                         'Rebelion vs Aversion',
-                        'Sickmode & Krowdexx New Live Act',
-                        'Mish vs The Straikerz LIVE',
-                        'Adjuzt vs Mutilator LIVE',
-                        'Marshals of Mayhem LIVE',
+                        'Sickmode & Krowdexx New Act',
+                        'Mish vs The Straikerz',
+                        'Adjuzt vs Mutilator',
+                        'Marshals of Mayhem',
                         'Element vs BMBERJCK vs The Saints',
                         'Warface - Electric Dreams',
                         'Paul Elstak',
@@ -466,9 +477,13 @@ class FestivalSeeder extends Seeder
                     foreach ($stages as $stageName => $actNames) {
                         $stage = $stageModels[$stageName] ?? Stage::firstOrCreate(['name' => $stageName]);
                         foreach ($actNames as $aName) {
-                            $act = $actModels[$aName] ?? Act::firstOrCreate(['name' => $aName]);
+                            if (!isset($actModels[$aName])) {
+                                $act = Act::firstOrCreate(['name' => $aName], ['is_live' => false]);
+                                $actModels[$aName] = $act;
+                            } else {
+                                $act = $actModels[$aName];
+                            }
                             $event->acts()->attach($act->id, ['stage_id' => $stage->id, 'date' => $date]);
-                            $actModels[$aName] = $act;
                         }
                     }
                 }
@@ -477,7 +492,12 @@ class FestivalSeeder extends Seeder
                 foreach ($stagesOrDates as $stageName => $actNames) {
                     $stage = $stageModels[$stageName] ?? Stage::firstOrCreate(['name' => $stageName]);
                     foreach ($actNames as $aName) {
-                        $act = $actModels[$aName] ?? Act::firstOrCreate(['name' => $aName]);
+                        if (!isset($actModels[$aName])) {
+                            $act = Act::firstOrCreate(['name' => $aName], ['is_live' => false]);
+                            $actModels[$aName] = $act;
+                        } else {
+                            $act = $actModels[$aName];
+                        }
 
                         $pivotData = ['stage_id' => $stage->id];
                         // Assign a random date between start and end if it's not the Spectacular Festival
