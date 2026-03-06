@@ -18,6 +18,7 @@ class ActResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
+            'is_live' => $this->is_live,
             'version' => $this->version,
             'stage_id' => $this->pivot?->stage_id,
             'date' => $this->pivot?->date,

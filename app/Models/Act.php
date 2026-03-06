@@ -12,7 +12,11 @@ class Act extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = ["name", "description"];
+    protected $fillable = ["name", "description", "is_live"];
+
+    protected $casts = [
+        "is_live" => "boolean",
+    ];
 
     protected static function booted(): void
     {

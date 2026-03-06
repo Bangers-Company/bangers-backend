@@ -157,7 +157,12 @@ class FestivalSeeder extends Seeder
             // Check if act name already exists to avoid duplicates from regular acts loop
             if (isset($actModels[$data['name']])) continue;
 
-            $act = Act::updateOrCreate(['name' => $data['name']], []);
+            $isLive = stripos($data['name'], 'live') !== false;
+
+            $act = Act::updateOrCreate(
+                ['name' => $data['name']],
+                ['is_live' => $isLive]
+            );
             foreach ($data['artists'] as $artistName) {
                 if (isset($artistModels[$artistName])) {
                     $act->artists()->syncWithoutDetaching([$artistModels[$artistName]->id]);
