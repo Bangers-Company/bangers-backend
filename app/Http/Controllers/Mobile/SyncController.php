@@ -30,7 +30,8 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return EventResource::collection($query->get());
+        return EventResource::collection($query->get())
+            ->additional(['sync_timestamp' => now()->toIso8601String()]);
     }
 
     /**
@@ -50,7 +51,8 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return ArtistResource::collection($query->get());
+        return ArtistResource::collection($query->get())
+            ->additional(['sync_timestamp' => now()->toIso8601String()]);
     }
 
     /**
@@ -70,6 +72,7 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return ActResource::collection($query->get());
+        return ActResource::collection($query->get())
+            ->additional(['sync_timestamp' => now()->toIso8601String()]);
     }
 }
