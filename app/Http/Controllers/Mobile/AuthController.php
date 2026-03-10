@@ -79,7 +79,7 @@ class AuthController extends Controller
             'accessToken' => $token->plainTextToken,
             'refreshToken' => $user->createToken('refresh_token', ['refresh'])->plainTextToken,
             'expiresAt' => Carbon::now()->addMinutes(config('sanctum.expiration') ?? 1440)->toIso8601String(),
-            'user' => new UserResource($user->load('roles.permissions'))
+            'user' => new UserResource($user->load(['roles.permissions', 'profileMedia']))
         ]);
     }
 }

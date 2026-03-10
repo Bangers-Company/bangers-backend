@@ -13,6 +13,7 @@ class UserController extends Controller
     {
         return new UserResource($request->user()->load([
             'roles.permissions',
+            'profileMedia',
             'upcomingEvents.banner',
             'upcomingEvents.stages',
             'pastEvents.banner',
@@ -22,7 +23,7 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = User::with('roles')->findOrFail($id);
+        $user = User::with(['roles', 'profileMedia'])->findOrFail($id);
         return new UserResource($user);
     }
 
@@ -44,6 +45,6 @@ class UserController extends Controller
 
         $user->update($request->only(['email', 'first_name', 'last_name', 'bio', 'is_public']));
 
-        return new UserResource($user->load('roles.permissions'));
+        return new UserResource($user->load(['roles.permissions', 'profileMedia']));
     }
 }
