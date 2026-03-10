@@ -15,9 +15,12 @@ class FriendshipResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'id' => $this->user_id_1 . '_' . $this->user_id_2,
+            'user_id_1' => $this->user_id_1,
+            'user_id_2' => $this->user_id_2,
             'status' => $this->status,
-            'requester_id' => $this->requester_id,
+            'requested_by' => $this->requested_by,
+            'requester' => new UserResource($this->whenLoaded('requester')),
             'user1' => new UserResource($this->whenLoaded('user1')),
             'user2' => new UserResource($this->whenLoaded('user2')),
             'created_at' => $this->created_at,

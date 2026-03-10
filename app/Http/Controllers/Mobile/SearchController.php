@@ -7,6 +7,7 @@ use App\Http\Resources\SearchResource;
 use App\Models\Event;
 use App\Models\Artist;
 use App\Models\Act;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class SearchController extends Controller
@@ -17,7 +18,7 @@ class SearchController extends Controller
     public function index(Request $request)
     {
         $queryText = $request->input('query');
-        $entities = $request->input('entities', ['events', 'artists', 'acts']);
+        $entities = $request->input('entities', ['events', 'artists', 'acts', 'users']);
         $perPage = $request->input('per_page', 10);
 
         $results = [];
@@ -45,6 +46,19 @@ class SearchController extends Controller
                 $actQuery->where('name', 'ilike', "%{$queryText}%");
             }
             $results['acts'] = $actQuery->paginate($perPage, ['*'], 'acts_page');
+        }
+
+        if (in_array('users', $entities)) {
+            $userQuery = User::where('is_public', true)->with('profileMedia');
+            if ($queryText) {
+                $userQuery->where(function($q) use ($queryText) {
+                    $q->where('first_name', 'ilike', "%{$queryText}%")
+                      ->orWhere('last_name', 'ilike', "%{$queryText}%")
+                      ->orWhere('username', 'ilike', "%{$queryText}%")
+                      ->orWhereRaw("first_name || ' ' || last_name ILIKE ?", ["%{$queryText}%"]);
+                });
+            }
+            $results['users'] = $userQuery->paginate($perPage, ['*'], 'users_page');
         }
 
         return new SearchResource($results);

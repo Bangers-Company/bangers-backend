@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('friends')->group(function () {
     Route::get('/', [FriendshipController::class, 'index']);
+    Route::get('{userId}/friends', [FriendshipController::class, 'userFriends']);
     Route::get('requests', [FriendshipController::class, 'requests']);
     Route::post('{userId}', [FriendshipController::class, 'store']);
     Route::put('{userId}/accept', [FriendshipController::class, 'accept']);

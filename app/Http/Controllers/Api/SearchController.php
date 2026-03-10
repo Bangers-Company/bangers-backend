@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Act;
 use App\Models\Artist;
 use App\Models\Event;
+use App\Models\User;
 use App\Http\Resources\SearchResource;
 use Illuminate\Http\Request;
 
@@ -37,6 +38,7 @@ class SearchController extends Controller
             "events",
             "artists",
             "acts",
+            "users",
         ]);
         $perPage = min(max((int) $request->input("per_page", 15), 1), 100);
 
@@ -114,6 +116,31 @@ class SearchController extends Controller
                 $perPage,
                 ["*"],
                 "acts_page",
+            );
+        }
+
+        if (in_array("users", $entities)) {
+
+            $userQuery = User::where('is_public', true);
+
+            if ($withMedia) {
+                $userQuery->with('profileMedia');
+            }
+
+            if ($queryText) {
+                $userQuery->where(function($q) use ($queryText) {
+                    $q->where("first_name", "ilike", "%{$queryText}%")
+                      ->orWhere("last_name", "ilike", "%{$queryText}%")
+                      ->orWhere("username", "ilike", "%{$queryText}%")
+                      // Support full name search roughly
+                      ->orWhereRaw("first_name || ' ' || last_name ILIKE ?", ["%{$queryText}%"]);
+                });
+            }
+
+            $results["users"] = $userQuery->paginate(
+                $perPage,
+                ["*"],
+                "users_page",
             );
         }
 

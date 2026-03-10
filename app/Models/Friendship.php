@@ -48,12 +48,12 @@ class Friendship extends Model
     /**
      * Helper to get the other user in the relationship.
      */
-    public function getFriendOf(string $userId): ?User
+    public function getFriendOf($userId): ?User
     {
-        if ($this->user_id_1 === $userId) {
+        if ((string)$this->user_id_1 === (string)$userId) {
             return $this->user2;
         }
-        if ($this->user_id_2 === $userId) {
+        if ((string)$this->user_id_2 === (string)$userId) {
             return $this->user1;
         }
         return null;

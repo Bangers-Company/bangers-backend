@@ -23,7 +23,7 @@ class FriendshipController extends Controller
         $existing = Friendship::where('user_id_1', $u1)->where('user_id_2', $u2)->first();
         if ($existing) return new FriendshipResource($existing->load(['user1', 'user2']));
 
-        $status = $target->is_public ? 'accepted' : 'pending';
+        $status = 'pending';
 
         $friendship = Friendship::create([
             'user_id_1' => $u1,
@@ -43,12 +43,15 @@ class FriendshipController extends Controller
         $u1 = min($user->id, $userId);
         $u2 = max($user->id, $userId);
 
-        $friendship = Friendship::where('user_id_1', $u1)
+        Friendship::where('user_id_1', $u1)
             ->where('user_id_2', $u2)
             ->where('requested_by', $userId)
+            ->update(['status' => 'accepted']);
+            
+        $friendship = Friendship::where('user_id_1', $u1)
+            ->where('user_id_2', $u2)
             ->firstOrFail();
 
-        $friendship->update(['status' => 'accepted']);
         return new FriendshipResource($friendship->load(['user1', 'user2']));
     }
 
@@ -58,13 +61,17 @@ class FriendshipController extends Controller
         $u1 = min($user->id, $userId);
         $u2 = max($user->id, $userId);
 
-        $friendship = Friendship::where('user_id_1', $u1)
+        // Use query builder to delete in order to avoid the composite primary key issue
+        $deleted = Friendship::where('user_id_1', $u1)
             ->where('user_id_2', $u2)
             ->where('requested_by', $userId)
             ->where('status', 'pending')
-            ->firstOrFail();
+            ->delete();
 
-        $friendship->delete();
+        if (!$deleted) {
+            abort(404, 'Request not found');
+        }
+
         return response()->json(['message' => 'Request rejected']);
     }
 
@@ -78,6 +85,20 @@ class FriendshipController extends Controller
             })
             ->get()
             ->map(fn($f) => $f->getFriendOf($user->id));
+
+        return UserResource::collection($friends);
+    }
+
+    public function userFriends(Request $request, $id)
+    {
+        $user = $request->user();
+        $friends = Friendship::with(['user1', 'user2'])
+            ->where('status', 'accepted')
+            ->where(function($q) use ($id) {
+                $q->where('user_id_1', $id)->orWhere('user_id_2', $id);
+            })
+            ->get()
+            ->map(fn($f) => $f->getFriendOf($id));
 
         return UserResource::collection($friends);
     }
