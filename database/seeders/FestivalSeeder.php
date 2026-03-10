@@ -198,6 +198,13 @@ class FestivalSeeder extends Seeder
             ['name' => 'EDC Las Vegas 2025', 'loc' => 'Motor Speedway, LV', 'start' => '2025-05-16', 'end' => '2025-05-18'],
             ['name' => 'Wacken Open Air 2025', 'loc' => 'Wacken, Germany', 'start' => '2025-07-30', 'end' => '2025-08-02'],
             ['name' => 'Download Festival UK 2025', 'loc' => 'Donington Park, UK', 'start' => '2025-06-13', 'end' => '2025-06-15'],
+            
+            // 5 Future Events (relative to 2026-03-10)
+            ['name' => 'Tomorrowland 2026', 'loc' => 'Boom, Belgium', 'start' => '2026-07-17', 'end' => '2026-07-26'],
+            ['name' => 'Defqon.1 2026', 'loc' => 'Biddinghuizen, Netherlands', 'start' => '2026-06-25', 'end' => '2026-06-28'],
+            ['name' => 'Intents Festival 2026', 'loc' => 'Oisterwijk, Netherlands', 'start' => '2026-06-05', 'end' => '2026-06-07'],
+            ['name' => 'EDC Las Vegas 2026', 'loc' => 'Motor Speedway, LV', 'start' => '2026-05-15', 'end' => '2026-05-17'],
+            ['name' => 'Mysteryland 2026', 'loc' => 'Haarlemmermeer, Netherlands', 'start' => '2026-08-28', 'end' => '2026-08-30'],
         ];
 
         $eventModels = [];
@@ -265,6 +272,11 @@ class FestivalSeeder extends Seeder
             'Spectacular Festival' => ['Mainstage', 'DYNAMITE', 'FANATICZ', 'REVIVE', 'BOOMBOX'],
             'Wacken Open Air 2025' => ['Faster Stage', 'Harder Stage', 'Louder Stage'],
             'Download Festival UK 2025' => ['Apex Stage', 'Opus Stage'],
+            'Tomorrowland 2026' => ['Mainstage', 'Freedom Stage', 'Atmosphere'],
+            'Defqon.1 2026' => ['RED Stage', 'BLUE Stage', 'BLACK Stage'],
+            'Intents Festival 2026' => ['Mainstage', 'RED Stage'],
+            'EDC Las Vegas 2026' => ['Kinetic FIELD', 'Circuit GROUNDS'],
+            'Mysteryland 2026' => ['Mainstage', 'Library'],
         ];
 
         foreach ($eventStages as $eventName => $stageNames) {
@@ -461,6 +473,28 @@ class FestivalSeeder extends Seeder
                 'Apex Stage' => ['Bring Me The Horizon', 'Architects'],
                 'Opus Stage' => ['Slipknot (Masked Up)', 'Lorna Shore'],
             ],
+            'Tomorrowland 2026' => [
+                'Mainstage' => ['Dimitri Vegas & Like Mike', 'Martin Garrix', 'Armin van Buuren'],
+                'Freedom Stage' => ['Eric Prydz presents HOLO', 'Boris Brejcha'],
+                'Atmosphere' => ['Charlotte de Witte', 'Amelie Lens'],
+            ],
+            'Defqon.1 2026' => [
+                'RED Stage' => ['Sub Zero Project', 'Rebelion', 'Sefa'],
+                'BLUE Stage' => ['Warface', 'D-Sturb'],
+                'BLACK Stage' => ['Angerfist', 'Miss K8'],
+            ],
+            'Intents Festival 2026' => [
+                'Mainstage' => ['The Gang', 'Hard Driver'],
+                'RED Stage' => ['Act of Rage', 'Rejecta'],
+            ],
+            'EDC Las Vegas 2026' => [
+                'Kinetic FIELD' => ['Tiësto', 'David Guetta'],
+                'Circuit GROUNDS' => ['Martin Garrix', 'Alesso'],
+            ],
+            'Mysteryland 2026' => [
+                'Mainstage' => ['Calvin Harris', 'Steve Aoki'],
+                'Library' => ['Headhunterz', 'Wildstylez'],
+            ],
         ];
 
         foreach ($lineups as $eventName => $stagesOrDates) {
@@ -580,6 +614,22 @@ class FestivalSeeder extends Seeder
 
                     $startTime = $endTime->copy()->addMinutes(15); // 15 min break between sets
                 }
+            }
+        }
+
+        // 9. Assign events to admin user
+        $admin = \App\Models\User::where('email', 'admin@bangers.nl')->first();
+        if ($admin) {
+            $now = Carbon::now();
+            $allEvents = Event::all();
+
+            $pastEvents = $allEvents->where('end_date', '<', $now)->take(10);
+            $futureEvents = $allEvents->where('start_date', '>=', $now)->take(5);
+
+            foreach ($pastEvents->concat($futureEvents) as $event) {
+                $admin->attendedEvents()->syncWithoutDetaching([
+                    $event->id => ['status' => 'going']
+                ]);
             }
         }
     }
