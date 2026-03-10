@@ -16,9 +16,10 @@ class EventDiscoveryController extends Controller
     {
         $perPage = $request->input('per_page', 10);
 
-        // Mock suggestion logic: Latest events for now
+        // Mock suggestion logic: Upcoming events ordered by start date
         $events = Event::with(['banner'])
-            ->orderBy('created_at', 'desc')
+            ->where('start_date', '>=', now())
+            ->orderBy('start_date', 'asc')
             ->paginate($perPage);
 
         return EventResource::collection($events);

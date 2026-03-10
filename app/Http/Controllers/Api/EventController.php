@@ -23,7 +23,7 @@ class EventController extends Controller
         $perPage = $request->query('per_page', 15);
 
         $sortBy = $request->query('sort_by', 'start_date');
-        $sortOrder = $request->query('sort_order', 'desc');
+        $sortOrder = $request->query('sort_order', 'asc');
 
         // Whitelist sortable columns to prevent SQL injection
         $allowedSorts = ['name', 'start_date', 'end_date', 'location'];

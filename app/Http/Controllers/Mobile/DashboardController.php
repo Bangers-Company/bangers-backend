@@ -15,19 +15,28 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        // For now, since user login is not implemented, 'attending' is empty or mocked.
-        // We will return upcoming events as the primary focus for the snapshot.
+        $user = $request->user();
 
-        $upcomingEvents = Event::with(['banner', 'stages', 'acts.artists'])
-            ->where('start_date', '>=', now())
+        // Load attending events (status: going) - Only future and today
+        $attendingEvents = $user ? $user->attendedEvents()
+            ->with(['banner', 'stages', 'acts.artists'])
+            ->wherePivot('status', 'going')
+            ->where('end_date', '>=', now())
             ->orderBy('start_date', 'asc')
-            ->take(5)
-            ->get();
+            ->get() : collect();
+
+        // Load upcoming (interested) events (status: interested) - Only future and today
+        $interestedEvents = $user ? $user->attendedEvents()
+            ->with(['banner', 'stages', 'acts.artists'])
+            ->wherePivot('status', 'interested')
+            ->where('end_date', '>=', now())
+            ->orderBy('start_date', 'asc')
+            ->get() : collect();
 
         return response()->json([
             'data' => [
-                'attending_events' => [], // To be implemented with user relations
-                'upcoming_events' => EventResource::collection($upcomingEvents),
+                'attending_events' => EventResource::collection($attendingEvents),
+                'upcoming_events' => EventResource::collection($interestedEvents),
                 'sync_timestamp' => now()->toIso8601String(),
             ],
             'meta' => [
