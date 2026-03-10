@@ -11,7 +11,13 @@ class UserController extends Controller
 {
     public function me(Request $request)
     {
-        return new UserResource($request->user()->load('roles.permissions'));
+        return new UserResource($request->user()->load([
+            'roles.permissions',
+            'upcomingEvents.banner',
+            'upcomingEvents.stages',
+            'pastEvents.banner',
+            'pastEvents.stages'
+        ]));
     }
 
     public function show($id)

@@ -83,4 +83,26 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Media::class, 'profile_media_id');
     }
+
+    /**
+     * Events the user is attending that are in the future or today
+     */
+    public function upcomingEvents(): BelongsToMany
+    {
+        return $this->attendedEvents()
+            ->wherePivot('status', 'going')
+            ->where('end_date', '>=', now())
+            ->orderBy('start_date', 'asc');
+    }
+
+    /**
+     * Events the user attended in the past
+     */
+    public function pastEvents(): BelongsToMany
+    {
+        return $this->attendedEvents()
+            ->wherePivot('status', 'going')
+            ->where('end_date', '<', now())
+            ->orderBy('end_date', 'desc');
+    }
 }
