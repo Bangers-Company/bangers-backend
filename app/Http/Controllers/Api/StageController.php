@@ -61,7 +61,7 @@ class StageController extends Controller
 
         $stage->events()->syncWithoutDetaching([$validated['event_id']]);
 
-        return new StageResource($stage->load('events'))->response()->setStatusCode(201);
+        return (new StageResource($stage->load('events')))->response()->setStatusCode(201);
     }
 
     public function show(Stage $stage)

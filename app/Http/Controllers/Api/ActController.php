@@ -42,7 +42,7 @@ class ActController extends Controller
 
         $act = Act::create($validator->validated());
 
-        return new ActResource($act)->response()->setStatusCode(201);
+        return (new ActResource($act))->response()->setStatusCode(201);
     }
 
     public function show(Act $act)

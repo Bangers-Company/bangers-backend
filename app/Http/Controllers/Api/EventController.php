@@ -61,7 +61,7 @@ class EventController extends Controller
 
         $event = Event::create($validator->validated());
 
-        return new EventResource($event)->response()->setStatusCode(201);
+        return (new EventResource($event))->response()->setStatusCode(201);
     }
 
     public function show(Event $event)

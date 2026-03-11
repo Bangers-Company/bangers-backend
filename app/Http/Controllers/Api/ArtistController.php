@@ -45,7 +45,7 @@ class ArtistController extends Controller
 
         $artist = Artist::create($validator->validated());
 
-        return new ArtistResource($artist)->response()->setStatusCode(201);
+        return (new ArtistResource($artist))->response()->setStatusCode(201);
     }
 
     public function show(Artist $artist)

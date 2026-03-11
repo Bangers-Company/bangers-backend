@@ -52,7 +52,7 @@ class MediaController extends Controller
             "is_public" => $request->input("is_public", true),
         ]);
 
-        return new MediaResource($media)->response()->setStatusCode(201);
+        return (new MediaResource($media))->response()->setStatusCode(201);
     }
 
     /**
