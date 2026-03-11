@@ -11,14 +11,24 @@ class UserController extends Controller
 {
     public function me(Request $request)
     {
-        return new UserResource($request->user()->load([
+        $user = $request->user();
+        $user->load([
             'roles.permissions',
             'profileMedia',
             'upcomingEvents.banner',
             'upcomingEvents.stages',
             'pastEvents.banner',
-            'pastEvents.stages'
-        ]));
+            'pastEvents.stages',
+            'pendingFriendRequests.requester'
+        ]);
+        
+        // Count friendships (status accepted)
+        $user->friend_count = \App\Models\Friendship::where(function($query) use ($user) {
+            $query->where('user_id_1', $user->id)
+                  ->orWhere('user_id_2', $user->id);
+        })->where('status', 'accepted')->count();
+
+        return new UserResource($user);
     }
 
     public function show($id)

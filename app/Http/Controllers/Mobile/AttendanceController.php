@@ -32,4 +32,13 @@ class AttendanceController extends Controller
         $user->attendedEvents()->detach($eventId);
         return response()->json(['message' => 'Attendance removed']);
     }
+
+    /**
+     * GET /events/{eventId}/attendees
+     */
+    public function index($eventId)
+    {
+        $event = Event::findOrFail($eventId);
+        return \App\Http\Resources\UserResource::collection($event->attendees()->with('roles')->paginate());
+    }
 }

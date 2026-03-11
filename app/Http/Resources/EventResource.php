@@ -25,6 +25,8 @@ class EventResource extends JsonResource
             'banner' => new MediaResource($this->whenLoaded('banner')),
             'stages' => StageResource::collection($this->whenLoaded('stages')),
             'acts' => ActResource::collection($this->whenLoaded('acts')),
+            'attendees' => UserResource::collection($this->whenLoaded('attendees')),
+            'attendee_count' => $this->whenCounted('attendees'),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

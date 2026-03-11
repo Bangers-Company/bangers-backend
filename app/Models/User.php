@@ -105,4 +105,10 @@ class User extends Authenticatable
             ->where('end_date', '<', now())
             ->orderBy('end_date', 'desc');
     }
+
+    public function pendingFriendRequests(): HasMany
+    {
+        return $this->hasMany(Friendship::class, 'user_id_2')
+            ->where('status', 'pending');
+    }
 }

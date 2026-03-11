@@ -54,4 +54,11 @@ class Event extends Model
             ->withPivot('stage_id', 'date')
             ->withTimestamps();
     }
+
+    public function attendees()
+    {
+        return $this->belongsToMany(User::class, 'user_event_attendance')
+            ->withPivot('status')
+            ->withTimestamps();
+    }
 }

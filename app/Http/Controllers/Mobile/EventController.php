@@ -17,8 +17,10 @@ class EventController extends Controller
         $event = Event::with([
             'banner',
             'stages',
-            'acts.artists'
-        ])->findOrFail($id);
+            'acts.artists',
+            'attendees.roles',
+            'attendees.profileMedia'
+        ])->withCount('attendees')->findOrFail($id);
 
         return new EventResource($event);
     }

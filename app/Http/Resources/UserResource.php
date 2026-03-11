@@ -24,8 +24,14 @@ class UserResource extends JsonResource
             'bio' => $this->bio,
             'profile_media_id' => $this->profile_media_id,
             'profile_media_url' => $this->profileMedia?->url,
+            'friends_count' => $this->whenNotNull($this->friend_count),
+            'stats' => [
+                'upcoming_count' => (int) ($this->upcoming_events_count ?? ($this->upcomingEvents ? $this->upcomingEvents->count() : 0)),
+                'past_count' => (int) ($this->past_events_count ?? ($this->pastEvents ? $this->pastEvents->count() : 0)),
+            ],
             'upcoming_events' => EventResource::collection($this->whenLoaded('upcomingEvents')),
             'past_events' => EventResource::collection($this->whenLoaded('pastEvents')),
+            'friend_requests' => FriendshipResource::collection($this->whenLoaded('pendingFriendRequests')),
             'roles' => RoleResource::collection($this->whenLoaded('roles')),
             'permissions' => $this->whenLoaded('roles', function() {
                 return $this->roles->flatMap->permissions->pluck('name')->unique()->values();
