@@ -28,6 +28,15 @@ class EventResource extends JsonResource
             'attendees' => UserResource::collection($this->whenLoaded('attendees')),
             'attendee_count' => $this->whenCounted('attendees'),
             'user_status' => $request->user() ? $this->attendees()->where('user_id', $request->user()->id)->first()?->pivot?->status : null,
+            'official_timetable' => $this->officialTimetable ? [
+                'id' => $this->officialTimetable->id,
+                'name' => $this->officialTimetable->name,
+            ] : null,
+            'personal_timetable' => $request->user() ? 
+                $this->personalTimetables()
+                    ->where('user_id', $request->user()->id)
+                    ->select('id', 'name')
+                    ->first() : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

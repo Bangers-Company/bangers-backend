@@ -61,4 +61,16 @@ class Event extends Model
             ->withPivot('status')
             ->withTimestamps();
     }
+
+    public function officialTimetable()
+    {
+        return $this->hasOne(EventTimetable::class)
+            ->where('is_official', true)
+            ->where('is_public', true);
+    }
+
+    public function personalTimetables()
+    {
+        return $this->hasMany(PersonalTimetable::class);
+    }
 }

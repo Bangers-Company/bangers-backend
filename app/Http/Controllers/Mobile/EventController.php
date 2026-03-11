@@ -19,7 +19,11 @@ class EventController extends Controller
             'stages',
             'acts.artists',
             'attendees.roles',
-            'attendees.profileMedia'
+            'attendees.profileMedia',
+            'officialTimetable',
+            'personalTimetables' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }
         ])->withCount('attendees')->findOrFail($id);
 
         return new EventResource($event);
