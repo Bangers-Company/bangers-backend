@@ -33,6 +33,6 @@ class PersonalTimetable extends Model
     public function entries(): BelongsToMany
     {
         return $this->belongsToMany(TimetableEntry::class, 'personal_timetable_entries', 'timetable_id', 'timetable_entry_id')
-            ->withPivot('time_range');
+            ->withPivot(['time_range', 'is_attending']);
     }
 }

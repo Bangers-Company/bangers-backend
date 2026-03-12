@@ -64,6 +64,8 @@ class SearchController extends Controller
                 $eventQuery->with('banner');
             }
 
+            $eventQuery->withCount('attendees');
+
             if ($queryText) {
                 $eventQuery->where("name", "ilike", "%{$queryText}%");
             }

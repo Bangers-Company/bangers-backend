@@ -13,6 +13,8 @@ Route::prefix('groups')->group(function () {
 
     Route::post('{id}/members', [GroupController::class, 'addMember']);
     Route::delete('{id}/members/{user_id}', [GroupController::class, 'removeMember']);
+    Route::post('{id}/accept', [GroupController::class, 'acceptInvitation']);
+    Route::post('{id}/reject', [GroupController::class, 'rejectInvitation']);
 
     // Group Timetables
     Route::prefix('{group_id}/timetables')->group(function () {
@@ -21,5 +23,7 @@ Route::prefix('groups')->group(function () {
         Route::get('{id}', [GroupTimetableController::class, 'show']);
         Route::put('{id}/entries', [GroupTimetableController::class, 'updateEntries']);
         Route::delete('{id}', [GroupTimetableController::class, 'destroy']);
+        Route::post('{id}/entries/{entry_id}/toggle-attend', [GroupTimetableController::class, 'toggleAttend']);
+        Route::get('{id}/entries/{entry_id}/attendance', [GroupTimetableController::class, 'getAttendance']);
     });
 });

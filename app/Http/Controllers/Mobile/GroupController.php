@@ -18,6 +18,8 @@ class GroupController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'user_ids' => 'nullable|array',
+            'user_ids.*' => 'exists:users,id',
         ]);
 
         $user = $request->user();
@@ -30,7 +32,21 @@ class GroupController extends Controller
                 'owner_id' => $user->id,
             ]);
 
-            $group->members()->attach($user->id, ['role' => 'owner']);
+            $group->members()->attach($user->id, [
+                'role' => 'owner',
+                'invitation_status' => 'accepted'
+            ]);
+
+            if ($request->has('user_ids')) {
+                foreach ($request->user_ids as $invitedId) {
+                    if ($invitedId !== $user->id) {
+                        $group->members()->attach($invitedId, [
+                            'role' => 'member',
+                            'invitation_status' => 'pending'
+                        ]);
+                    }
+                }
+            }
 
             return $group;
         });
@@ -122,5 +138,43 @@ class GroupController extends Controller
         $group->delete();
 
         return response()->json(['message' => 'Group deleted']);
+    }
+
+    /**
+     * POST /groups/{id}/accept
+     */
+    public function acceptInvitation(Request $request, $id)
+    {
+        $group = Group::findOrFail($id);
+        $userId = $request->user()->id;
+
+        $membership = $group->members()->where('user_id', $userId)->first();
+        if (!$membership) {
+            abort(404, 'Invitation not found.');
+        }
+
+        $group->members()->updateExistingPivot($userId, [
+            'invitation_status' => 'accepted'
+        ]);
+
+        return response()->json(['message' => 'Invitation accepted']);
+    }
+
+    /**
+     * POST /groups/{id}/reject
+     */
+    public function rejectInvitation(Request $request, $id)
+    {
+        $group = Group::findOrFail($id);
+        $userId = $request->user()->id;
+
+        $membership = $group->members()->where('user_id', $userId)->first();
+        if (!$membership) {
+            abort(404, 'Invitation not found.');
+        }
+
+        $group->members()->detach($userId);
+
+        return response()->json(['message' => 'Invitation rejected']);
     }
 }

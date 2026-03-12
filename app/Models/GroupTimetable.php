@@ -35,4 +35,11 @@ class GroupTimetable extends Model
             ->withPivot('added_by')
             ->withTimestamps();
     }
+
+    public function attendingUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'group_timetable_attendance', 'group_timetable_id', 'user_id')
+            ->withPivot('timetable_entry_id')
+            ->withTimestamps();
+    }
 }

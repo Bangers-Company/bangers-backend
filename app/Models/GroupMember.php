@@ -17,5 +17,6 @@ class GroupMember extends Pivot
         'group_id',
         'user_id',
         'role',
+        'invitation_status',
     ];
 }

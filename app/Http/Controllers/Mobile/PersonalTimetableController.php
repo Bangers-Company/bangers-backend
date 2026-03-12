@@ -34,7 +34,19 @@ class PersonalTimetableController extends Controller
             'name' => $request->name,
         ]);
 
-        return response()->json($timetable, 201);
+        // Automatically populate with ALL official entries
+        $officialEntries = TimetableEntry::whereHas('timetable', function ($q) use ($request) {
+            $q->where('event_id', $request->event_id);
+        })->get();
+
+        foreach ($officialEntries as $entry) {
+            $timetable->entries()->attach($entry->id, [
+                'time_range' => "[{$entry->start_time}, {$entry->end_time})",
+                'is_attending' => false,
+            ]);
+        }
+
+        return response()->json($timetable->load('entries.stage', 'entries.act.artists'), 201);
     }
 
     /**
@@ -104,5 +116,26 @@ class PersonalTimetableController extends Controller
         $timetable->delete();
 
         return response()->json(['message' => 'Personal timetable removed']);
+    }
+
+    /**
+     * POST /personal-timetables/{id}/entries/{entry_id}/toggle-attend
+     */
+    public function toggleAttend(Request $request, $id, $entryId)
+    {
+        $timetable = PersonalTimetable::where('user_id', $request->user()->id)->findOrFail($id);
+        
+        $entry = $timetable->entries()->where('timetable_entry_id', $entryId)->firstOrFail();
+        
+        $newStatus = !$entry->pivot->is_attending;
+        
+        $timetable->entries()->updateExistingPivot($entryId, [
+            'is_attending' => $newStatus,
+        ]);
+
+        return response()->json([
+            'is_attending' => $newStatus,
+            'message' => $newStatus ? 'Now attending' : 'No longer attending'
+        ]);
     }
 }

@@ -33,7 +33,18 @@ class GroupTimetableController extends Controller
             'name' => $request->name,
         ]);
 
-        return response()->json($timetable, 201);
+        // Automatically populate with ALL official entries
+        $officialEntries = TimetableEntry::whereHas('timetable', function ($q) use ($request) {
+            $q->where('event_id', $request->event_id);
+        })->get();
+
+        foreach ($officialEntries as $entry) {
+            $timetable->entries()->attach($entry->id, [
+                'added_by' => $request->user()->id,
+            ]);
+        }
+
+        return response()->json($timetable->load('entries.stage', 'entries.act.artists'), 201);
     }
 
     /**
@@ -117,5 +128,58 @@ class GroupTimetableController extends Controller
         $timetable->delete();
 
         return response()->json(['message' => 'Group timetable removed']);
+    }
+
+    /**
+     * POST /groups/{group_id}/timetables/{id}/entries/{entry_id}/toggle-attend
+     */
+    public function toggleAttend(Request $request, $groupId, $id, $entryId)
+    {
+        $group = Group::findOrFail($groupId);
+        if (!$group->members->contains($request->user()->id)) {
+            abort(403, 'You are not a member of this group.');
+        }
+
+        $timetable = GroupTimetable::where('group_id', $groupId)->findOrFail($id);
+        
+        $userId = $request->user()->id;
+        $isAttending = $timetable->attendingUsers()
+            ->where('user_id', $userId)
+            ->where('timetable_entry_id', $entryId)
+            ->exists();
+
+        if ($isAttending) {
+            $timetable->attendingUsers()
+                ->wherePivot('timetable_entry_id', $entryId)
+                ->detach($userId);
+        } else {
+            $timetable->attendingUsers()->attach($userId, [
+                'timetable_entry_id' => $entryId,
+            ]);
+        }
+
+        return response()->json([
+            'is_attending' => !$isAttending,
+            'count' => $timetable->attendingUsers()->where('timetable_entry_id', $entryId)->count()
+        ]);
+    }
+
+    /**
+     * GET /groups/{group_id}/timetables/{id}/entries/{entry_id}/attendance
+     */
+    public function getAttendance(Request $request, $groupId, $id, $entryId)
+    {
+        $group = Group::findOrFail($groupId);
+        if (!$group->members->contains($request->user()->id)) {
+            abort(403, 'You are not a member of this group.');
+        }
+
+        $timetable = GroupTimetable::where('group_id', $groupId)->findOrFail($id);
+        
+        $users = $timetable->attendingUsers()
+            ->where('timetable_entry_id', $entryId)
+            ->get(['users.id', 'users.name', 'users.profile_photo_path']);
+
+        return response()->json($users);
     }
 }
