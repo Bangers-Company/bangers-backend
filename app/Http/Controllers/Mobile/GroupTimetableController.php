@@ -35,7 +35,7 @@ class GroupTimetableController extends Controller
 
         // Automatically populate with ALL official entries
         $officialEntries = TimetableEntry::whereHas('timetable', function ($q) use ($request) {
-            $q->where('event_id', $request->event_id);
+            $q->where('event_id', $request->event_id)->where('is_official', true);
         })->get();
 
         foreach ($officialEntries as $entry) {
@@ -57,7 +57,7 @@ class GroupTimetableController extends Controller
             abort(403, 'You are not a member of this group.');
         }
 
-        return response()->json($group->timetables()->get());
+        return response()->json($group->timetables()->with('entries.stage', 'entries.act.artists')->get());
     }
 
     /**
@@ -73,6 +73,20 @@ class GroupTimetableController extends Controller
         $timetable = GroupTimetable::with(['entries.stage', 'entries.act.artists', 'entries.pivot.added_by'])
             ->where('group_id', $groupId)
             ->findOrFail($id);
+
+        $userId = $request->user()->id;
+        $attendingEntryIds = $timetable->attendingUsers()
+            ->where('user_id', $userId)
+            ->pluck('timetable_entry_id')
+            ->toArray();
+
+        $timetable->entries->map(function ($entry) use ($attendingEntryIds, $timetable) {
+            $entry->pivot->is_attending = in_array($entry->id, $attendingEntryIds);
+            $entry->pivot->attending_count = $timetable->attendingUsers()
+                ->where('timetable_entry_id', $entry->id)
+                ->count();
+            return $entry;
+        });
 
         return response()->json($timetable);
     }

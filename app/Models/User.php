@@ -111,4 +111,19 @@ class User extends Authenticatable
         return $this->hasMany(Friendship::class, 'user_id_2')
             ->where('status', 'pending');
     }
+
+    /**
+     * Group Relationships
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'group_members')
+            ->withPivot('role', 'invitation_status')
+            ->withTimestamps();
+    }
+
+    public function personalTimetables(): HasMany
+    {
+        return $this->hasMany(PersonalTimetable::class);
+    }
 }

@@ -36,7 +36,7 @@ class PersonalTimetableController extends Controller
 
         // Automatically populate with ALL official entries
         $officialEntries = TimetableEntry::whereHas('timetable', function ($q) use ($request) {
-            $q->where('event_id', $request->event_id);
+            $q->where('event_id', $request->event_id)->where('is_official', true);
         })->get();
 
         foreach ($officialEntries as $entry) {
@@ -85,24 +85,17 @@ class PersonalTimetableController extends Controller
             }
         }
 
-        try {
-            DB::transaction(function () use ($timetable, $entries) {
-                // Clear existing
-                $timetable->entries()->detach();
+        DB::transaction(function () use ($timetable, $entries) {
+            // Clear existing
+            $timetable->entries()->detach();
 
-                // Add new ones - the database EXCLUDE constraint will handle the overlap check
-                foreach ($entries as $entry) {
-                    $timetable->entries()->attach($entry->id, [
-                        'time_range' => "[{$entry->start_time}, {$entry->end_time})",
-                    ]);
-                }
-            });
-        } catch (\Illuminate\Database\QueryException $e) {
-            if ($e->getCode() == '23P01') { // exclusion_violation
-                return response()->json(['message' => 'Cannot add overlapping entries to your timetable.'], 409);
+            // Add new ones
+            foreach ($entries as $entry) {
+                $timetable->entries()->attach($entry->id, [
+                    'time_range' => "[{$entry->start_time}, {$entry->end_time})",
+                ]);
             }
-            throw $e;
-        }
+        });
 
         return response()->json($timetable->load('entries.stage', 'entries.act.artists'));
     }

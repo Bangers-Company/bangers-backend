@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('version')->default(1);
             $table->timestamps();
 
-            $table->unique(['group_id', 'event_id']);
+            // $table->unique(['group_id', 'event_id']);
             $table->foreign('group_id')->references('id')->on('groups')->onDelete('cascade');
             $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
 

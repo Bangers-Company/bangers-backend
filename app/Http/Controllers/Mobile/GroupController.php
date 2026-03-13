@@ -51,7 +51,7 @@ class GroupController extends Controller
             return $group;
         });
 
-        return response()->json($group->load('owner'), 201);
+        return response()->json($group->load(['owner', 'timetables']), 201);
     }
 
     /**
@@ -59,7 +59,13 @@ class GroupController extends Controller
      */
     public function index(Request $request)
     {
-        return response()->json($request->user()->groups()->with('owner')->get());
+        $query = $request->user()->groups()->with(['owner', 'timetables.entries.stage', 'timetables.entries.act.artists']);
+
+        if ($request->has('status')) {
+            $query->wherePivot('invitation_status', $request->status);
+        }
+
+        return response()->json($query->get());
     }
 
     /**
@@ -73,7 +79,7 @@ class GroupController extends Controller
             abort(403, 'You are not a member of this group.');
         }
 
-        return response()->json($group);
+        return response()->json($group->load('timetables'));
     }
 
     /**
@@ -130,14 +136,23 @@ class GroupController extends Controller
     public function destroy(Request $request, $id)
     {
         $group = Group::findOrFail($id);
+        $user = $request->user();
 
-        if ($group->owner_id !== $request->user()->id) {
-            abort(403, 'Only the owner can delete the group.');
+        if ($group->owner_id === $user->id) {
+            // Owner deletes the group for everyone
+            $group->delete();
+            return response()->json(['message' => 'Group deleted for everyone']);
+        } else {
+            // Member leaves the group
+            // 1. Remove attendance entries for this user in all group timetables
+            foreach ($group->timetables as $timetable) {
+                $timetable->attendingUsers()->detach($user->id);
+            }
+            // 2. Detach member from group
+            $group->members()->detach($user->id);
+            
+            return response()->json(['message' => 'You have left the group']);
         }
-
-        $group->delete();
-
-        return response()->json(['message' => 'Group deleted']);
     }
 
     /**
