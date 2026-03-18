@@ -59,7 +59,7 @@ class GroupController extends Controller
      */
     public function index(Request $request)
     {
-        $query = $request->user()->groups()->with(['owner', 'timetables.entries.stage', 'timetables.entries.act.artists']);
+        $query = $request->user()->groups()->withCount('members')->with(['owner', 'timetables.entries.stage', 'timetables.entries.act.artists']);
 
         if ($request->has('status')) {
             $query->wherePivot('invitation_status', $request->status);
