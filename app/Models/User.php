@@ -112,18 +112,10 @@ class User extends Authenticatable
             ->where('status', 'pending');
     }
 
-    /**
-     * Group Relationships
-     */
     public function groups(): BelongsToMany
     {
         return $this->belongsToMany(Group::class, 'group_members')
             ->withPivot('role', 'invitation_status')
             ->withTimestamps();
-    }
-
-    public function personalTimetables(): HasMany
-    {
-        return $this->hasMany(PersonalTimetable::class);
     }
 }

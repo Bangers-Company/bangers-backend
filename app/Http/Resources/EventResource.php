@@ -32,11 +32,6 @@ class EventResource extends JsonResource
                 'id' => $this->officialTimetable->id,
                 'name' => $this->officialTimetable->name,
             ] : null,
-            'personal_timetable' => $request->user() ? 
-                $this->personalTimetables()
-                    ->where('user_id', $request->user()->id)
-                    ->select('id', 'name')
-                    ->first() : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

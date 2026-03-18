@@ -68,9 +68,4 @@ class Event extends Model
             ->where('is_official', true)
             ->where('is_public', true);
     }
-
-    public function personalTimetables()
-    {
-        return $this->hasMany(PersonalTimetable::class);
-    }
 }

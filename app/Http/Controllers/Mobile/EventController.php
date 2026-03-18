@@ -21,9 +21,6 @@ class EventController extends Controller
             'attendees.roles',
             'attendees.profileMedia',
             'officialTimetable',
-            'personalTimetables' => function ($query) {
-                $query->where('user_id', auth()->id());
-            }
         ])->withCount('attendees')->findOrFail($id);
 
         return new EventResource($event);
