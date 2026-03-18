@@ -21,6 +21,10 @@ class SearchController extends Controller
         $entities = $request->input('entities', ['events', 'artists', 'acts', 'users']);
         $perPage = $request->input('per_page', 10);
 
+        if (is_string($entities)) {
+            $entities = explode(',', $entities);
+        }
+
         $results = [];
 
         if (in_array('events', $entities)) {
