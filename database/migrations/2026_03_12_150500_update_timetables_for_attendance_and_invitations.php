@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         // Add is_attending to personal_timetable_entries
-        Schema::table('personal_timetable_entries', function (Blueprint $table) {
-            $table->boolean('is_attending')->default(false);
-        });
+        if (Schema::hasTable('personal_timetable_entries')) {
+            Schema::table('personal_timetable_entries', function (Blueprint $table) {
+                $table->boolean('is_attending')->default(false);
+            });
+        }
 
         // Add invitation_status to group_members
         Schema::table('group_members', function (Blueprint $table) {
@@ -47,8 +49,10 @@ return new class extends Migration
             $table->dropColumn('invitation_status');
         });
 
-        Schema::table('personal_timetable_entries', function (Blueprint $table) {
-            $table->dropColumn('is_attending');
-        });
+        if (Schema::hasTable('personal_timetable_entries')) {
+            Schema::table('personal_timetable_entries', function (Blueprint $table) {
+                $table->dropColumn('is_attending');
+            });
+        }
     }
 };
