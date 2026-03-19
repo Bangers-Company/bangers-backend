@@ -24,7 +24,9 @@ return new class extends Migration
             $table->index('user_id');
         });
 
-        DB::statement("ALTER TABLE group_members ADD CONSTRAINT valid_role CHECK (role IN ('owner', 'admin', 'member'))");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE group_members ADD CONSTRAINT valid_role CHECK (role IN ('owner', 'admin', 'member'))");
+        }
     }
 
     public function down(): void

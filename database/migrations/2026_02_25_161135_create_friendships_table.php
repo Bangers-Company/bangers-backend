@@ -24,7 +24,9 @@ return new class extends Migration
             $table->foreign('requested_by')->references('id')->on('users')->onDelete('cascade');
         });
 
-        DB::statement('ALTER TABLE friendships ADD CONSTRAINT check_user_order CHECK (user_id_1 < user_id_2)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE friendships ADD CONSTRAINT check_user_order CHECK (user_id_1 < user_id_2)');
+        }
     }
 
     /**

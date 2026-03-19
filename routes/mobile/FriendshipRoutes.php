@@ -10,5 +10,6 @@ Route::prefix('friends')->group(function () {
     Route::post('{userId}', [FriendshipController::class, 'store']);
     Route::put('{userId}/accept', [FriendshipController::class, 'accept']);
     Route::put('{userId}/reject', [FriendshipController::class, 'reject']);
+    Route::get('{userId}/status', [FriendshipController::class, 'status']);
     Route::delete('{userId}', [FriendshipController::class, 'destroy']);
 });

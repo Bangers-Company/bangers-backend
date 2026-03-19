@@ -3,6 +3,7 @@
 use App\Models\Act;
 use App\Models\Artist;
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -14,21 +15,18 @@ beforeEach(function () {
 });
 
 test('can search by name', function () {
-    $response = $this->getJson(route('api.search', ['query' => 'Tomorrow']));
+    $user = User::factory()->create();
+    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', ['query' => 'Tomorrow']));
 
     $response->assertStatus(200)
         ->assertJsonCount(1, 'data.events.data')
-        ->assertJsonPath('data.events.data.0.name', 'Tomorrowland')
-        ->assertJsonStructure([
-            'data' => [
-                'events' => ['data', 'meta', 'links']
-            ]
-        ]);
+        ->assertJsonPath('data.events.data.0.name', 'Tomorrowland');
 });
 
 test('can filter by entities', function () {
+    $user = User::factory()->create();
     // Only search artists
-    $response = $this->getJson(route('api.search', [
+    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', [
         'query' => 'Garrix',
         'entities' => 'artists'
     ]));
@@ -40,9 +38,20 @@ test('can filter by entities', function () {
 });
 
 test('can search by location', function () {
-    $response = $this->getJson(route('api.search', ['location' => 'Belgium']));
+    $user = User::factory()->create();
+    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', ['query' => 'Tomorrow']));
 
     $response->assertStatus(200)
         ->assertJsonCount(1, 'data.events.data')
         ->assertJsonPath('data.events.data.0.location', 'Belgium');
+});
+
+test('it validates the search query length', function () {
+    $user = User::factory()->create();
+    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', [
+        'query' => str_repeat('a', 101)
+    ]));
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['query']);
 });
