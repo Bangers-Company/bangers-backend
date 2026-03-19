@@ -57,7 +57,9 @@ class TimetableController extends Controller
             ->first();
             
         if ($favorite) {
-            $favorite->delete();
+            \App\Models\UserTimetableFavorite::where('user_id', $user->id)
+                ->where('timetable_entry_id', $entryId)
+                ->delete();
             $status = false;
         } else {
             \App\Models\UserTimetableFavorite::create([
