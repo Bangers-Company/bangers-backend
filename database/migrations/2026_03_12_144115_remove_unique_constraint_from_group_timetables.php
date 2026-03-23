@@ -12,7 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement('ALTER TABLE group_timetables DROP CONSTRAINT IF EXISTS group_timetables_group_id_event_id_unique');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE group_timetables DROP CONSTRAINT IF EXISTS group_timetables_group_id_event_id_unique');
+        }
     }
 
     /**

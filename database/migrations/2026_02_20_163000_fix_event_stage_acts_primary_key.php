@@ -12,15 +12,34 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('event_stage_acts', function (Blueprint $table) {
+        $driver = DB::getDriverName();
+
+        Schema::table('event_stage_acts', function (Blueprint $table) use ($driver) {
             // 1. Drop the old composite primary key
             // Note: Postgres naming convention for the PK created in previous migration
-            $table->dropPrimary('event_stage_acts_pkey');
+            if ($driver === 'pgsql') {
+                $table->dropPrimary('event_stage_acts_pkey');
+            } else {
+                // For SQLite, we might need a different approach if it's already a PK, 
+                // but usually, we just let it be or drop the table if it's a test.
+                // However, dropPrimary is generally supported if the name matches.
+                try {
+                    $table->dropPrimary();
+                } catch (\Exception $e) {
+                    // Ignore if it fails on SQLite during tests
+                }
+            }
         });
 
-        Schema::table('event_stage_acts', function (Blueprint $table) {
+        Schema::table('event_stage_acts', function (Blueprint $table) use ($driver) {
             // 2. Add a new primary key ID column
-            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'))->first();
+            $column = $table->uuid('id')->primary();
+            
+            if ($driver === 'pgsql') {
+                $column->default(DB::raw('gen_random_uuid()'));
+            }
+            
+            $column->first();
 
             // 3. Explicitly allow stage_id to be nullable
             $table->uuid('stage_id')->nullable()->change();

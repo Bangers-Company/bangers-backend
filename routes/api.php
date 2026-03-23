@@ -44,5 +44,6 @@ Route::prefix('mobile')->name('api.mobile.')->group(function () {
         require __DIR__.'/mobile/TimetableRoutes.php';
         require __DIR__.'/mobile/FavoriteRoutes.php';
         require __DIR__.'/mobile/GroupRoutes.php';
+        require __DIR__.'/mobile/ConfigRoutes.php';
     });
 });

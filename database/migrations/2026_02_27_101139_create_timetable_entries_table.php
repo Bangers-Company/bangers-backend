@@ -30,7 +30,9 @@ return new class extends Migration
             $table->index(['stage_id', 'start_time']);
         });
 
-        DB::statement('ALTER TABLE timetable_entries ADD CONSTRAINT valid_time CHECK (end_time > start_time)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE timetable_entries ADD CONSTRAINT valid_time CHECK (end_time > start_time)');
+        }
     }
 
     public function down(): void

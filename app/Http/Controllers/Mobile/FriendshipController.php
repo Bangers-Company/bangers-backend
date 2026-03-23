@@ -125,4 +125,33 @@ class FriendshipController extends Controller
         Friendship::where('user_id_1', $u1)->where('user_id_2', $u2)->delete();
         return response()->json(['message' => 'Friendship removed']);
     }
+
+    public function status(Request $request, $userId)
+    {
+        $user = $request->user();
+        if ((string)$user->id === (string)$userId) {
+            return response()->json(['status' => 'self']);
+        }
+
+        $u1 = min($user->id, $userId);
+        $u2 = max($user->id, $userId);
+
+        $friendship = Friendship::where('user_id_1', $u1)
+            ->where('user_id_2', $u2)
+            ->first();
+
+        if (!$friendship) {
+            return response()->json(['status' => 'none']);
+        }
+
+        if ($friendship->status === 'accepted') {
+            return response()->json(['status' => 'accepted']);
+        }
+
+        if ($friendship->requested_by === $user->id) {
+            return response()->json(['status' => 'pending_sent']);
+        }
+
+        return response()->json(['status' => 'pending_received']);
+    }
 }

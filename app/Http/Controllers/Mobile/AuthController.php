@@ -62,6 +62,11 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         $user = $request->user();
+        
+        if (!$user->tokenCan('refresh')) {
+            return response()->json(['message' => 'Invalid token for refresh'], 403);
+        }
+
         $user->currentAccessToken()->delete();
         return $this->generateResponse($user);
     }
