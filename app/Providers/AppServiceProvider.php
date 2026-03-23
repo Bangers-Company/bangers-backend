@@ -41,5 +41,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage_content', function (User $user) {
             return $user->hasPermission('manage_content');
         });
+
+        Gate::policy(\App\Models\Group::class, \App\Policies\GroupPolicy::class);
+        Gate::policy(\App\Models\GroupTimetable::class, \App\Policies\GroupTimetablePolicy::class);
     }
 }

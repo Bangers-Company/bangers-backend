@@ -19,7 +19,7 @@ class SyncController extends Controller
     public function events(Request $request)
     {
         $since = $request->input('since');
-        $query = Event::with(['banner', 'stages', 'acts.artists'])->withTrashed();
+        $query = Event::with(['banner', 'stages', 'acts.artists'])->withUserStatus()->withTrashed();
 
         if ($since) {
             if (is_numeric($since)) {
@@ -30,7 +30,7 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return EventResource::collection($query->get())
+        return EventResource::collection($query->limit(500)->get())
             ->additional(['sync_timestamp' => now()->toIso8601String()]);
     }
 
@@ -51,7 +51,7 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return ArtistResource::collection($query->get())
+        return ArtistResource::collection($query->limit(500)->get())
             ->additional(['sync_timestamp' => now()->toIso8601String()]);
     }
 
@@ -72,7 +72,7 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return ActResource::collection($query->get())
+        return ActResource::collection($query->limit(500)->get())
             ->additional(['sync_timestamp' => now()->toIso8601String()]);
     }
 }

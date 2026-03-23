@@ -37,20 +37,29 @@ class MediaController extends Controller
         }
 
         $file = $request->file("file");
-        $id = (string) Str::uuid();
+        // $tempId = (string) Str::uuid(); // Keep for filename generation if desired, or use model's generated id after save.
+        // Actually, Media model generates ID on creation.
+        // Let's create the model first or use a temporary name.
+        
         $extension = $file->getClientOriginalExtension();
-        $path = $file->storeAs("media", $id . "." . $extension, "public");
-
-        $media = Media::create([
-            "id" => $id,
+        $media = new Media([
             "owner_id" => $request->user()?->id,
             "type" => $request->type,
-            "storage_key" => $path,
-            "url" => Storage::disk("public")->url($path),
             "mime_type" => $file->getMimeType(),
             "size_bytes" => $file->getSize(),
             "is_public" => $request->input("is_public", true),
         ]);
+        
+        // Use the model's generated ID for the filename
+        $media->id = (string) Str::uuid(); // Manually set if we need it for filename BEFORE save, 
+        // OR better: use Str::random() for filename to keep it separate.
+        
+        $filename = $media->id . "." . $extension;
+        $path = $file->storeAs("media", $filename, "public");
+        
+        $media->storage_key = $path;
+        $media->url = Storage::disk("public")->url($path);
+        $media->save();
 
         return (new MediaResource($media))->response()->setStatusCode(201);
     }

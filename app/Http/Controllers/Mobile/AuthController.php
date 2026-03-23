@@ -10,53 +10,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Carbon;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Services\AuthService;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    protected $authService;
+
+    public function __construct(AuthService $authService)
     {
-        $request->validate([
-            'email' => 'required|email|unique:users',
-            'username' => 'required|string|unique:users',
-            'password' => 'required|min:8',
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
-            'dob' => 'required|date',
-        ]);
-
-        $user = User::create([
-            'email' => $request->email,
-            'username' => $request->username,
-            'password' => Hash::make($request->password),
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'dob' => $request->dob,
-        ]);
-
-        $userRole = Role::where('name', 'user')->first();
-        if ($userRole) {
-            $user->roles()->attach($userRole->id);
-        }
-
-        return $this->generateResponse($user);
+        $this->authService = $authService;
     }
 
-    public function login(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $user = $this->authService->register($request->validated());
 
-        $user = User::where('email', $request->email)->first();
+        return response()->json($this->authService->generateTokenResponse($user, ['roles.permissions', 'profileMedia']), 201);
+    }
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Incorrect credentials.'],
-            ]);
-        }
+    public function login(LoginRequest $request)
+    {
+        $user = $this->authService->login($request->email, $request->password);
 
-        return $this->generateResponse($user);
+        return response()->json($this->authService->generateTokenResponse($user, ['roles.permissions', 'profileMedia']));
     }
 
     public function refresh(Request $request)
@@ -67,8 +45,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid token for refresh'], 403);
         }
 
-        $user->currentAccessToken()->delete();
-        return $this->generateResponse($user);
+        $this->authService->refresh($user);
+        return response()->json($this->authService->generateTokenResponse($user, ['roles.permissions', 'profileMedia']));
     }
 
     public function logout(Request $request)
@@ -77,14 +55,7 @@ class AuthController extends Controller
         return response()->json(['message' => 'Logged out successfully']);
     }
 
-    private function generateResponse($user)
-    {
-        $token = $user->createToken('auth_token');
-        return response()->json([
-            'accessToken' => $token->plainTextToken,
-            'refreshToken' => $user->createToken('refresh_token', ['refresh'])->plainTextToken,
-            'expiresAt' => Carbon::now()->addMinutes(config('sanctum.expiration') ?? 1440)->toIso8601String(),
-            'user' => new UserResource($user->load(['roles.permissions', 'profileMedia']))
-        ]);
-    }
+    /**
+     * Helper to generate standardized token response is now handled by AuthService.
+     */
 }

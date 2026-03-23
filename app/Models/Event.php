@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -36,6 +37,23 @@ class Event extends Model
             // Logic for cascading deletes to stages/acts can be handled here if needed,
             // but database cascades are already in place.
         });
+    }
+
+    public function scopeWithUserStatus($query, $userId = null)
+    {
+        $userId = $userId ?: auth()->id();
+
+        if (!$userId) {
+            return $query;
+        }
+
+        return $query->addSelect([
+            'user_status' => DB::table('user_event_attendance')
+                ->select('status')
+                ->whereColumn('event_id', 'events.id')
+                ->where('user_id', $userId)
+                ->limit(1)
+        ]);
     }
 
     public function banner()

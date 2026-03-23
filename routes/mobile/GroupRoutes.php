@@ -8,22 +8,23 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('groups')->group(function () {
     Route::get('/', [GroupController::class, 'index']);
     Route::post('/', [GroupController::class, 'store']);
-    Route::get('{id}', [GroupController::class, 'show']);
-    Route::delete('{id}', [GroupController::class, 'destroy']);
+    Route::get('{group}', [GroupController::class, 'show']);
+    Route::put('{group}', [GroupController::class, 'update']);
+    Route::delete('{group}', [GroupController::class, 'destroy']);
 
-    Route::post('{id}/members', [GroupController::class, 'addMember']);
-    Route::delete('{id}/members/{user_id}', [GroupController::class, 'removeMember']);
-    Route::post('{id}/accept', [GroupController::class, 'acceptInvitation']);
-    Route::post('{id}/reject', [GroupController::class, 'rejectInvitation']);
+    Route::post('{group}/members', [GroupController::class, 'addMember']);
+    Route::delete('{group}/members/{user}', [GroupController::class, 'removeMember']);
+    Route::post('{group}/accept', [GroupController::class, 'acceptInvitation']);
+    Route::post('{group}/reject', [GroupController::class, 'rejectInvitation']);
 
     // Group Timetables
-    Route::prefix('{group_id}/timetables')->group(function () {
+    Route::prefix('{group}/timetables')->group(function () {
         Route::get('/', [GroupTimetableController::class, 'index']);
         Route::post('/', [GroupTimetableController::class, 'store']);
-        Route::get('{id}', [GroupTimetableController::class, 'show']);
-        Route::put('{id}/entries', [GroupTimetableController::class, 'updateEntries']);
-        Route::delete('{id}', [GroupTimetableController::class, 'destroy']);
-        Route::post('{id}/entries/{entry_id}/toggle-attend', [GroupTimetableController::class, 'toggleAttend']);
-        Route::get('{id}/entries/{entry_id}/attendance', [GroupTimetableController::class, 'getAttendance']);
+        Route::get('{timetable}', [GroupTimetableController::class, 'show']);
+        Route::put('{timetable}/entries', [GroupTimetableController::class, 'updateEntries']);
+        Route::delete('{timetable}', [GroupTimetableController::class, 'destroy']);
+        Route::post('{timetable}/entries/{entry}/toggle-attend', [GroupTimetableController::class, 'toggleAttend']);
+        Route::get('{timetable}/entries/{entry}/attendance', [GroupTimetableController::class, 'getAttendance']);
     });
 });

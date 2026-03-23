@@ -21,7 +21,10 @@ class EventController extends Controller
             'attendees.roles',
             'attendees.profileMedia',
             'officialTimetable',
-        ])->withCount('attendees')->findOrFail($id);
+        ])
+        ->withUserStatus()
+        ->withCount('attendees')
+        ->findOrFail($id);
 
         return new EventResource($event);
     }

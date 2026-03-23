@@ -10,25 +10,24 @@ use App\Models\Event;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+use App\Http\Requests\Attendance\UpdateAttendanceRequest;
+use App\Services\AttendanceService;
+
 class AttendanceController extends Controller
 {
+    protected $attendanceService;
+
+    public function __construct(AttendanceService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
+
     /**
      * PUT /events/{eventId}/attendance
      */
-    public function update(Request $request, $eventId)
+    public function update(UpdateAttendanceRequest $request, $eventId)
     {
-        $request->validate([
-            'status' => 'required|in:going,interested'
-        ]);
-
-        $user = $request->user();
-        $event = Event::findOrFail($eventId);
-
-        $user->attendedEvents()->syncWithoutDetaching([
-            $eventId => ['status' => $request->status]
-        ]);
-
-        $attendance = $user->attendedEvents()->where('event_id', $eventId)->first()->pivot;
+        $attendance = $this->attendanceService->updateAttendance($request->user(), $eventId, $request->status);
         return new AttendanceResource($attendance);
     }
 
@@ -37,8 +36,7 @@ class AttendanceController extends Controller
      */
     public function destroy(Request $request, $eventId)
     {
-        $user = $request->user();
-        $user->attendedEvents()->detach($eventId);
+        $this->attendanceService->removeAttendance($request->user(), $eventId);
 
         return response()->json(['message' => 'Attendance removed']);
     }
@@ -48,8 +46,8 @@ class AttendanceController extends Controller
      */
     public function index($eventId)
     {
-        $event = Event::findOrFail($eventId);
-        return UserResource::collection($event->attendees()->with('roles')->paginate());
+        $attendees = $this->attendanceService->getAttendees($eventId);
+        return UserResource::collection($attendees);
     }
 
     /**
@@ -57,7 +55,7 @@ class AttendanceController extends Controller
      */
     public function userEvents($id)
     {
-        $user = User::findOrFail($id);
-        return EventResource::collection($user->attendedEvents()->paginate());
+        $events = $this->attendanceService->getUserEvents($id);
+        return EventResource::collection($events);
     }
 }

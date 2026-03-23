@@ -7,6 +7,10 @@ use App\Models\Act;
 use App\Http\Resources\ActResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Requests\Admin\StoreActRequest;
+use App\Http\Requests\Admin\UpdateActRequest;
 
 class ActController extends Controller
 {
@@ -20,27 +24,15 @@ class ActController extends Controller
                   ->orWhere('description', 'ilike', "%{$search}%");
         }
 
-        $perPage = $request->query('per_page', 15);
-
-        if ($perPage == -1) {
-            return ActResource::collection($query->with('artists', 'stages.events', 'events')->get());
-        }
+        $perPage = min(max((int) $request->query('per_page', 15), 1), 100);
 
         return ActResource::collection($query->with('artists', 'stages.events', 'events')->paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreActRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            "name" => "required|string|max:255",
-            "description" => "nullable|string",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $act = Act::create($validator->validated());
+        $this->authorize('create', Act::class);
+        $act = Act::create($request->validated());
 
         return (new ActResource($act))->response()->setStatusCode(201);
     }
@@ -50,24 +42,17 @@ class ActController extends Controller
         return new ActResource($act->load("artists", "stages.events", "events"));
     }
 
-    public function update(Request $request, Act $act)
+    public function update(UpdateActRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "name" => "sometimes|required|string|max:255",
-            "description" => "nullable|string",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $act->update($validator->validated());
+        $this->authorize('update', $act);
+        $act->update($request->validated());
 
         return new ActResource($act);
     }
 
     public function destroy(Act $act)
     {
+        $this->authorize('delete', $act);
         $act->delete();
 
         return response()->json(null, 204);

@@ -5,11 +5,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('friends')->group(function () {
     Route::get('/', [FriendshipController::class, 'index']);
-    Route::get('{userId}/friends', [FriendshipController::class, 'userFriends']);
+    Route::get('{user}/friends', [FriendshipController::class, 'userFriends']);
     Route::get('requests', [FriendshipController::class, 'requests']);
-    Route::post('{userId}', [FriendshipController::class, 'store']);
-    Route::put('{userId}/accept', [FriendshipController::class, 'accept']);
-    Route::put('{userId}/reject', [FriendshipController::class, 'reject']);
-    Route::get('{userId}/status', [FriendshipController::class, 'status']);
-    Route::delete('{userId}', [FriendshipController::class, 'destroy']);
+    Route::post('{user}', [FriendshipController::class, 'store']);
+    Route::put('{user}/accept', [FriendshipController::class, 'accept']);
+    Route::put('{user}/reject', [FriendshipController::class, 'reject']);
+    Route::get('{user}/status', [FriendshipController::class, 'status']);
+    Route::delete('{user}', [FriendshipController::class, 'destroy']);
 });

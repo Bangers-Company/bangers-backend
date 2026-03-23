@@ -7,12 +7,17 @@ use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->admin = \App\Models\User::factory()->admin()->create();
+    \Laravel\Sanctum\Sanctum::actingAs($this->admin);
+});
+
 test("can upload media", function () {
     Storage::fake("public");
 
     $file = UploadedFile::fake()->image("banner.png");
 
-    $response = $this->postJson(route("api.media.store"), [
+    $response = $this->postJson(route('api.v1.media.store'), [
         "file" => $file,
         "type" => "event_banner",
     ]);
@@ -32,7 +37,7 @@ test("can upload media", function () {
 test("can show media info", function () {
     $media = Media::factory()->create();
 
-    $response = $this->getJson(route("api.media.show", $media));
+    $response = $this->getJson(route('api.v1.media.show', $media));
 
     $response->assertStatus(200)->assertJsonPath("data.id", $media->id);
 });
@@ -44,7 +49,7 @@ test("can delete media", function () {
     $media = Media::factory()->create(["storage_key" => "media/test.jpg"]);
     Storage::disk("public")->put("media/test.jpg", "fake content");
 
-    $response = $this->deleteJson(route("api.media.destroy", $media));
+    $response = $this->deleteJson(route('api.v1.media.destroy', $media));
 
     $response->assertStatus(204);
     Storage::disk("public")->assertMissing("media/test.jpg");
