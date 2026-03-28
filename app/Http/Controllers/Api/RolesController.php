@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RoleResource;
 use App\Models\Role;
+use App\Http\Requests\Admin\StoreRoleRequest;
+use App\Http\Requests\Admin\UpdateRoleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -30,12 +32,9 @@ class RolesController extends Controller
     /**
      * POST /roles
      */
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        $request->validate([
-            'name' => 'required|unique:roles,name',
-            'permissions' => 'array'
-        ]);
+        $validated = $request->validated();
 
         $role = Role::create($request->only('name', 'description'));
 
@@ -57,14 +56,11 @@ class RolesController extends Controller
     /**
      * PUT /roles/{id}
      */
-    public function update(Request $request, $id)
+    public function update(UpdateRoleRequest $request, $id)
     {
         $role = Role::findOrFail($id);
 
-        $request->validate([
-            'name' => 'unique:roles,name,' . $role->id,
-            'permissions' => 'array'
-        ]);
+        $validated = $request->validated();
 
         $role->update($request->only('name', 'description'));
 

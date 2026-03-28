@@ -24,12 +24,12 @@ class Artist extends Model
         });
     }
 
-    public function image()
+    public function image(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Media::class, "image_media_id");
     }
 
-    public function acts()
+    public function acts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Act::class, "act_artists");
     }

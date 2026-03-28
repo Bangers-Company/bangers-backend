@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Stage;
 use App\Http\Resources\StageResource;
+use App\Http\Requests\Admin\StoreStageRequest;
+use App\Http\Requests\Admin\UpdateStageRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
 
 class StageController extends Controller
 {
@@ -16,43 +18,39 @@ class StageController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'ilike', "%{$search}%")
-                  ->orWhere('description', 'ilike', "%{$search}%")
-                  ->orWhereHas('events', function($eq) use ($search) {
-                      $eq->where('name', 'ilike', "%{$search}%");
-                  });
+                    ->orWhere('description', 'ilike', "%{$search}%")
+                    ->orWhereHas('events', function ($eq) use ($search) {
+                    $eq->where('name', 'ilike', "%{$search}%");
+                }
+                );
             });
         }
 
-        $perPage = $request->query('per_page', 15);
+        $perPage = (int) $request->query('per_page', 15);
         $query->orderBy('name', 'asc');
 
         if ($perPage == -1) {
-            return StageResource::collection($query->with('events')->get());
+            // Cap "unbounded" requests at 500 for safety
+            return StageResource::collection($query->with('events')->limit(500)->get());
         }
+        
+        $perPage = min(max($perPage, 1), 100);
 
         return StageResource::collection($query->with('events')->paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreStageRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            "event_id" => "required|uuid|exists:events,id",
-            "name" => "required|string|max:255",
-            "description" => "nullable|string",
-            "stage_id" => "nullable|uuid|exists:stages,id",
-        ]);
+        Gate::authorize('manage_content');
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $validated = $validator->validated();
+        $validated = $request->validated();
 
         if (isset($validated['stage_id'])) {
             $stage = Stage::findOrFail($validated['stage_id']);
-        } else {
+        }
+        else {
             $stage = Stage::create([
                 "name" => $validated['name'],
                 "description" => $validated['description'] ?? null,
@@ -69,24 +67,18 @@ class StageController extends Controller
         return new StageResource($stage->load("events"));
     }
 
-    public function update(Request $request, Stage $stage)
+    public function update(UpdateStageRequest $request, Stage $stage)
     {
-        $validator = Validator::make($request->all(), [
-            "name" => "sometimes|required|string|max:255",
-            "description" => "nullable|string",
-        ]);
+        Gate::authorize('manage_content');
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $stage->update($validator->validated());
+        $stage->update($request->validated());
 
         return new StageResource($stage->load('events'));
     }
 
     public function destroy(Stage $stage)
     {
+        Gate::authorize('manage_content');
         $stage->delete();
 
         return response()->json(null, 204);

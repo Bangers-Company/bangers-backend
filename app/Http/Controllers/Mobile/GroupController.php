@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Groups\StoreGroupRequest;
 use App\Services\GroupService;
+use Illuminate\Support\Facades\Gate;
 
 class GroupController extends Controller
 {
@@ -42,7 +43,7 @@ class GroupController extends Controller
      */
     public function show(Request $request, Group $group)
     {
-        \Illuminate\Support\Facades\Gate::authorize('view', $group);
+        Gate::authorize('view', $group);
 
         return response()->json($group->load(['owner', 'members', 'timetables']));
     }
@@ -52,7 +53,7 @@ class GroupController extends Controller
      */
     public function update(Request $request, Group $group)
     {
-        \Illuminate\Support\Facades\Gate::authorize('update', $group);
+        Gate::authorize('update', $group);
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
@@ -69,7 +70,7 @@ class GroupController extends Controller
      */
     public function addMember(Request $request, Group $group)
     {
-        \Illuminate\Support\Facades\Gate::authorize('addMember', $group);
+        Gate::authorize('addMember', $group);
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -86,7 +87,7 @@ class GroupController extends Controller
      */
     public function removeMember(Request $request, Group $group, User $user)
     {
-        \Illuminate\Support\Facades\Gate::authorize('removeMember', [$group, $user->id]);
+        Gate::authorize('removeMember', [$group, $user->id]);
 
         $this->groupService->removeMember($group, $user->id);
 
@@ -98,7 +99,7 @@ class GroupController extends Controller
      */
     public function destroy(Request $request, Group $group)
     {
-        \Illuminate\Support\Facades\Gate::authorize('delete', $group);
+        Gate::authorize('delete', $group);
 
         $this->groupService->deleteGroup($group);
 

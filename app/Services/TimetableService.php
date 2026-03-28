@@ -146,8 +146,6 @@ class TimetableService
                 abort(400, "Entry {$entry->id} belongs to a different event or has no timetable.");
             }
         }
-        
-        // dd('Passed checks', $entries->count());
 
         DB::transaction(function () use ($timetable, $entries, $actor) {
             $timetable->entries()->detach();

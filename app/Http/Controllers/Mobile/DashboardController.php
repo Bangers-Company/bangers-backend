@@ -28,7 +28,7 @@ class DashboardController extends Controller
             'attendees.profileMedia'
         ];
 
-        $dashboardData = Cache::remember("user_{$user->id}_dashboard", 600, function () use ($user, $eventRelations) {
+        $dashboardData = Cache::flexible("user_{$user->id}_dashboard", [300, 600], function () use ($user, $eventRelations) {
             $user->load([
                 'roles.permissions', 
                 'profileMedia',

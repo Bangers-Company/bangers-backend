@@ -7,6 +7,7 @@ use App\Models\Artist;
 use App\Http\Resources\ArtistResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
 
 class ArtistController extends Controller
 {
@@ -17,7 +18,7 @@ class ArtistController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('name', 'ilike', "%{$search}%")
-                  ->orWhere('genre', 'ilike', "%{$search}%");
+                ->orWhere('genre', 'ilike', "%{$search}%");
         }
 
         $perPage = $request->query('per_page', 15);
@@ -32,6 +33,7 @@ class ArtistController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('manage_content');
         $validator = Validator::make($request->all(), [
             "name" => "required|string|max:255",
             "bio" => "nullable|string",
@@ -55,6 +57,7 @@ class ArtistController extends Controller
 
     public function update(Request $request, Artist $artist)
     {
+        Gate::authorize('manage_content');
         $validator = Validator::make($request->all(), [
             "name" => "sometimes|required|string|max:255",
             "bio" => "nullable|string",
@@ -73,6 +76,7 @@ class ArtistController extends Controller
 
     public function destroy(Artist $artist)
     {
+        Gate::authorize('manage_content');
         $artist->delete();
 
         return response()->json(null, 204);

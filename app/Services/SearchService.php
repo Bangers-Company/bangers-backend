@@ -6,6 +6,7 @@ use App\Models\Act;
 use App\Models\Artist;
 use App\Models\Event;
 use App\Models\User;
+use App\Models\Friendship;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -16,75 +17,100 @@ class SearchService
      */
     public function search(array $filters): array
     {
-        $queryText = $filters['query'] ?? null;
-        $date = $filters['date'] ?? null;
-        $location = $filters['location'] ?? null;
         $entities = $filters['entities'] ?? ['events', 'artists', 'acts', 'users'];
-        $perPage = (int) ($filters['per_page'] ?? 15);
-        $withMedia = $filters['with_media'] ?? false;
-
         if (is_string($entities)) {
             $entities = explode(',', $entities);
         }
 
-        $like = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
         $results = [];
 
-        if (in_array('events', $entities)) {
-            $eventQuery = Event::query();
-            if ($withMedia) $eventQuery->with('banner');
-            $eventQuery->withCount('attendees');
-
-            if ($queryText) {
-                $eventQuery->where(function($q) use ($queryText, $like) {
-                    $q->where('name', $like, "%{$queryText}%")
-                      ->orWhere('location', $like, "%{$queryText}%")
-                      ->orWhere('description', $like, "%{$queryText}%");
-                });
+        foreach ($entities as $entity) {
+            $method = 'search' . ucfirst($entity);
+            if (method_exists($this, $method)) {
+                $results[$entity] = $this->$method($filters);
             }
-            if ($date) {
-                $eventQuery->whereDate('start_date', '<=', $date)
-                           ->whereDate('end_date', '>=', $date);
-            }
-            if ($location) {
-                $eventQuery->where('location', $like, "%{$location}%");
-            }
-
-            $results['events'] = $eventQuery->paginate($perPage, ['*'], 'events_page');
-        }
-
-        if (in_array('artists', $entities)) {
-            $artistQuery = Artist::query();
-            if ($withMedia) $artistQuery->with('image');
-            if ($queryText) {
-                $artistQuery->where('name', $like, "%{$queryText}%");
-            }
-            $results['artists'] = $artistQuery->paginate($perPage, ['*'], 'artists_page');
-        }
-
-        if (in_array('acts', $entities)) {
-            $actQuery = Act::query();
-            if ($queryText) {
-                $actQuery->where('name', $like, "%{$queryText}%");
-            }
-            $results['acts'] = $actQuery->paginate($perPage, ['*'], 'acts_page');
-        }
-
-        if (in_array('users', $entities)) {
-            $userQuery = User::where('is_public', true);
-            if ($withMedia) $userQuery->with('profileMedia');
-            if ($queryText) {
-                $userQuery->where(function($q) use ($queryText, $like) {
-                    $q->where('first_name', $like, "%{$queryText}%")
-                      ->orWhere('last_name', $like, "%{$queryText}%")
-                      ->orWhere('username', $like, "%{$queryText}%")
-                      ->orWhereRaw("first_name || ' ' || last_name " . $like . " ?", ["%{$queryText}%"]);
-                });
-            }
-            $results['users'] = $userQuery->paginate($perPage, ['*'], 'users_page');
         }
 
         return $results;
+    }
+
+    protected function searchEvents(array $filters): LengthAwarePaginator
+    {
+        $queryText = $filters['query'] ?? null;
+        $date = $filters['date'] ?? null;
+        $location = $filters['location'] ?? null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $withMedia = $filters['with_media'] ?? false;
+        $like = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $query = Event::query();
+        if ($withMedia) $query->with('banner');
+        $query->withCount('attendees');
+
+        if ($queryText) {
+            $query->where(function ($q) use ($queryText, $like) {
+                $q->where('name', $like, "%{$queryText}%")
+                    ->orWhere('location', $like, "%{$queryText}%")
+                    ->orWhere('description', $like, "%{$queryText}%");
+            });
+        }
+        if ($date) {
+            $query->whereDate('start_date', '<=', $date)
+                ->whereDate('end_date', '>=', $date);
+        }
+        if ($location) {
+            $query->where('location', $like, "%{$location}%");
+        }
+
+        return $query->paginate($perPage, ['*'], 'events_page');
+    }
+
+    protected function searchArtists(array $filters): LengthAwarePaginator
+    {
+        $queryText = $filters['query'] ?? null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $withMedia = $filters['with_media'] ?? false;
+        $like = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $query = Artist::query();
+        if ($withMedia) $query->with('image');
+        if ($queryText) {
+            $query->where('name', $like, "%{$queryText}%");
+        }
+        return $query->paginate($perPage, ['*'], 'artists_page');
+    }
+
+    protected function searchActs(array $filters): LengthAwarePaginator
+    {
+        $queryText = $filters['query'] ?? null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $like = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $query = Act::query();
+        if ($queryText) {
+            $query->where('name', $like, "%{$queryText}%");
+        }
+        return $query->paginate($perPage, ['*'], 'acts_page');
+    }
+
+    protected function searchUsers(array $filters): LengthAwarePaginator
+    {
+        $queryText = $filters['query'] ?? null;
+        $perPage = (int) ($filters['per_page'] ?? 15);
+        $withMedia = $filters['with_media'] ?? false;
+        $like = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $query = User::where('is_public', true);
+        if ($withMedia) $query->with('profileMedia');
+        if ($queryText) {
+            $query->where(function ($q) use ($queryText, $like) {
+                $q->where('first_name', $like, "%{$queryText}%")
+                    ->orWhere('last_name', $like, "%{$queryText}%")
+                    ->orWhere('username', $like, "%{$queryText}%")
+                    ->orWhereRaw("first_name || ' ' || last_name " . $like . " ?", ["%{$queryText}%"]);
+            });
+        }
+        return $query->paginate($perPage, ['*'], 'users_page');
     }
 
     /**
@@ -92,7 +118,6 @@ class SearchService
      */
     public function getSuggestedEvents(User $user, int $perPage = 10): LengthAwarePaginator
     {
-        // For now, simple upcoming events
         return Event::with(['banner'])
             ->withUserStatus()
             ->where('start_date', '>=', now())
@@ -105,9 +130,19 @@ class SearchService
      */
     public function getFriendsEvents(User $user, int $perPage = 10): LengthAwarePaginator
     {
-        // For now, same as suggested but could be filtered by friend attendance in the future
+        $friendIds = Friendship::where('status', 'accepted')
+            ->where(function ($q) use ($user) {
+                $q->where('user_id_1', $user->id)
+                    ->orWhere('user_id_2', $user->id);
+            })
+            ->get()
+            ->map(fn($f) => $f->user_id_1 === $user->id ? $f->user_id_2 : $f->user_id_1);
+
         return Event::with(['banner'])
             ->withUserStatus()
+            ->whereHas('attendees', function ($q) use ($friendIds) {
+                $q->whereIn('user_id', $friendIds);
+            })
             ->where('start_date', '>=', now())
             ->orderBy('start_date', 'asc')
             ->paginate($perPage);

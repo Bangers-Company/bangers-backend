@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Http\Resources\MediaResource;
+use App\Http\Requests\Admin\StoreMediaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 
 class MediaController extends Controller
 {
@@ -23,24 +25,11 @@ class MediaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreMediaRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            "file" => "required|file|image|max:5120", // Max 5MB
-            "type" =>
-                "required|string|in:profile_picture,artist_image,event_banner",
-            "is_public" => "boolean",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
+        Gate::authorize('manage_content');
 
         $file = $request->file("file");
-        // $tempId = (string) Str::uuid(); // Keep for filename generation if desired, or use model's generated id after save.
-        // Actually, Media model generates ID on creation.
-        // Let's create the model first or use a temporary name.
-        
         $extension = $file->getClientOriginalExtension();
         $media = new Media([
             "owner_id" => $request->user()?->id,
@@ -49,14 +38,14 @@ class MediaController extends Controller
             "size_bytes" => $file->getSize(),
             "is_public" => $request->input("is_public", true),
         ]);
-        
+
         // Use the model's generated ID for the filename
-        $media->id = (string) Str::uuid(); // Manually set if we need it for filename BEFORE save, 
+        $media->id = (string) Str::uuid(); // Manually set if we need it for filename BEFORE save,
         // OR better: use Str::random() for filename to keep it separate.
-        
+
         $filename = $media->id . "." . $extension;
         $path = $file->storeAs("media", $filename, "public");
-        
+
         $media->storage_key = $path;
         $media->url = Storage::disk("public")->url($path);
         $media->save();
@@ -77,8 +66,34 @@ class MediaController extends Controller
      */
     public function destroy(Media $media)
     {
+        Gate::authorize('manage_content');
         Storage::disk("public")->delete($media->storage_key);
         $media->delete();
+
+        return response()->json(null, 204);
+    }
+
+    /**
+     * Bulk remove media resources.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        Gate::authorize('manage_content');
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:media,id'
+        ]);
+
+        $ids = $request->input('ids');
+        $mediaItems = Media::whereIn('id', $ids)->get();
+
+        DB::transaction(function () use ($mediaItems) {
+            foreach ($mediaItems as $media) {
+                Storage::disk("public")->delete($media->storage_key);
+                $media->delete();
+            }
+        });
 
         return response()->json(null, 204);
     }

@@ -8,6 +8,7 @@ use App\Models\Artist;
 use App\Models\Event;
 use App\Models\User;
 use App\Http\Resources\SearchResource;
+use App\Http\Requests\SearchRequest;
 use Illuminate\Http\Request;
 
 use App\Services\SearchService;
@@ -21,9 +22,9 @@ class SearchController extends Controller
         $this->searchService = $searchService;
     }
 
-    public function search(Request $request)
+    public function search(SearchRequest $request)
     {
-        $results = $this->searchService->search($request->all());
+        $results = $this->searchService->search($request->validated());
 
         return new SearchResource($results);
     }
@@ -31,9 +32,9 @@ class SearchController extends Controller
     /**
      * Mobile search (with images)
      */
-    public function mobileSearch(Request $request)
+    public function mobileSearch(SearchRequest $request)
     {
-        $filters = $request->all();
+        $filters = $request->validated();
         $filters['with_media'] = true;
         $results = $this->searchService->search($filters);
 

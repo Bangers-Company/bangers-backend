@@ -17,7 +17,7 @@ class DashboardController extends Controller
 {
     public function stats()
     {
-        $stats = Cache::remember('admin_dashboard_stats', 300, function () {
+        $stats = Cache::flexible('admin_dashboard_stats', [600, 1200], function () {
             return [
                 'counts' => [
                     'events' => Event::count(),

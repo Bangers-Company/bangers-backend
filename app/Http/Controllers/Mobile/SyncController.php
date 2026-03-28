@@ -19,6 +19,7 @@ class SyncController extends Controller
     public function events(Request $request)
     {
         $since = $request->input('since');
+        $limit = min((int) $request->input('limit', 500), 500);
         $query = Event::with(['banner', 'stages', 'acts.artists'])->withUserStatus()->withTrashed();
 
         if ($since) {
@@ -30,8 +31,18 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return EventResource::collection($query->limit(500)->get())
-            ->additional(['sync_timestamp' => now()->toIso8601String()]);
+        $results = $query->limit($limit + 1)->get();
+        $hasMore = $results->count() > $limit;
+
+        if ($hasMore) {
+            $results = $results->take($limit);
+        }
+
+        return EventResource::collection($results)
+            ->additional([
+                'sync_timestamp' => now()->toIso8601String(),
+                'has_more' => $hasMore,
+            ]);
     }
 
     /**
@@ -40,6 +51,7 @@ class SyncController extends Controller
     public function artists(Request $request)
     {
         $since = $request->input('since');
+        $limit = min((int) $request->input('limit', 500), 500);
         $query = Artist::with(['image'])->withTrashed();
 
         if ($since) {
@@ -51,8 +63,18 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return ArtistResource::collection($query->limit(500)->get())
-            ->additional(['sync_timestamp' => now()->toIso8601String()]);
+        $results = $query->limit($limit + 1)->get();
+        $hasMore = $results->count() > $limit;
+
+        if ($hasMore) {
+            $results = $results->take($limit);
+        }
+
+        return ArtistResource::collection($results)
+            ->additional([
+                'sync_timestamp' => now()->toIso8601String(),
+                'has_more' => $hasMore,
+            ]);
     }
 
     /**
@@ -61,6 +83,7 @@ class SyncController extends Controller
     public function acts(Request $request)
     {
         $since = $request->input('since');
+        $limit = min((int) $request->input('limit', 500), 500);
         $query = Act::with(['artists.image'])->withTrashed();
 
         if ($since) {
@@ -72,7 +95,17 @@ class SyncController extends Controller
             $query->where('updated_at', '>', $since);
         }
 
-        return ActResource::collection($query->limit(500)->get())
-            ->additional(['sync_timestamp' => now()->toIso8601String()]);
+        $results = $query->limit($limit + 1)->get();
+        $hasMore = $results->count() > $limit;
+
+        if ($hasMore) {
+            $results = $results->take($limit);
+        }
+
+        return ActResource::collection($results)
+            ->additional([
+                'sync_timestamp' => now()->toIso8601String(),
+                'has_more' => $hasMore,
+            ]);
     }
 }

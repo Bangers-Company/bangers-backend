@@ -85,7 +85,7 @@ class AuthService
 
         // Short-lived access token (15 mins)
         $token = $user->createToken('auth_token', ['*'], now()->addMinutes(15));
-        
+
         // Long-lived refresh token (30 days)
         $refreshToken = $user->createToken('refresh_token', ['refresh'], now()->addDays(30));
 

@@ -56,31 +56,31 @@ class Event extends Model
         ]);
     }
 
-    public function banner()
+    public function banner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Media::class, "banner_media_id");
     }
 
-    public function stages()
+    public function stages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Stage::class, 'event_stages');
     }
 
-    public function acts()
+    public function acts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Act::class, 'event_stage_acts')
             ->withPivot('stage_id', 'date')
             ->withTimestamps();
     }
 
-    public function attendees()
+    public function attendees(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_event_attendance')
             ->withPivot('status')
             ->withTimestamps();
     }
 
-    public function officialTimetable()
+    public function officialTimetable(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(EventTimetable::class)
             ->where('is_official', true)

@@ -79,8 +79,4 @@ class AuthController extends Controller
 
         return response()->json($this->authService->generateTokenResponse($user, ['roles.permissions']));
     }
-
-    /**
-     * Helper to generate standardized response is now handled by AuthService.
-     */
 }

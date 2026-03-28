@@ -108,7 +108,7 @@ class FriendshipService
      */
     public function getFriends(string $userId): Collection
     {
-        return Friendship::with(['user1', 'user2'])
+        return Friendship::with(['user1.profileMedia', 'user2.profileMedia'])
             ->where('status', 'accepted')
             ->where(function ($q) use ($userId) {
                 $q->where('user_id_1', $userId)->orWhere('user_id_2', $userId);
@@ -122,7 +122,7 @@ class FriendshipService
      */
     public function getPendingRequests(string $userId): Collection
     {
-        return Friendship::with('requester')
+        return Friendship::with(['requester.profileMedia', 'requester.roles'])
             ->where('status', 'pending')
             ->where('requested_by', '!=', $userId)
             ->where(function ($q) use ($userId) {

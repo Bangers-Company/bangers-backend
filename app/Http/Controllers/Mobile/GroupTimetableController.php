@@ -9,6 +9,7 @@ use App\Models\TimetableEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Groups\StoreGroupRequest;
+use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\Timetables\UpdateTimetableEntriesRequest;
 use App\Services\TimetableService;
 
@@ -26,7 +27,7 @@ class GroupTimetableController extends Controller
      */
     public function store(Request $request, Group $group)
     {
-        \Illuminate\Support\Facades\Gate::authorize('update', $group);
+        Gate::authorize('update', $group);
 
         $request->validate([
             'event_id' => 'required|exists:events,id',
@@ -43,7 +44,7 @@ class GroupTimetableController extends Controller
      */
     public function index(Request $request, Group $group)
     {
-        \Illuminate\Support\Facades\Gate::authorize('view', $group);
+        Gate::authorize('view', $group);
 
         return response()->json($group->timetables()->with('entries.stage', 'entries.act.artists')->get());
     }
@@ -53,7 +54,7 @@ class GroupTimetableController extends Controller
      */
     public function show(Request $request, Group $group, GroupTimetable $timetable)
     {
-        \Illuminate\Support\Facades\Gate::authorize('view', $timetable);
+        Gate::authorize('view', $timetable);
 
         $timetable = $this->timetableService->getGroupTimetableWithAttendance($group->id, $timetable->id, $request->user());
 
@@ -65,7 +66,7 @@ class GroupTimetableController extends Controller
      */
     public function updateEntries(UpdateTimetableEntriesRequest $request, Group $group, GroupTimetable $timetable)
     {
-        \Illuminate\Support\Facades\Gate::authorize('manage', $timetable);
+        Gate::authorize('manage', $timetable);
 
         $this->timetableService->updateGroupTimetableEntries($timetable, $request->entry_ids, $request->user());
 
@@ -77,7 +78,7 @@ class GroupTimetableController extends Controller
      */
     public function destroy(Request $request, Group $group, GroupTimetable $timetable)
     {
-        \Illuminate\Support\Facades\Gate::authorize('manage', $timetable);
+        Gate::authorize('manage', $timetable);
 
         $timetable->delete();
 
@@ -89,7 +90,7 @@ class GroupTimetableController extends Controller
      */
     public function toggleAttend(Request $request, Group $group, GroupTimetable $timetable, TimetableEntry $entry)
     {
-        \Illuminate\Support\Facades\Gate::authorize('view', $timetable);
+        Gate::authorize('view', $timetable);
         
         $isAttending = $this->timetableService->toggleGroupEntryAttendance($timetable, $entry->id, $request->user());
 
@@ -104,7 +105,7 @@ class GroupTimetableController extends Controller
      */
     public function getAttendance(Request $request, Group $group, GroupTimetable $timetable, TimetableEntry $entry)
     {
-        \Illuminate\Support\Facades\Gate::authorize('view', $timetable);
+        Gate::authorize('view', $timetable);
         
         $users = $this->timetableService->getGroupEntryAttendees($timetable, $entry->id);
 
