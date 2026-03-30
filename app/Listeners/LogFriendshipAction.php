@@ -19,7 +19,7 @@ class LogFriendshipAction
     /**
      * Handle the event.
      */
-    public function handle(object $event): void
+    public function handle(FriendshipAccepted $event): void
     {
         \Illuminate\Support\Facades\Log::info("Friendship accepted between {$event->friendship->user_id} and {$event->friendship->friend_id}");
     }

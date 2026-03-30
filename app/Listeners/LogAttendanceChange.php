@@ -19,7 +19,7 @@ class LogAttendanceChange
     /**
      * Handle the event.
      */
-    public function handle(object $event): void
+    public function handle(AttendanceUpdated $event): void
     {
         \Illuminate\Support\Facades\Log::info("User {$event->user->id} updated attendance for event {$event->event->id} to '{$event->status}'");
     }

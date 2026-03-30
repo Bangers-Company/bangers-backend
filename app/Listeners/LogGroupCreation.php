@@ -19,7 +19,7 @@ class LogGroupCreation
     /**
      * Handle the event.
      */
-    public function handle(object $event): void
+    public function handle(GroupCreated $event): void
     {
         \Illuminate\Support\Facades\Log::info("Group created: {$event->group->name} by user {$event->group->owner_id}");
     }
