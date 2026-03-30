@@ -55,10 +55,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Models\GroupTimetable::class, \App\Policies\GroupTimetablePolicy::class);
 
         // Register multi-event listener
-        Event::listen(UserRegistered::class, ClearDashboardCache::class);
-        Event::listen(AttendanceUpdated::class, ClearDashboardCache::class);
-        Event::listen(GroupCreated::class, ClearDashboardCache::class);
-        Event::listen(FriendshipAccepted::class, ClearDashboardCache::class);
         Event::listen(EventCreated::class, ClearDashboardCache::class);
         Event::listen(EventUpdated::class, ClearDashboardCache::class);
         Event::listen(EventDeleted::class, ClearDashboardCache::class);
