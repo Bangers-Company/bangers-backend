@@ -7,6 +7,13 @@ use App\Models\Act;
 use App\Http\Resources\ActResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+
+use App\Http\Requests\Admin\StoreActRequest;
+use App\Http\Requests\Admin\UpdateActRequest;
+use App\Http\Requests\Admin\AttachArtistRequest;
+use App\Http\Requests\Admin\AttachStageRequest;
+use App\Http\Requests\Admin\AttachEventRequest;
 
 class ActController extends Controller
 {
@@ -20,27 +27,15 @@ class ActController extends Controller
                   ->orWhere('description', 'ilike', "%{$search}%");
         }
 
-        $perPage = $request->query('per_page', 15);
-
-        if ($perPage == -1) {
-            return ActResource::collection($query->with('artists', 'stages.events', 'events')->get());
-        }
+        $perPage = min(max((int) $request->query('per_page', 15), 1), 100);
 
         return ActResource::collection($query->with('artists', 'stages.events', 'events')->paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreActRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            "name" => "required|string|max:255",
-            "description" => "nullable|string",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $act = Act::create($validator->validated());
+        $this->authorize('create', Act::class);
+        $act = Act::create($request->validated());
 
         return (new ActResource($act))->response()->setStatusCode(201);
     }
@@ -50,79 +45,47 @@ class ActController extends Controller
         return new ActResource($act->load("artists", "stages.events", "events"));
     }
 
-    public function update(Request $request, Act $act)
+    public function update(UpdateActRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "name" => "sometimes|required|string|max:255",
-            "description" => "nullable|string",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $act->update($validator->validated());
+        $this->authorize('update', $act);
+        $act->update($request->validated());
 
         return new ActResource($act);
     }
 
     public function destroy(Act $act)
     {
+        $this->authorize('delete', $act);
         $act->delete();
 
         return response()->json(null, 204);
     }
 
-    public function attachArtist(Request $request, Act $act)
+    public function attachArtist(AttachArtistRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "artist_id" => "required|uuid|exists:artists,id",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $act->artists()->syncWithoutDetaching([$request->artist_id]);
+        $act->artists()->syncWithoutDetaching([$request->validated()['artist_id']]);
 
         return response()->json([
             "message" => "Artist attached to act successfully.",
         ]);
     }
 
-    public function detachArtist(Request $request, Act $act)
+    public function detachArtist(AttachArtistRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "artist_id" => "required|uuid|exists:artists,id",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $act->artists()->detach($request->artist_id);
+        $act->artists()->detach($request->validated()['artist_id']);
 
         return response()->json([
             "message" => "Artist detached from act successfully.",
         ]);
     }
 
-    public function attachStage(Request $request, Act $act)
+    public function attachStage(AttachStageRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "stage_id" => "required|uuid|exists:stages,id",
-            "event_id" => "required|uuid|exists:events,id",
-            "date" => "nullable|date",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
+        $validated = $request->validated();
         $act->stages()->syncWithoutDetaching([
-            $request->stage_id => [
-                'event_id' => $request->event_id,
-                'date' => $request->date,
+            $validated['stage_id'] => [
+                'event_id' => $validated['event_id'],
+                'date' => $validated['date'] ?? null,
             ]
         ]);
 
@@ -131,25 +94,16 @@ class ActController extends Controller
         ]);
     }
 
-    public function detachStage(Request $request, Act $act)
+    public function detachStage(AttachStageRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "stage_id" => "required|uuid|exists:stages,id",
-            "event_id" => "required|uuid|exists:events,id",
-            "date" => "nullable|date",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
+        $validated = $request->validated();
         // We use DB to delete specific pivot record to be safe with many-to-many-to-many
         \DB::table('event_stage_acts')
             ->where('act_id', $act->id)
-            ->where('stage_id', $request->stage_id)
-            ->where('event_id', $request->event_id)
-            ->when($request->has('date'), function($q) use ($request) {
-                return $q->where('date', $request->date);
+            ->where('stage_id', $validated['stage_id'])
+            ->where('event_id', $validated['event_id'])
+            ->when(isset($validated['date']), function($q) use ($validated) {
+                return $q->where('date', $validated['date']);
             })
             ->delete();
 
@@ -158,21 +112,13 @@ class ActController extends Controller
         ]);
     }
 
-    public function attachEvent(Request $request, Act $act)
+    public function attachEvent(AttachEventRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "event_id" => "required|uuid|exists:events,id",
-            "date" => "nullable|date",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
+        $validated = $request->validated();
         $act->events()->syncWithoutDetaching([
-            $request->event_id => [
+            $validated['event_id'] => [
                 'stage_id' => null,
-                'date' => $request->date,
+                'date' => $validated['date'] ?? null,
             ]
         ]);
 
@@ -181,23 +127,15 @@ class ActController extends Controller
         ]);
     }
 
-    public function detachEvent(Request $request, Act $act)
+    public function detachEvent(AttachEventRequest $request, Act $act)
     {
-        $validator = Validator::make($request->all(), [
-            "event_id" => "required|uuid|exists:events,id",
-            "date" => "nullable|date",
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
+        $validated = $request->validated();
         \DB::table('event_stage_acts')
             ->where('act_id', $act->id)
-            ->where('event_id', $request->event_id)
+            ->where('event_id', $validated['event_id'])
             ->whereNull('stage_id')
-            ->when($request->has('date'), function($q) use ($request) {
-                return $q->where('date', $request->date);
+            ->when(isset($validated['date']), function($q) use ($validated) {
+                return $q->where('date', $validated['date']);
             })
             ->delete();
 

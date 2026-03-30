@@ -9,34 +9,23 @@ use App\Models\Friendship;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\FriendshipService;
 
 class FriendshipController extends Controller
 {
+    protected $friendshipService;
+
+    public function __construct(FriendshipService $friendshipService)
+    {
+        $this->friendshipService = $friendshipService;
+    }
     /**
      * POST /friends/{userId}
      * Send or auto-accept request
      */
-    public function store(Request $request, $userId)
+    public function store(Request $request, User $user)
     {
-        $user = $request->user();
-        if ($user->id === $userId) abort(400, 'Cannot friend yourself');
-
-        $target = User::findOrFail($userId);
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        // Check if exists
-        $existing = Friendship::where('user_id_1', $u1)->where('user_id_2', $u2)->first();
-        if ($existing) return response()->json($existing);
-
-        $status = $target->is_public ? 'accepted' : 'pending';
-
-        $friendship = Friendship::create([
-            'user_id_1' => $u1,
-            'user_id_2' => $u2,
-            'status' => $status,
-            'requested_by' => $user->id,
-        ]);
+        $friendship = $this->friendshipService->sendRequest($request->user(), $user->id);
 
         return (new FriendshipResource($friendship->load(['user1', 'user2'])))
             ->response()
@@ -46,18 +35,9 @@ class FriendshipController extends Controller
     /**
      * PUT /friends/{userId}/accept
      */
-    public function accept(Request $request, $userId)
+    public function accept(Request $request, User $user)
     {
-        $user = $request->user();
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        $friendship = Friendship::where('user_id_1', $u1)
-            ->where('user_id_2', $u2)
-            ->where('requested_by', $userId) // Must be requested by the OTHER person
-            ->firstOrFail();
-
-        $friendship->update(['status' => 'accepted']);
+        $friendship = $this->friendshipService->acceptRequest($request->user(), $user->id);
 
         return new FriendshipResource($friendship->load(['user1', 'user2']));
     }
@@ -65,19 +45,9 @@ class FriendshipController extends Controller
     /**
      * PUT /friends/{userId}/reject
      */
-    public function reject(Request $request, $userId)
+    public function reject(Request $request, User $user)
     {
-        $user = $request->user();
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        $friendship = Friendship::where('user_id_1', $u1)
-            ->where('user_id_2', $u2)
-            ->where('requested_by', $userId)
-            ->where('status', 'pending')
-            ->firstOrFail();
-
-        $friendship->delete();
+        $this->friendshipService->rejectRequest($request->user(), $user->id);
 
         return response()->json(['message' => 'Request rejected']);
     }
@@ -85,16 +55,9 @@ class FriendshipController extends Controller
     /**
      * PUT /friends/{userId}/block
      */
-    public function block(Request $request, $userId)
+    public function block(Request $request, User $user)
     {
-        $user = $request->user();
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        Friendship::updateOrCreate(
-            ['user_id_1' => $u1, 'user_id_2' => $u2],
-            ['status' => 'blocked', 'requested_by' => $user->id]
-        );
+        $this->friendshipService->blockUser($request->user(), $user->id);
 
         return response()->json(['message' => 'User blocked']);
     }
@@ -102,13 +65,9 @@ class FriendshipController extends Controller
     /**
      * DELETE /friends/{userId}
      */
-    public function destroy(Request $request, $userId)
+    public function destroy(Request $request, User $user)
     {
-        $user = $request->user();
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        Friendship::where('user_id_1', $u1)->where('user_id_2', $u2)->delete();
+        $this->friendshipService->removeFriendship($request->user(), $user->id);
 
         return response()->json(['message' => 'Friendship removed']);
     }
@@ -118,15 +77,7 @@ class FriendshipController extends Controller
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-
-        $friends = Friendship::with(['user1', 'user2'])
-            ->where('status', 'accepted')
-            ->where(function($q) use ($user) {
-                $q->where('user_id_1', $user->id)->orWhere('user_id_2', $user->id);
-            })
-            ->get()
-            ->map(fn($f) => $f->getFriendOf($user->id));
+        $friends = $this->friendshipService->getFriends($request->user()->id);
 
         return UserResource::collection($friends);
     }
@@ -136,15 +87,7 @@ class FriendshipController extends Controller
      */
     public function requests(Request $request)
     {
-        $user = $request->user();
-
-        $requests = Friendship::with('requester')
-            ->where('status', 'pending')
-            ->where('requested_by', '!=', $user->id)
-            ->where(function($q) use ($user) {
-                $q->where('user_id_1', $user->id)->orWhere('user_id_2', $user->id);
-            })
-            ->get();
+        $requests = $this->friendshipService->getPendingRequests($request->user()->id);
 
         return FriendshipResource::collection($requests);
     }
@@ -152,17 +95,9 @@ class FriendshipController extends Controller
     /**
      * GET /friends/users/{id}/friends
      */
-    public function userFriends(Request $request, $id)
+    public function userFriends(Request $request, User $user)
     {
-        $user = $request->user();
-
-        $friends = Friendship::with(['user1', 'user2'])
-            ->where('status', 'accepted')
-            ->where(function($q) use ($user) {
-                $q->where('user_id_1', $user->id)->orWhere('user_id_2', $user->id);
-            })
-            ->get()
-            ->map(fn($f) => $f->getFriendOf($user->id));
+        $friends = $this->friendshipService->getFriends($user->id);
 
         return UserResource::collection($friends);
     }

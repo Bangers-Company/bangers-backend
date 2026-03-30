@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Http\Requests\Admin\UpdateUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -17,7 +18,7 @@ class UserController extends Controller
     {
         Gate::authorize('manage_users');
 
-        $perPage = $request->query('size', 20);
+        $perPage = min(max((int) $request->query('size', 20), 1), 100);
         return UserResource::collection(User::with('roles')->paginate($perPage));
     }
 
@@ -36,15 +37,17 @@ class UserController extends Controller
     {
         $user = User::with('roles')->findOrFail($id);
 
-        // If profile is private and not self/admin, maybe hide some info
-        // For now returning basic user info
+        if (!$user->is_public && auth()->id() !== $user->id && !auth()->user()?->hasRole('admin')) {
+            return new UserResource($user->only(['id', 'username', 'first_name', 'is_public']));
+        }
+
         return new UserResource($user->load(['roles.permissions', 'profileMedia']));
     }
 
     /**
      * PUT /users/{id} (admin or self)
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
 
@@ -52,27 +55,7 @@ class UserController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $request->validate([
-            'email' => 'email|unique:users,email,' . $user->id,
-            'username' => 'string|unique:users,username,' . $user->id,
-            'first_name' => 'string|max:100',
-            'last_name' => 'string|max:100',
-            'dob' => 'nullable|date',
-            'bio' => 'nullable|string',
-            'is_public' => 'boolean',
-            'profile_media_id' => 'nullable|uuid|exists:media,id',
-        ]);
-
-        $user->update($request->only([
-            'email',
-            'username',
-            'first_name',
-            'last_name',
-            'dob',
-            'bio',
-            'is_public',
-            'profile_media_id'
-        ]));
+        $user->update($request->validated());
 
         return new UserResource($user->load('roles.permissions'));
     }

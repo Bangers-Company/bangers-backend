@@ -24,7 +24,6 @@ class User extends Authenticatable
         'dob',
         'bio',
         'profile_media_id',
-        'is_verified',
         'is_public',
         'version',
     ];
@@ -47,17 +46,19 @@ class User extends Authenticatable
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'user_roles');
+        return $this->belongsToMany(Role::class , 'user_roles');
     }
 
     public function hasRole(string $role): bool
     {
-        return $this->roles->contains('name', $role);
+        return $this->roles()->where('name', $role)->exists();
     }
 
     public function hasPermission(string $permission): bool
     {
-        return $this->roles->flatMap->permissions->contains('name', $permission);
+        return $this->roles()->whereHas('permissions', function($q) use ($permission) {
+            $q->where('name', $permission);
+        })->exists();
     }
 
     /**
@@ -65,7 +66,7 @@ class User extends Authenticatable
      */
     public function friendships(): HasMany
     {
-        return $this->hasMany(Friendship::class, 'user_id_1')
+        return $this->hasMany(Friendship::class , 'user_id_1')
             ->orWhere('user_id_2', $this->id);
     }
 
@@ -74,20 +75,20 @@ class User extends Authenticatable
      */
     public function attendedEvents(): BelongsToMany
     {
-        return $this->belongsToMany(Event::class, 'user_event_attendance')
+        return $this->belongsToMany(Event::class , 'user_event_attendance')
             ->withPivot('status')
             ->withTimestamps();
     }
 
     public function profileMedia(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Media::class, 'profile_media_id');
+        return $this->belongsTo(Media::class , 'profile_media_id');
     }
 
     /**
      * Events the user is attending that are in the future or today
      */
-    public function upcomingEvents(): BelongsToMany
+    public function upcomingEvents()
     {
         return $this->attendedEvents()
             ->wherePivot('status', 'going')
@@ -98,7 +99,7 @@ class User extends Authenticatable
     /**
      * Events the user attended in the past
      */
-    public function pastEvents(): BelongsToMany
+    public function pastEvents()
     {
         return $this->attendedEvents()
             ->wherePivot('status', 'going')
@@ -108,14 +109,20 @@ class User extends Authenticatable
 
     public function pendingFriendRequests(): HasMany
     {
-        return $this->hasMany(Friendship::class, 'user_id_2')
+        return $this->hasMany(Friendship::class , 'user_id_2')
             ->where('status', 'pending');
     }
 
     public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(Group::class, 'group_members')
+        return $this->belongsToMany(Group::class , 'group_members')
             ->withPivot('role', 'invitation_status')
             ->withTimestamps();
+    }
+
+    public function markAsVerified(): void
+    {
+        $this->is_verified = true;
+        $this->save();
     }
 }

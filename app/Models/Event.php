@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -38,31 +39,48 @@ class Event extends Model
         });
     }
 
-    public function banner()
+    public function scopeWithUserStatus($query, $userId = null)
+    {
+        $userId = $userId ?: auth()->id();
+
+        if (!$userId) {
+            return $query;
+        }
+
+        return $query->addSelect([
+            'user_status' => DB::table('user_event_attendance')
+                ->select('status')
+                ->whereColumn('event_id', 'events.id')
+                ->where('user_id', $userId)
+                ->limit(1)
+        ]);
+    }
+
+    public function banner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Media::class, "banner_media_id");
     }
 
-    public function stages()
+    public function stages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Stage::class, 'event_stages');
     }
 
-    public function acts()
+    public function acts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Act::class, 'event_stage_acts')
             ->withPivot('stage_id', 'date')
             ->withTimestamps();
     }
 
-    public function attendees()
+    public function attendees(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_event_attendance')
             ->withPivot('status')
             ->withTimestamps();
     }
 
-    public function officialTimetable()
+    public function officialTimetable(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(EventTimetable::class)
             ->where('is_official', true)

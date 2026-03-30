@@ -21,4 +21,12 @@ class UserFactory extends Factory
             'is_public' => true,
         ];
     }
+
+    public function admin(): static
+    {
+        return $this->afterCreating(function (\App\Models\User $user) {
+            $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin']);
+            $user->roles()->syncWithoutDetaching([$adminRole->id]);
+        });
+    }
 }

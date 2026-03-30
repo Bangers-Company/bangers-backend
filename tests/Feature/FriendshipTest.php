@@ -2,39 +2,98 @@
 
 use App\Models\User;
 use App\Models\Friendship;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\postJson;
+use function Pest\Laravel\putJson;
+use function Pest\Laravel\deleteJson;
+use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
 
-uses(RefreshDatabase::class);
+test('user can send a friend request', function () {
+    $sender = User::factory()->create();
+    $recipient = User::factory()->create(['is_public' => false]);
 
-test('authenticated user can check friendship status', function () {
-    $user = User::factory()->create();
-    $other = User::factory()->create();
+    \Laravel\Sanctum\Sanctum::actingAs($sender);
 
-    // 1. None
-    $response = $this->actingAs($user)->getJson("/api/mobile/friends/{$other->id}/status");
-    $response->assertStatus(200)->assertJson(['status' => 'none']);
+    postJson("/api/mobile/v1/friends/{$recipient->id}")
+        ->assertStatus(201);
 
-    // 2. Pending (Sent)
-    Friendship::create([
-        'user_id_1' => min($user->id, $other->id),
-        'user_id_2' => max($user->id, $other->id),
+    [$id1, $id2] = [min($sender->id, $recipient->id), max($sender->id, $recipient->id)];
+
+    assertDatabaseHas('friendships', [
+        'user_id_1' => $id1,
+        'user_id_2' => $id2,
+        'requested_by' => $sender->id,
         'status' => 'pending',
-        'requested_by' => $user->id
     ]);
+});
+
+test('user can accept a friend request', function () {
+    $sender = User::factory()->create();
+    $recipient = User::factory()->create();
     
-    $response = $this->actingAs($user)->getJson("/api/mobile/friends/{$other->id}/status");
-    $response->assertStatus(200)->assertJson(['status' => 'pending_sent']);
+    [$id1, $id2] = [min($sender->id, $recipient->id), max($sender->id, $recipient->id)];
+    
+    Friendship::create([
+        'user_id_1' => $id1,
+        'user_id_2' => $id2,
+        'requested_by' => $sender->id,
+        'status' => 'pending',
+    ]);
 
-    // 3. Pending (Received)
-    $response = $this->actingAs($other)->getJson("/api/mobile/friends/{$user->id}/status");
-    $response->assertStatus(200)->assertJson(['status' => 'pending_received']);
+    \Laravel\Sanctum\Sanctum::actingAs($recipient);
+    putJson("/api/mobile/v1/friends/{$sender->id}/accept")
+        ->assertStatus(200);
 
-    // 4. Accepted
-    Friendship::where('requested_by', $user->id)->update(['status' => 'accepted']);
-    $response = $this->actingAs($user)->getJson("/api/mobile/friends/{$other->id}/status");
-    $response->assertStatus(200)->assertJson(['status' => 'accepted']);
+    assertDatabaseHas('friendships', [
+        'user_id_1' => $id1,
+        'user_id_2' => $id2,
+        'status' => 'accepted',
+    ]);
+});
 
-    // 5. Self
-    $response = $this->actingAs($user)->getJson("/api/mobile/friends/{$user->id}/status");
-    $response->assertStatus(200)->assertJson(['status' => 'self']);
+test('user can reject a friend request', function () {
+    $sender = User::factory()->create();
+    $recipient = User::factory()->create();
+    
+    [$id1, $id2] = [min($sender->id, $recipient->id), max($sender->id, $recipient->id)];
+    
+    Friendship::create([
+        'user_id_1' => $id1,
+        'user_id_2' => $id2,
+        'requested_by' => $sender->id,
+        'status' => 'pending',
+    ]);
+
+    \Laravel\Sanctum\Sanctum::actingAs($recipient);
+    putJson("/api/mobile/v1/friends/{$sender->id}/reject")
+        ->assertStatus(200);
+
+    assertDatabaseMissing('friendships', [
+        'user_id_1' => $id1,
+        'user_id_2' => $id2,
+    ]);
+});
+
+test('user can unfriend', function () {
+    $user1 = User::factory()->create();
+    $user2 = User::factory()->create();
+    
+    [$id1, $id2] = [min($user1->id, $user2->id), max($user1->id, $user2->id)];
+    
+    Friendship::create([
+        'user_id_1' => $id1,
+        'user_id_2' => $id2,
+        'requested_by' => $user1->id,
+        'status' => 'accepted',
+    ]);
+
+    \Laravel\Sanctum\Sanctum::actingAs($user1);
+    deleteJson("/api/mobile/v1/friends/{$user2->id}")
+        ->assertStatus(200);
+
+    assertDatabaseMissing('friendships', [
+        'user_id_1' => $id1,
+        'user_id_2' => $id2,
+    ]);
 });

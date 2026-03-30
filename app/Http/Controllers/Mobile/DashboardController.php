@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Event;
 use App\Models\Friendship;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -27,72 +28,69 @@ class DashboardController extends Controller
             'attendees.profileMedia'
         ];
 
-        // Load everything onto the user object so UserResource can include it
-        $user->load([
-            'roles.permissions', 
-            'profileMedia',
-            'upcomingEvents' => function($query) use ($eventRelations) {
-                $query->with($eventRelations)->withCount('attendees');
-            },
-            'pastEvents' => function($query) use ($eventRelations) {
-                $query->with($eventRelations)->withCount('attendees');
-            },
-            'pendingFriendRequests.requester'
-        ]);
+        $dashboardData = Cache::flexible("user_{$user->id}_dashboard", [300, 600], function () use ($user, $eventRelations) {
+            $user->load([
+                'roles.permissions', 
+                'profileMedia',
+                'upcomingEvents' => function($query) use ($eventRelations) {
+                    $query->with($eventRelations)->withUserStatus()->withCount('attendees');
+                },
+                'pastEvents' => function($query) use ($eventRelations) {
+                    $query->with($eventRelations)->withUserStatus()->withCount('attendees');
+                },
+                'pendingFriendRequests.requester'
+            ]);
 
-        // Dashboard specific categories
-        $attendingEvents = $user->upcomingEvents; // This relationship matches "going" in future
-        
-        // Load "interested" events separately for the dashboard
-        $interestedEvents = $user->attendedEvents()
-            ->with($eventRelations)
-            ->withCount('attendees')
-            ->wherePivot('status', 'interested')
-            ->where('end_date', '>=', now())
-            ->orderBy('start_date', 'asc')
-            ->get();
+            $interestedEvents = $user->attendedEvents()
+                ->with($eventRelations)
+                ->withUserStatus()
+                ->withCount('attendees')
+                ->wherePivot('status', 'interested')
+                ->where('end_date', '>=', now())
+                ->orderBy('start_date', 'asc')
+                ->get();
 
-        // Suggested Events (Upcoming, ordered by date)
-        $suggestedEvents = Event::with($eventRelations)
-            ->withCount('attendees')
-            ->where('start_date', '>=', now())
-            ->orderBy('start_date', 'asc')
-            ->limit(10)
-            ->get();
+            $suggestedEvents = Event::with($eventRelations)
+                ->withUserStatus()
+                ->withCount('attendees')
+                ->where('start_date', '>=', now())
+                ->orderBy('start_date', 'asc')
+                ->limit(10)
+                ->get();
 
-        // Friends Events (Mock logic: just some upcoming events for now)
-        $friendsEvents = Event::with($eventRelations)
-            ->withCount('attendees')
-            ->where('start_date', '>=', now())
-            ->orderBy('start_date', 'asc')
-            ->limit(10)
-            ->get();
+            $friendsEvents = Event::with($eventRelations)
+                ->withUserStatus()
+                ->withCount('attendees')
+                ->where('start_date', '>=', now())
+                ->orderBy('start_date', 'asc')
+                ->limit(10)
+                ->get();
 
-        // Friends Count
-        $friendsCount = Friendship::where(function($query) use ($user) {
-                $query->where('user_id_1', $user->id)
-                      ->orWhere('user_id_2', $user->id);
-            })
-            ->where('status', 'accepted')
-            ->count();
-            
-        $user->friend_count = $friendsCount;
-
-        return response()->json([
-            'data' => [
-                'user' => new UserResource($user),
-                'attending_events' => EventResource::collection($attendingEvents),
-                'upcoming_events' => EventResource::collection($interestedEvents),
-                'past_events' => EventResource::collection($user->pastEvents),
-                'suggested_events' => EventResource::collection($suggestedEvents),
-                'friends_events' => EventResource::collection($friendsEvents),
+            $friendsCount = Friendship::where(function($query) use ($user) {
+                    $query->where('user_id_1', $user->id)
+                          ->orWhere('user_id_2', $user->id);
+                })
+                ->where('status', 'accepted')
+                ->count();
+                
+            return [
+                'user' => (new UserResource($user))->resolve(),
+                'attending_events' => EventResource::collection($user->upcomingEvents)->resolve(),
+                'upcoming_events' => EventResource::collection($interestedEvents)->resolve(),
+                'past_events' => EventResource::collection($user->pastEvents)->resolve(),
+                'suggested_events' => EventResource::collection($suggestedEvents)->resolve(),
+                'friends_events' => EventResource::collection($friendsEvents)->resolve(),
                 'friends_count' => $friendsCount,
                 'sync_timestamp' => now()->toIso8601String(),
-            ],
+            ];
+        });
+
+        return response()->json([
+            'data' => $dashboardData,
             'meta' => [
                 'discovery_endpoints' => [
-                    'suggested' => route('api.mobile.events.suggested'),
-                    'friends' => route('api.mobile.events.friends'),
+                    'suggested' => route('api.mobile.v1.events.suggested'),
+                    'friends' => route('api.mobile.v1.events.friends'),
                 ]
             ]
         ]);

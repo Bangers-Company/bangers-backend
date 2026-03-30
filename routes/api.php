@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::name('api.')->group(function () {
+Route::prefix('v1')->name('api.v1.')->group(function () {
     // Public Auth Routes (Admin Login Only)
     require __DIR__.'/api/AuthRoutes.php';
+
     // Restricted Admin Routes
     Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
         require __DIR__.'/api/EventsRoutes.php';
@@ -28,7 +29,7 @@ Route::name('api.')->group(function () {
     });
 });
 
-Route::prefix('mobile')->name('api.mobile.')->group(function () {
+Route::prefix('mobile/v1')->name('api.mobile.v1.')->group(function () {
     require __DIR__.'/mobile/AuthRoutes.php';
 
     Route::middleware('auth:sanctum')->group(function () {

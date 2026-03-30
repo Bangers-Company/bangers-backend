@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Friendship extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'friendships';
-    public $incrementing = false;
-    protected $primaryKey = ['user_id_1', 'user_id_2'];
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'user_id_1',

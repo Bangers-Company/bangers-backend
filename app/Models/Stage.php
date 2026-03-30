@@ -12,14 +12,14 @@ class Stage extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = ["event_id", "name", "description"];
+    protected $fillable = ["name", "description"];
 
-    public function events()
+    public function events(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Event::class, 'event_stages');
     }
 
-    public function acts()
+    public function acts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Act::class, "event_stage_acts")
             ->withPivot('event_id', 'date')

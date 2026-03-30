@@ -8,150 +8,72 @@ use App\Http\Resources\UserResource;
 use App\Models\Friendship;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\FriendshipService;
+use Illuminate\Support\Facades\Log;
 
 class FriendshipController extends Controller
 {
-    public function store(Request $request, $userId)
+    protected $friendshipService;
+
+    public function __construct(FriendshipService $friendshipService)
     {
-        $user = $request->user();
-        if ($user->id === $userId) abort(400, 'Cannot friend yourself');
-
-        $target = User::findOrFail($userId);
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        $existing = Friendship::where('user_id_1', $u1)->where('user_id_2', $u2)->first();
-        if ($existing) return new FriendshipResource($existing->load(['user1', 'user2']));
-
-        $status = 'pending';
-
-        $friendship = Friendship::create([
-            'user_id_1' => $u1,
-            'user_id_2' => $u2,
-            'status' => $status,
-            'requested_by' => $user->id,
-        ]);
+        $this->friendshipService = $friendshipService;
+    }
+    public function store(Request $request, User $user)
+    {
+        $friendship = $this->friendshipService->sendRequest($request->user(), $user->id);
 
         return (new FriendshipResource($friendship->load(['user1', 'user2'])))
             ->response()
             ->setStatusCode(201);
     }
 
-    public function accept(Request $request, $userId)
+    public function accept(Request $request, User $user)
     {
-        $user = $request->user();
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        Friendship::where('user_id_1', $u1)
-            ->where('user_id_2', $u2)
-            ->where('requested_by', $userId)
-            ->update(['status' => 'accepted']);
-            
-        $friendship = Friendship::where('user_id_1', $u1)
-            ->where('user_id_2', $u2)
-            ->firstOrFail();
+        $friendship = $this->friendshipService->acceptRequest($request->user(), $user->id);
 
         return new FriendshipResource($friendship->load(['user1', 'user2']));
     }
 
-    public function reject(Request $request, $userId)
+    public function reject(Request $request, User $user)
     {
-        $user = $request->user();
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        // Use query builder to delete in order to avoid the composite primary key issue
-        $deleted = Friendship::where('user_id_1', $u1)
-            ->where('user_id_2', $u2)
-            ->where('requested_by', $userId)
-            ->where('status', 'pending')
-            ->delete();
-
-        if (!$deleted) {
-            abort(404, 'Request not found');
-        }
+        $this->friendshipService->rejectRequest($request->user(), $user->id);
 
         return response()->json(['message' => 'Request rejected']);
     }
 
     public function index(Request $request)
     {
-        $user = $request->user();
-        $friends = Friendship::with(['user1', 'user2'])
-            ->where('status', 'accepted')
-            ->where(function($q) use ($user) {
-                $q->where('user_id_1', $user->id)->orWhere('user_id_2', $user->id);
-            })
-            ->get()
-            ->map(fn($f) => $f->getFriendOf($user->id));
+        $friends = $this->friendshipService->getFriends($request->user()->id);
 
         return UserResource::collection($friends);
     }
 
-    public function userFriends(Request $request, $id)
+    public function userFriends(Request $request, User $user)
     {
-        $user = $request->user();
-        $friends = Friendship::with(['user1', 'user2'])
-            ->where('status', 'accepted')
-            ->where(function($q) use ($id) {
-                $q->where('user_id_1', $id)->orWhere('user_id_2', $id);
-            })
-            ->get()
-            ->map(fn($f) => $f->getFriendOf($id));
+        $friends = $this->friendshipService->getFriends($user->id);
 
         return UserResource::collection($friends);
     }
 
     public function requests(Request $request)
     {
-        $user = $request->user();
-        $requests = Friendship::with('requester')
-            ->where('status', 'pending')
-            ->where('requested_by', '!=', $user->id)
-            ->where(function($q) use ($user) {
-                $q->where('user_id_1', $user->id)->orWhere('user_id_2', $user->id);
-            })
-            ->get();
+        $requests = $this->friendshipService->getPendingRequests($request->user()->id);
 
         return FriendshipResource::collection($requests);
     }
 
-    public function destroy(Request $request, $userId)
+    public function destroy(Request $request, User $user)
     {
-        $user = $request->user();
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-        Friendship::where('user_id_1', $u1)->where('user_id_2', $u2)->delete();
+        $this->friendshipService->removeFriendship($request->user(), $user->id);
+
         return response()->json(['message' => 'Friendship removed']);
     }
 
-    public function status(Request $request, $userId)
+    public function status(Request $request, User $user)
     {
-        $user = $request->user();
-        if ((string)$user->id === (string)$userId) {
-            return response()->json(['status' => 'self']);
-        }
+        $status = $this->friendshipService->getStatus($request->user()->id, $user->id);
 
-        $u1 = min($user->id, $userId);
-        $u2 = max($user->id, $userId);
-
-        $friendship = Friendship::where('user_id_1', $u1)
-            ->where('user_id_2', $u2)
-            ->first();
-
-        if (!$friendship) {
-            return response()->json(['status' => 'none']);
-        }
-
-        if ($friendship->status === 'accepted') {
-            return response()->json(['status' => 'accepted']);
-        }
-
-        if ($friendship->requested_by === $user->id) {
-            return response()->json(['status' => 'pending_sent']);
-        }
-
-        return response()->json(['status' => 'pending_received']);
+        return response()->json(['status' => $status]);
     }
 }

@@ -8,6 +8,12 @@ use App\Http\Resources\EventResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
+use App\Http\Requests\Admin\StoreEventRequest;
+use App\Http\Requests\Admin\UpdateEventRequest;
+use App\Events\EventCreated;
+use App\Events\EventUpdated;
+use App\Events\EventDeleted;
+
 class EventController extends Controller
 {
     public function index(Request $request)
@@ -20,7 +26,7 @@ class EventController extends Controller
                   ->orWhere('location', 'ilike', "%{$search}%");
         }
 
-        $perPage = $request->query('per_page', 15);
+        $perPage = min(max((int) $request->query('per_page', 15), 1), 100);
 
         $sortBy = $request->query('sort_by', 'start_date');
         $sortOrder = $request->query('sort_order', 'asc');
@@ -37,61 +43,40 @@ class EventController extends Controller
 
         $query->orderBy($sortBy, $sortOrder);
 
-        if ($perPage == -1) {
-            return EventResource::collection($query->with('stages', 'banner', 'acts')->get());
-        }
-
-        return EventResource::collection($query->with('stages', 'banner', 'acts')->paginate($perPage));
+        return EventResource::collection($query->with('stages', 'banner', 'acts')->withUserStatus()->paginate($perPage));
     }
 
-    public function store(Request $request)
+    public function store(StoreEventRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            "name" => "required|string|max:255",
-            "description" => "nullable|string",
-            "location" => "nullable|string|max:255",
-            "start_date" => "required|date",
-            "end_date" => "required|date|after_or_equal:start_date",
-            "banner_media_id" => "nullable|uuid|exists:media,id",
-        ]);
+        $this->authorize('create', Event::class);
+        $event = Event::create($request->validated());
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $event = Event::create($validator->validated());
+        event(new EventCreated($event));
 
         return (new EventResource($event))->response()->setStatusCode(201);
     }
 
     public function show(Event $event)
     {
-        return new EventResource($event->load("stages", "acts.artists", "banner"));
+        return new EventResource($event->load("stages", "acts.artists", "banner")->append('user_status'));
     }
 
-    public function update(Request $request, Event $event)
+    public function update(UpdateEventRequest $request, Event $event)
     {
-        $validator = Validator::make($request->all(), [
-            "name" => "sometimes|required|string|max:255",
-            "description" => "nullable|string",
-            "location" => "nullable|string|max:255",
-            "start_date" => "sometimes|required|date",
-            "end_date" => "sometimes|required|date|after_or_equal:start_date",
-            "banner_media_id" => "nullable|uuid|exists:media,id",
-        ]);
+        $this->authorize('update', $event);
+        $event->update($request->validated());
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        $event->update($validator->validated());
+        event(new EventUpdated($event));
 
         return new EventResource($event);
     }
 
     public function destroy(Event $event)
     {
+        $this->authorize('delete', $event);
         $event->delete();
+
+        event(new EventDeleted($event));
 
         return response()->json(null, 204);
     }

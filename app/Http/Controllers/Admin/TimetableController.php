@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+use App\Http\Requests\Admin\StoreTimetableRequest;
+use App\Http\Requests\Admin\UpdateTimetableRequest;
+
 class TimetableController extends Controller
 {
     /**
@@ -31,17 +34,9 @@ class TimetableController extends Controller
     /**
      * POST /admin/timetables
      */
-    public function store(Request $request)
+    public function store(StoreTimetableRequest $request)
     {
-        $request->validate([
-            'event_id' => 'required|exists:events,id|unique:event_timetables,event_id',
-            'name' => 'required|string|max:255',
-            'is_official' => 'boolean',
-            'is_public' => 'boolean',
-        ]);
-
         $timetable = EventTimetable::create([
-            'id' => Str::uuid(),
             'event_id' => $request->event_id,
             'name' => $request->name,
             'is_official' => $request->input('is_official', true),
@@ -55,19 +50,9 @@ class TimetableController extends Controller
      * PUT /admin/timetables/{id}
      * Update entries and meta data.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateTimetableRequest $request, $id)
     {
         $timetable = EventTimetable::findOrFail($id);
-
-        $request->validate([
-            'name' => 'string|max:255',
-            'is_public' => 'boolean',
-            'entries' => 'array',
-            'entries.*.stage_id' => 'required|exists:stages,id',
-            'entries.*.act_id' => 'required|exists:acts,id',
-            'entries.*.start_time' => 'required|date',
-            'entries.*.end_time' => 'required|date|after:entries.*.start_time',
-        ]);
 
         if ($request->has('name')) $timetable->name = $request->name;
         if ($request->has('is_public')) $timetable->is_public = $request->is_public;
@@ -98,7 +83,6 @@ class TimetableController extends Controller
 
                 foreach ($request->entries as $eData) {
                     $timetable->entries()->create([
-                        'id' => Str::uuid(),
                         'stage_id' => $eData['stage_id'],
                         'act_id' => $eData['act_id'],
                         'start_time' => $eData['start_time'],

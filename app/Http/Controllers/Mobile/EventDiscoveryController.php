@@ -7,20 +7,25 @@ use App\Http\Resources\EventResource;
 use App\Models\Event;
 use Illuminate\Http\Request;
 
+use App\Services\SearchService;
+
 class EventDiscoveryController extends Controller
 {
+    protected $searchService;
+
+    public function __construct(SearchService $searchService)
+    {
+        $this->searchService = $searchService;
+    }
+
     /**
      * Paginated list of suggested events for the user.
      */
     public function suggested(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 100);
 
-        // Mock suggestion logic: Upcoming events ordered by start date
-        $events = Event::with(['banner'])
-            ->where('start_date', '>=', now())
-            ->orderBy('start_date', 'asc')
-            ->paginate($perPage);
+        $events = $this->searchService->getSuggestedEvents($request->user(), $perPage);
 
         return EventResource::collection($events);
     }
@@ -30,13 +35,9 @@ class EventDiscoveryController extends Controller
      */
     public function friends(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
+        $perPage = min(max((int) $request->input('per_page', 10), 1), 100);
 
-        // Mock friends attendance logic: Upcoming events for now
-        $events = Event::with(['banner'])
-            ->where('start_date', '>=', now())
-            ->orderBy('start_date', 'asc')
-            ->paginate($perPage);
+        $events = $this->searchService->getFriendsEvents($request->user(), $perPage);
 
         return EventResource::collection($events);
     }

@@ -16,7 +16,7 @@ beforeEach(function () {
 
 test('can search by name', function () {
     $user = User::factory()->create();
-    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', ['query' => 'Tomorrow']));
+    $response = $this->actingAs($user)->getJson(route('api.mobile.v1.search.mobile', ['query' => 'Tomorrow']));
 
     $response->assertStatus(200)
         ->assertJsonCount(1, 'data.events.data')
@@ -26,7 +26,7 @@ test('can search by name', function () {
 test('can filter by entities', function () {
     $user = User::factory()->create();
     // Only search artists
-    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', [
+    $response = $this->actingAs($user)->getJson(route('api.mobile.v1.search.mobile', [
         'query' => 'Garrix',
         'entities' => 'artists'
     ]));
@@ -39,7 +39,7 @@ test('can filter by entities', function () {
 
 test('can search by location', function () {
     $user = User::factory()->create();
-    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', ['query' => 'Tomorrow']));
+    $response = $this->actingAs($user)->getJson(route('api.mobile.v1.search.mobile', ['query' => 'Tomorrow']));
 
     $response->assertStatus(200)
         ->assertJsonCount(1, 'data.events.data')
@@ -48,7 +48,7 @@ test('can search by location', function () {
 
 test('it validates the search query length', function () {
     $user = User::factory()->create();
-    $response = $this->actingAs($user)->getJson(route('api.mobile.search.mobile', [
+    $response = $this->actingAs($user)->getJson(route('api.mobile.v1.search.mobile', [
         'query' => str_repeat('a', 101)
     ]));
 

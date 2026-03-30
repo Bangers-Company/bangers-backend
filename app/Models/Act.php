@@ -29,19 +29,19 @@ class Act extends Model
         });
     }
 
-    public function artists()
+    public function artists(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Artist::class, "act_artists");
     }
 
-    public function stages()
+    public function stages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Stage::class, "event_stage_acts")
             ->withPivot('event_id', 'date')
             ->withTimestamps();
     }
 
-    public function events()
+    public function events(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Event::class, "event_stage_acts")
             ->withPivot('stage_id', 'date')

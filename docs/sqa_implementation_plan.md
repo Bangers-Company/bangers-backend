@@ -1,524 +1,659 @@
-# 🛠️ SQA Implementation Plan — `bangers-backend`
+# Backend SQA Implementation Plan — bangers-backend
 
-**Based on:** [SQA Report](./sqa_report.md) (2026-03-23)  
-**Structure:** 4 phases, ordered by risk and dependencies
-
----
-
-## Phase 1 — 🔴 Critical Security & Stability Fixes
-
-**Goal:** Eliminate critical vulnerabilities and data integrity issues.  
-**Estimated effort:** 1–2 days  
-**Risk if skipped:** High — secrets exposed, brute-force possible, data corruption via composite PK
+> **Generated from:** [SQA Report](file:///home/voss/.gemini/antigravity/brain/9e88d933-4b19-4942-a6e0-0a339632a675/sqa_report.md)
+> **Date:** 2026-03-28 | **Status:** Ready for review
 
 ---
 
-### 1.1 Remove `.env` from Git & Rotate Secrets
+## Corrections from Initial SQA Report
 
-**Files:**
-- `.gitignore`
-- `.env` / `.env.example`
+During deeper inspection, the following items from the SQA report are **already implemented**:
 
-**Steps:**
-1. Add `.env` to `.gitignore` (verify it's not already there correctly)
-2. Run `git rm --cached .env` to untrack the file
-3. Rotate the `APP_KEY` using `php artisan key:generate`
-4. Change all database credentials (`DB_USERNAME`, `DB_PASSWORD`)
-5. Ensure `APP_DEBUG=false` in any non-local `.env` configuration
-6. Commit the `.gitignore` change with a clear commit message
-7. Consider using `git filter-branch` or BFG Repo Cleaner to purge `.env` from Git history
+| SQA Finding | Actual Status |
+|-------------|--------------|
+| No rate limiting on auth | ✅ Already implemented — `throttle:5,1` on both [api/AuthRoutes.php](file:///home/voss/Projects/Bangers/bangers-backend/routes/api/AuthRoutes.php) and [mobile/AuthRoutes.php](file:///home/voss/Projects/Bangers/bangers-backend/routes/mobile/AuthRoutes.php) |
+| Friendship status endpoint missing | ✅ Already exists — `FriendshipController::status()` with dedicated route |
+| Feature flags system needed | ✅ Already exists — [config/features.php](file:///home/voss/Projects/Bangers/bangers-backend/config/features.php) + `ConfigController` |
+| `.env` committed to git | ✅ `.env` is in [.gitignore](file:///home/voss/Projects/Bangers/bangers-backend/.gitignore) |
 
 ---
 
-### 1.2 Add Rate Limiting to Auth Endpoints
+## Phase 1: Security Hardening 🔴
 
-**Files:**
-- `routes/api/AuthRoutes.php`
-- `routes/mobile/AuthRoutes.php`
+### S1 — Restrict CORS Origins
+**Severity: 🔴 Critical | Effort: Low**
 
-**Steps:**
-1. Wrap login and register routes in `throttle` middleware:
-   ```php
-   Route::middleware('throttle:5,1')->group(function () {
-       Route::post('/auth/login', ...);
-       Route::post('/auth/register', ...);
-   });
-   ```
-2. Consider a separate, stricter limiter for password-related endpoints
-3. Test that the 429 response is returned after exceeding the limit
+Currently `allowed_origins => ['*']` allows any website to make authenticated API calls.
 
----
+#### [MODIFY] [cors.php](file:///home/voss/Projects/Bangers/bangers-backend/config/cors.php)
+```diff
+- 'allowed_origins' => ['*'],
++ 'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173')),
 
-### 1.3 Strengthen Password Validation
+- 'allowed_methods' => ['*'],
++ 'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-**Files:**
-- `app/Http/Controllers/Api/AuthController.php`
-- `app/Http/Controllers/Mobile/AuthController.php`
+- 'allowed_headers' => ['*'],
++ 'allowed_headers' => ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
 
-**Steps:**
-1. Replace `'password' => 'required|min:8'` with:
-   ```php
-   use Illuminate\Validation\Rules\Password;
-   
-   'password' => ['required', Password::min(8)->mixedCase()->numbers()],
-   ```
-2. Apply to both Api and Mobile AuthControllers (will later be deduplicated in Phase 2)
+- 'max_age' => 0,
++ 'max_age' => 86400,
+```
+
+Add to `.env.example`:
+```
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+```
 
 ---
 
-### 1.4 Fix EventResource N+1 Query
+### S2 — Harden `$fillable` on User Model
+**Severity: 🔴 Critical | Effort: Low**
 
-**Files:**
-- `app/Http/Resources/EventResource.php`
-- Controllers that return `EventResource` collections
+`is_verified` and `password` are in `$fillable`, which allows mass assignment of security-sensitive fields.
 
-**Steps:**
-1. Remove the inline `->attendees()->where(...)` query from `EventResource`
-2. Add a method or scope on the `Event` model to eager-load user attendance status:
-   ```php
-   // Option A: Eager-load as a sub-select in controllers that return collections
-   $events->each(function ($event) use ($userId) {
-       $event->user_status = $event->attendees
-           ->firstWhere('id', $userId)?->pivot?->status;
-   });
-   
-   // Option B: Use selectSub in query
-   Event::addSelect([
-       'user_status' => UserEventAttendance::select('status')
-           ->whereColumn('event_id', 'events.id')
-           ->where('user_id', $userId)
-           ->limit(1)
-   ]);
-   ```
-3. Verify with `DB::enableQueryLog()` that the N+1 is eliminated
+#### [MODIFY] [User.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Models/User.php)
+```diff
+  protected $fillable = [
+      'first_name',
+      'last_name',
+      'email',
+      'username',
+      'password',
+      'dob',
+      'bio',
+      'profile_media_id',
+-     'is_verified',
+      'is_public',
+      'version',
+  ];
+```
 
----
+> [!IMPORTANT]
+> `is_verified` should only be set through a dedicated admin method or email verification flow, never via mass assignment. `password` is acceptable in `$fillable` because it's hashed via the `hashed` cast, but should be validated carefully at every entry point.
 
-### 1.5 Fix Friendship Composite Primary Key
-
-**Files:**
-- `app/Models/Friendship.php`
-- New migration: `add_id_to_friendships_table.php`
-
-**Steps:**
-1. Create a migration to add a UUID `id` column as the actual primary key:
-   ```php
-   Schema::table('friendships', function (Blueprint $table) {
-       $table->uuid('id')->primary()->first();
-       $table->unique(['user_id_1', 'user_id_2']); // Keep uniqueness constraint
-   });
-   ```
-2. Update the `Friendship` model:
-   - Add `HasUuids` trait
-   - Remove `public $incrementing = false;`
-   - Change `$primaryKey` to `'id'`
-3. Test that all friendship operations still work correctly
+Add a dedicated method for admin verification:
+```php
+public function markAsVerified(): void
+{
+    $this->is_verified = true;
+    $this->save();
+}
+```
 
 ---
 
-### 1.6 Cap Pagination & Limit Sync Endpoints
+### S3 — Add Authorization to Unprotected Controllers
+**Severity: 🔴 High | Effort: Medium**
 
-**Files:**
-- `app/Http/Controllers/Api/ActController.php`
-- `app/Http/Controllers/Api/EventController.php`
-- `app/Http/Controllers/Mobile/SyncController.php`
+Several admin-scoped controllers lack explicit authorization checks. While they're behind `auth:sanctum` + `role:admin` middleware at the route level, defense-in-depth requires controller-level authorization.
 
-**Steps:**
-1. Remove `per_page == -1` branches — enforce a max of 100:
-   ```php
-   $perPage = min(max((int) $request->query('per_page', 15), 1), 100);
-   ```
-2. Add a hard limit to Sync endpoints:
-   ```php
-   $query->limit(500); // or paginate
-   ```
-3. Consider adding a required `since` parameter to Sync endpoints
+#### [MODIFY] [StageController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/StageController.php)
+Add `Gate::authorize()` to mutating methods:
+```php
+public function store(Request $request)
+{
+    Gate::authorize('manage_content');
+    // ... existing code
+}
 
----
+public function update(Request $request, Stage $stage)
+{
+    Gate::authorize('manage_content');
+    // ... existing code
+}
 
-## Phase 2 — 🟡 Architecture & Maintainability
+public function destroy(Stage $stage)
+{
+    Gate::authorize('manage_content');
+    // ... existing code
+}
+```
 
-**Goal:** Eliminate duplication, introduce proper Laravel patterns, improve code organization.  
-**Estimated effort:** 3–5 days  
-**Prerequisite:** Phase 1 complete
+#### [MODIFY] [MediaController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/MediaController.php)
+Add ownership validation on delete:
+```php
+public function destroy(Media $media)
+{
+    Gate::authorize('manage_content');
+    Storage::disk("public")->delete($media->storage_key);
+    $media->delete();
+    return response()->json(null, 204);
+}
+```
 
----
-
-### 2.1 Create Service Layer
-
-**New files:**
-- `app/Services/AuthService.php`
-- `app/Services/FriendshipService.php`
-- `app/Services/GroupService.php`
-- `app/Services/AttendanceService.php`
-- `app/Services/SearchService.php`
-- `app/Services/TimetableService.php`
-
-**Steps:**
-1. Create `app/Services/` directory
-2. Extract shared business logic from duplicated controller pairs:
-   - `AuthService` — login, register, token generation, refresh logic
-   - `FriendshipService` — friend ordering (min/max), request/accept/reject/block logic
-   - `GroupService` — membership checks, invitation flow
-   - `AttendanceService` — attendance update/remove
-   - `SearchService` — unified search logic with media flag
-   - `TimetableService` — timetable CRUD, entry management
-3. Inject services into both Api and Mobile controllers via constructor DI
-4. Controllers become thin wrappers that call services and return responses
-5. Example structure:
-   ```php
-   class AuthService
-   {
-       public function register(array $data): User { ... }
-       public function login(string $email, string $password): User { ... }
-       public function generateTokenResponse(User $user): array { ... }
-       public function refresh(User $user): array { ... }
-   }
-   ```
+#### [MODIFY] [ArtistController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/ArtistController.php)
+Add `Gate::authorize('manage_content')` to `store`, `update`, `destroy`.
 
 ---
 
-### 2.2 Create Form Request Classes
+### S4 — Harden Production `.env` Configuration
+**Severity: 🔴 High | Effort: Low**
 
-**New files (examples):**
-- `app/Http/Requests/Auth/LoginRequest.php`
-- `app/Http/Requests/Auth/RegisterRequest.php`
-- `app/Http/Requests/Event/StoreEventRequest.php`
-- `app/Http/Requests/Event/UpdateEventRequest.php`
-- `app/Http/Requests/Act/StoreActRequest.php`
-- `app/Http/Requests/Act/UpdateActRequest.php`
-- `app/Http/Requests/User/UpdateUserRequest.php`
-- `app/Http/Requests/Group/StoreGroupRequest.php`
-- `app/Http/Requests/Attendance/UpdateAttendanceRequest.php`
-- `app/Http/Requests/Timetable/StoreTimetableRequest.php`
-- `app/Http/Requests/Timetable/UpdateTimetableRequest.php`
-- `app/Http/Requests/Media/StoreMediaRequest.php`
+The `.env` has development values that must never reach production.
 
-**Steps:**
-1. Create a Form Request for every store/update action using `php artisan make:request`
-2. Move validation rules from controllers into the `rules()` method
-3. Add `authorize()` methods where applicable (replaces inline auth checks)
-4. Standardize: remove all `Validator::make()` usage
-5. Both Api and Mobile controllers share the same Form Request classes
+#### [MODIFY] [.env.example](file:///home/voss/Projects/Bangers/bangers-backend/.env.example)
+Document production requirements in comments:
+```diff
+- APP_DEBUG=true
++ APP_DEBUG=false  # MUST be false in production
 
----
+- DB_USERNAME=root
+- DB_PASSWORD=secret
++ DB_USERNAME=bangers_app  # Use a non-root user in production
++ DB_PASSWORD=              # Use a strong, unique password
 
-### 2.3 Create Policies
++ # CORS — Restrict in production
++ CORS_ALLOWED_ORIGINS=https://admin.bangers.app
 
-**New files:**
-- `app/Policies/EventPolicy.php`
-- `app/Policies/ActPolicy.php`
-- `app/Policies/StagePolicy.php`
-- `app/Policies/MediaPolicy.php`
-- `app/Policies/GroupPolicy.php`
-- `app/Policies/UserPolicy.php`
-
-**Steps:**
-1. Create policies using `php artisan make:policy EventPolicy --model=Event`
-2. Define `viewAny`, `view`, `create`, `update`, `delete` gates
-3. Register policies in `AppServiceProvider` or use auto-discovery
-4. Replace inline `if` checks and `Gate::authorize()` calls with `$this->authorize()` in controllers
-5. Auto-register all permission-based gates from the database:
-   ```php
-   // AppServiceProvider::boot()
-   Gate::before(fn(User $user, $ability) => $user->hasRole('admin') ? true : null);
-   // Remove hardcoded Gate::define() calls
-   ```
++ # Sanctum token prefix for secret scanning
++ SANCTUM_TOKEN_PREFIX=bangers_
+```
 
 ---
 
-### 2.4 Adopt Route Model Binding
+### S5 — Set Sanctum Global Token Expiration
+**Severity: 🟠 Medium | Effort: Low**
 
-**Files:** All controllers using manual `findOrFail()`:
-- `UserController` (Api + Mobile)
-- `GroupController`
-- `GroupTimetableController`
-- `AttendanceController`
-- `FriendshipController`
-- `Admin/TimetableController`
+`sanctum.expiration` is `null`, meaning any token without an explicit `expires_at` lives forever.
 
-**Steps:**
-1. Replace `$id` parameters with typed model parameters:
-   ```php
-   // Before
-   public function show($id) {
-       $event = Event::findOrFail($id);
-   }
-   
-   // After
-   public function show(Event $event) {
-       // $event is already resolved
-   }
-   ```
-2. Update corresponding route definitions if needed
-3. Note: Cannot apply to `Friendship` until the composite PK is fixed (Phase 1.5)
+#### [MODIFY] [sanctum.php](file:///home/voss/Projects/Bangers/bangers-backend/config/sanctum.php)
+```diff
+- 'expiration' => null,
++ 'expiration' => (int) env('SANCTUM_EXPIRATION', 1440), // 24h safety net
+```
 
 ---
 
-### 2.5 Clean Up Dead Code & Inconsistencies
+## Phase 2: Code Quality 🟡
 
-**Files:**
-- `app/Http/Controllers/Api/DashboardController.php` — Remove `MobileDashboard()` method
-- All controllers using `Str::uuid()` manually — Remove where `HasUuids` handles it
-- Standardize method naming to camelCase
+### Q1 — Migrate Inline Validation to Form Requests
+**Severity: 🟡 Medium | Effort: Medium**
 
-**Steps:**
-1. Delete the `MobileDashboard()` method and any routes pointing to it
-2. Remove manual `Str::uuid()` from `GroupTimetableController::store`, `Admin/TimetableController::store`, `MediaController::store`
-3. Verify that `HasUuids` trait is present on the corresponding models
-4. Search for any other orphaned or commented-out code
+Create dedicated Form Request classes for all controllers still using inline validation.
 
----
+#### [NEW] `app/Http/Requests/Admin/StoreStageRequest.php`
+```php
+<?php
+namespace App\Http\Requests\Admin;
 
-### 2.6 Conditionally Expose PII in UserResource
+use Illuminate\Foundation\Http\FormRequest;
 
-**Files:**
-- `app/Http/Resources/UserResource.php`
+class StoreStageRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
 
-**Steps:**
-1. Conditionally include sensitive fields based on context:
-   ```php
-   'email' => $this->when(
-       $request->user()?->id === $this->id || $request->user()?->hasRole('admin'),
-       $this->email
-   ),
-   'dob' => $this->when(
-       $request->user()?->id === $this->id || $request->user()?->hasRole('admin'),
-       $this->dob
-   ),
-   ```
+    public function rules(): array
+    {
+        return [
+            'event_id' => 'required|uuid|exists:events,id',
+            'name'     => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'stage_id' => 'nullable|uuid|exists:stages,id',
+        ];
+    }
+}
+```
 
----
+#### [NEW] `app/Http/Requests/Admin/UpdateStageRequest.php`
+```php
+<?php
+namespace App\Http\Requests\Admin;
 
-## Phase 3 — 🟢 Testing & Quality Gates
+use Illuminate\Foundation\Http\FormRequest;
 
-**Goal:** Build comprehensive test coverage and ensure reliability.  
-**Estimated effort:** 3–5 days  
-**Prerequisite:** Phase 2 complete (services and form requests make tests easier to write)
+class UpdateStageRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
 
----
+    public function rules(): array
+    {
+        return [
+            'name'        => 'sometimes|required|string|max:255',
+            'description' => 'nullable|string',
+        ];
+    }
+}
+```
 
-### 3.1 Fix Test Infrastructure
+#### [NEW] `app/Http/Requests/Admin/StoreMediaRequest.php`
+```php
+<?php
+namespace App\Http\Requests\Admin;
 
-**Files:**
-- `tests/Pest.php`
-- `phpunit.xml`
+use Illuminate\Foundation\Http\FormRequest;
 
-**Steps:**
-1. Uncomment `RefreshDatabase` in `Pest.php`:
-   ```php
-   pest()->extend(Tests\TestCase::class)
-       ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-       ->in('Feature');
-   ```
-2. Configure test database in `phpunit.xml` (SQLite in-memory or separate PostgreSQL DB)
-3. Verify `php artisan test` runs with a clean state
+class StoreMediaRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
 
----
+    public function rules(): array
+    {
+        return [
+            'file'      => 'required|file|image|max:5120',
+            'type'      => 'required|string|in:profile_picture,artist_image,event_banner',
+            'is_public' => 'boolean',
+        ];
+    }
+}
+```
 
-### 3.2 Create Missing Factories
+#### [NEW] `app/Http/Requests/SearchRequest.php`
+Validates search input that currently passes `$request->all()` raw:
+```php
+<?php
+namespace App\Http\Requests;
 
-**New files:**
-- `database/factories/UserFactory.php`
-- `database/factories/RoleFactory.php`
-- `database/factories/PermissionFactory.php`
-- `database/factories/FriendshipFactory.php`
-- `database/factories/GroupFactory.php`
-- `database/factories/GroupMemberFactory.php` (if needed)
-- `database/factories/EventTimetableFactory.php`
-- `database/factories/TimetableEntryFactory.php`
-- `database/factories/GroupTimetableFactory.php`
+use Illuminate\Foundation\Http\FormRequest;
 
-**Steps:**
-1. Create factories with realistic fake data
-2. Add helper states for common scenarios (e.g., `User::factory()->admin()`)
-3. Create seeders using the factories for local development
+class SearchRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
 
----
+    public function rules(): array
+    {
+        return [
+            'query'    => 'nullable|string|max:100',
+            'date'     => 'nullable|date',
+            'location' => 'nullable|string|max:100',
+            'entities' => 'nullable',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ];
+    }
+}
+```
 
-### 3.3 Write Feature Tests
+#### [NEW] `app/Http/Requests/Admin/StoreRoleRequest.php`
+#### [NEW] `app/Http/Requests/Admin/UpdateRoleRequest.php`
+#### [NEW] `app/Http/Requests/Admin/UpdateUserRequest.php`
+#### [NEW] `app/Http/Requests/Admin/AttachArtistRequest.php`
 
-**New files:**
-- `tests/Feature/Auth/LoginTest.php`
-- `tests/Feature/Auth/RegisterTest.php`
-- `tests/Feature/Auth/RefreshTest.php`
-- `tests/Feature/FriendshipTest.php`
-- `tests/Feature/GroupTest.php`
-- `tests/Feature/GroupTimetableTest.php`
-- `tests/Feature/TimetableTest.php`
-- `tests/Feature/AttendanceTest.php`
-- `tests/Feature/Mobile/DashboardTest.php`
-- `tests/Feature/Mobile/SearchTest.php`
-- `tests/Feature/Mobile/SyncTest.php`
-- `tests/Feature/UserTest.php`
+> Apply the same pattern for `ActController` attach/detach methods, `RolesController`, and `UserController::update`.
 
-**Coverage targets:**
-- Auth: login success/failure, register validation, refresh, logout, rate limiting
-- Friendship: send/accept/reject/block, self-friending guard, duplicate guard
-- Groups: create, invite, accept/reject invite, leave, delete, ownership checks
-- Timetables: CRUD, entry management, attendance toggle, overlap detection
-- Attendance: go/interested, remove
-- Authorization: admin-only routes reject regular users
-- Edge cases: invalid UUIDs, missing data, concurrent operations
-
----
-
-### 3.4 Fix Existing Tests
-
-**Files:**
-- `tests/Feature/EventsTest.php`
-- `tests/Feature/ActsTest.php`
-- `tests/Feature/ArtistsTest.php`
-- `tests/Feature/MediaTest.php`
-- `tests/Feature/StagesTest.php`
-- `tests/Feature/SearchTest.php`
-
-**Steps:**
-1. Add authentication to all existing tests (create admin user, `actingAs()`)
-2. Verify tests pass against the admin routes with proper auth
-3. Add negative test cases (unauthenticated, wrong role)
+Then update each controller to inject the new Form Request instead of inline validation.
 
 ---
 
-## Phase 4 — 🔵 Extensibility & Performance Optimization
+### Q2 — Remove Debug Code & Stale Comments
+**Severity: 🟡 Medium | Effort: Low**
 
-**Goal:** Future-proof the architecture and optimize for scale.  
-**Estimated effort:** 3–5 days  
-**Prerequisite:** Phase 3 complete (tests provide safety net for refactoring)
+#### [MODIFY] [TimetableService.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Services/TimetableService.php)
+```diff
+-         // dd('Passed checks', $entries->count());
+```
 
----
+#### [MODIFY] [MediaController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/MediaController.php)
+Remove commented-out code blocks (lines 40-42, 54-55).
 
-### 4.1 Implement Laravel Events & Listeners
-
-**New files:**
-- `app/Events/UserRegistered.php`
-- `app/Events/FriendshipAccepted.php`
-- `app/Events/GroupCreated.php`
-- `app/Events/AttendanceUpdated.php`
-- `app/Events/TimetablePublished.php`
-- `app/Listeners/` — Corresponding listener classes
-
-**Steps:**
-1. Create event classes for key domain actions
-2. Fire events from services (created in Phase 2)
-3. Create listeners for side-effects (logging, notifications, analytics)
-4. Register in `EventServiceProvider` or use auto-discovery
+#### [MODIFY] [AuthController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/AuthController.php) (both Api and Mobile)
+Remove orphaned doc comment at end of class:
+```diff
+-     /**
+-      * Helper to generate standardized response is now handled by AuthService.
+-      */
+```
 
 ---
 
-### 4.2 Add Caching Layer
+### Q3 — Cap Pagination on All Endpoints
+**Severity: 🟡 Medium | Effort: Low**
 
-**Files:**
-- `app/Http/Controllers/Api/DashboardController.php`
-- `app/Http/Controllers/Mobile/DashboardController.php`
-- `app/Services/` (if caching is done at service level)
+#### [MODIFY] [StageController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/StageController.php)
+```diff
+- $perPage = $request->query('per_page', 15);
++ $perPage = min(max((int) $request->query('per_page', 15), 1), 100);
 
-**Steps:**
-1. Cache admin dashboard stats:
-   ```php
-   return Cache::remember('admin.dashboard.stats', 300, function () {
-       return [...]; // Existing query logic
-   });
-   ```
-2. Cache mobile dashboard suggested/friends events
-3. Invalidate caches when underlying data changes (via Events from 4.1)
-4. Consider Redis for production instead of database cache
+- if ($perPage == -1) {
+-     return StageResource::collection($query->with('events')->get());
+- }
+```
 
----
+> [!WARNING]
+> Removing the `-1` (unbounded) option is a **breaking change** for any admin frontend relying on it. If needed, replace with a paginated "all" option capped at 500.
 
-### 4.3 Implement Proper Refresh Tokens
-
-**Files:**
-- `app/Services/AuthService.php` (created in Phase 2)
-- Both AuthControllers (Api + Mobile)
-- New migration for refresh tokens table (or repurpose existing)
-
-**Steps:**
-1. Options:
-   - **Option A:** Use separate long-lived Sanctum tokens with a `refresh` ability and validate the ability on the refresh endpoint
-   - **Option B:** Implement a custom `refresh_tokens` table with hashed tokens, family tracking, and rotation
-2. Update `generateResponse()` to issue a proper refresh token
-3. Update the `refresh()` method to validate and rotate the refresh token
-4. Add refresh token expiry that is longer than access token expiry
+#### [MODIFY] [UserController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/UserController.php)
+```diff
+- $perPage = $request->query('size', 20);
++ $perPage = min(max((int) $request->query('size', 20), 1), 100);
+```
 
 ---
 
-### 4.4 Add API Versioning
+### Q4 — Fix Unfinished Stub Implementations
+**Severity: 🟡 Medium | Effort: Medium**
 
-**Files:**
-- `routes/api.php`
-- Route files in `routes/api/` and `routes/mobile/`
+#### [MODIFY] [SearchService.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Services/SearchService.php)
+Implement actual friend-based event filtering in `getFriendsEvents()`:
+```php
+public function getFriendsEvents(User $user, int $perPage = 10): LengthAwarePaginator
+{
+    $friendIds = Friendship::where('status', 'accepted')
+        ->where(fn($q) => $q->where('user_id_1', $user->id)->orWhere('user_id_2', $user->id))
+        ->get()
+        ->map(fn($f) => $f->user_id_1 === $user->id ? $f->user_id_2 : $f->user_id_1);
 
-**Steps:**
-1. Move current routes under a `/v1/` prefix:
-   ```php
-   Route::prefix('v1')->name('api.v1.')->group(function () {
-       // Current admin routes
-   });
-   
-   Route::prefix('mobile/v1')->name('api.mobile.v1.')->group(function () {
-       // Current mobile routes
-   });
-   ```
-2. Update mobile client to use versioned endpoints
-3. Document the versioning strategy
+    return Event::with(['banner'])
+        ->withUserStatus()
+        ->whereHas('attendees', fn($q) => $q->whereIn('user_id', $friendIds))
+        ->where('start_date', '>=', now())
+        ->orderBy('start_date', 'asc')
+        ->paginate($perPage);
+}
+```
 
----
+Apply the same query pattern to the `friendsEvents` block in [Mobile/DashboardController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Mobile/DashboardController.php).
 
-### 4.5 Create Custom Exception Classes
+#### [MODIFY] [UserController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/UserController.php)
+Implement the privacy check from the TODO comment:
+```php
+public function show($id)
+{
+    $user = User::with('roles')->findOrFail($id);
 
-**New files:**
-- `app/Exceptions/GroupMembershipException.php`
-- `app/Exceptions/FriendshipAlreadyExistsException.php`
-- `app/Exceptions/TimetableOverlapException.php`
-- `app/Exceptions/UnauthorizedActionException.php`
+    if (!$user->is_public && auth()->id() !== $user->id && !auth()->user()?->hasRole('admin')) {
+        return new UserResource($user->only(['id', 'username', 'first_name', 'is_public']));
+    }
 
-**Steps:**
-1. Create exception classes extending Laravel's `HttpException` or base `Exception`
-2. Add machine-readable error codes and structured error responses
-3. Register custom rendering in `bootstrap/app.php` or exception handler
-4. Replace `abort()` calls with specific exception throws
-
----
-
-### 4.6 Optimize Group Membership Checks
-
-**Files:**
-- `app/Http/Controllers/Mobile/GroupTimetableController.php`
-- `app/Http/Controllers/Mobile/GroupController.php`
-- `app/Services/GroupService.php` (created in Phase 2)
-
-**Steps:**
-1. Replace `$group->members->contains($userId)` (loads all members) with:
-   ```php
-   $group->members()->where('user_id', $userId)->exists()
-   ```
-2. Extract to `GroupService::ensureMember(Group $group, User $user)` to DRY up the check
-3. Consider middleware for group membership verification
+    return new UserResource($user->load(['roles.permissions', 'profileMedia']));
+}
+```
 
 ---
 
-### 4.7 Add CORS Middleware
+### Q5 — Inline Gate Imports in GroupController
+**Severity: 🟢 Low | Effort: Low**
 
-**Files:**
-- `bootstrap/app.php` or `config/cors.php`
+#### [MODIFY] [GroupController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Mobile/GroupController.php)
+Replace inline `\Illuminate\Support\Facades\Gate::authorize()` with a proper `use` import:
+```diff
++ use Illuminate\Support\Facades\Gate;
 
-**Steps:**
-1. Verify if Laravel's built-in CORS handling is configured
-2. If not, publish the CORS config: `php artisan config:publish cors`
-3. Configure allowed origins, methods, and headers for the admin frontend
-4. Test cross-origin requests from the admin frontend
+- \Illuminate\Support\Facades\Gate::authorize('view', $group);
++ Gate::authorize('view', $group);
+```
+Apply to all 6 occurrences in the file and similarly in [GroupTimetableController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Mobile/GroupTimetableController.php).
 
 ---
 
-## Summary
+## Phase 3: Performance 🟠
 
-| Phase | Focus | Effort | Items |
-|---|---|---|---|
-| **Phase 1** | 🔴 Critical Security & Stability | 1–2 days | 6 items |
-| **Phase 2** | 🟡 Architecture & Maintainability | 3–5 days | 6 items |
-| **Phase 3** | 🟢 Testing & Quality Gates | 3–5 days | 4 items |
-| **Phase 4** | 🔵 Extensibility & Performance | 3–5 days | 7 items |
-| **Total** | | **~10–17 days** | **23 items** |
+### P1 — Dashboard Thundering Herd Protection
+**Severity: 🟠 Medium | Effort: Medium**
 
-Each phase builds on the previous one. Phase 1 is standalone and should be done immediately. Phases 2–4 can be parallelized somewhat, but the recommended order ensures that services and form requests (Phase 2) exist before writing tests (Phase 3), and tests exist before doing major refactors (Phase 4).
+#### [MODIFY] [Mobile/DashboardController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Mobile/DashboardController.php)
+Add cache locking to prevent stampede when cache expires under load:
+```php
+$dashboardData = Cache::flexible("user_{$user->id}_dashboard", [300, 600], function () use ($user, $eventRelations) {
+    // ... existing closure body
+});
+```
+
+Alternatively, if `Cache::flexible` isn't available in your cache driver, use a lock:
+```php
+$dashboardData = Cache::remember("user_{$user->id}_dashboard", 600, function () use ($user, $eventRelations) {
+    // ... existing closure body
+});
+// The key insight: ClearDashboardCache listener already busts this cache on data changes,
+// so the 600s TTL is a safety net, not the primary invalidation mechanism.
+```
+
+> Consider splitting into smaller cache keys (user_profile, upcoming_events, etc.) so partial invalidation doesn't require rebuilding everything.
+
+---
+
+### P2 — Eager Load Missing Relations in Friendship Queries
+**Severity: 🟠 Medium | Effort: Low**
+
+#### [MODIFY] [FriendshipService.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Services/FriendshipService.php)
+```diff
+  public function getFriends(string $userId): Collection
+  {
+-     return Friendship::with(['user1', 'user2'])
++     return Friendship::with(['user1.profileMedia', 'user2.profileMedia'])
+          ->where('status', 'accepted')
+```
+
+---
+
+### P3 — Sync Endpoint Pagination
+**Severity: 🟠 Medium | Effort: Medium**
+
+The 500-record hard limit in `SyncController` may silently miss updates if more than 500 records change between syncs.
+
+#### [MODIFY] [SyncController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Mobile/SyncController.php)
+Add a `has_more` indicator so the client knows to paginate:
+```php
+$limit = 500;
+$results = $query->limit($limit + 1)->get();
+$hasMore = $results->count() > $limit;
+
+return EventResource::collection($results->take($limit))
+    ->additional([
+        'sync_timestamp' => now()->toIso8601String(),
+        'has_more' => $hasMore,
+    ]);
+```
+
+---
+
+### P4 — Admin Dashboard Denormalized Counts
+**Severity: 🟢 Low | Effort: Low**
+
+#### [MODIFY] [Api/DashboardController.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/DashboardController.php)
+The admin dashboard already caches for 300s. Consider increasing TTL or using `Cache::flexible()` since admin stats don't need real-time accuracy:
+```diff
+- $stats = Cache::remember('admin_dashboard_stats', 300, function () {
++ $stats = Cache::remember('admin_dashboard_stats', 900, function () { // 15 min for admin stats
+```
+
+---
+
+## Phase 4: Architecture & Maintainability 🔵
+
+### A1 — Add SoftDeletes to Critical Models
+**Severity: 🟡 Medium | Effort: Medium**
+
+#### [MODIFY] [User.php](file:///home/voss/Projects/Bangers/bangers-backend/app/Models/User.php)
+```diff
++ use Illuminate\Database\Eloquent\SoftDeletes;
+
+  class User extends Authenticatable
+  {
+-     use HasFactory, Notifiable, HasUuids, HasApiTokens;
++     use HasFactory, Notifiable, HasUuids, HasApiTokens, SoftDeletes;
+```
+
+#### [NEW] Migration: `add_soft_deletes_to_users_table`
+```php
+Schema::table('users', function (Blueprint $table) {
+    $table->softDeletes();
+});
+```
+
+Repeat for `Artist`, `Act`, and `Group` models. Also create corresponding migration files.
+
+> [!IMPORTANT]
+> After adding SoftDeletes, review all queries that need to include soft-deleted records (e.g., sync endpoints already use `withTrashed()`). Review `User::findOrFail()` calls to ensure they don't break when a user is soft-deleted.
+
+---
+
+### A2 — Deduplicate API & Mobile Auth Controllers
+**Severity: 🟢 Low | Effort: Medium**
+
+Both [Api/AuthController](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Api/AuthController.php) and [Mobile/AuthController](file:///home/voss/Projects/Bangers/bangers-backend/app/Http/Controllers/Mobile/AuthController.php) share ~90% of code. Extract shared logic into a trait.
+
+#### [NEW] `app/Http/Controllers/Traits/AuthenticatesUsers.php`
+```php
+<?php
+namespace App\Http\Controllers\Traits;
+
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\Request;
+
+trait AuthenticatesUsers
+{
+    public function register(RegisterRequest $request)
+    {
+        $user = $this->authService->register($request->validated());
+        return response()->json(
+            $this->authService->generateTokenResponse($user, $this->getLoadRelations()),
+            201
+        );
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $user = $this->authService->login($request->email, $request->password);
+        return response()->json(
+            $this->authService->generateTokenResponse($user, $this->getLoadRelations())
+        );
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logged out successfully']);
+    }
+
+    public function refresh(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->tokenCan('refresh')) {
+            abort(403, 'Invalid token for refresh');
+        }
+        $this->authService->refresh($user);
+        return response()->json(
+            $this->authService->generateTokenResponse($user, $this->getLoadRelations())
+        );
+    }
+
+    abstract protected function getLoadRelations(): array;
+}
+```
+
+Then each controller just defines `getLoadRelations()`:
+- **Api:** `['roles.permissions']`
+- **Mobile:** `['roles.permissions', 'profileMedia']`
+
+Apply the same trait pattern to the duplicate `FriendshipController` pair.
+
+---
+
+### A3 — Review Database Indexes
+**Severity: 🟢 Low | Effort: Low**
+
+#### [NEW] Migration: `add_performance_indexes`
+```php
+// Friendship lookup by ordered pair + status
+Schema::table('friendships', function (Blueprint $table) {
+    $table->index(['user_id_1', 'user_id_2', 'status']);
+    $table->index(['requested_by']);
+});
+
+// User search by public flag
+Schema::table('users', function (Blueprint $table) {
+    $table->index(['is_public']);
+});
+
+// Attendance lookup
+Schema::table('user_event_attendance', function (Blueprint $table) {
+    $table->index(['user_id', 'status']);
+    $table->index(['event_id', 'status']);
+});
+
+// Timetable entry ordering
+Schema::table('timetable_entries', function (Blueprint $table) {
+    $table->index(['start_time']);
+});
+```
+
+> Run `EXPLAIN ANALYZE` on the heaviest queries (dashboard, search, friendship lookups) to confirm which indexes are needed before creating them.
+
+---
+
+### A4 — Set Sanctum Token Prefix
+**Severity: 🟢 Low | Effort: Low**
+
+#### [MODIFY] [.env.example](file:///home/voss/Projects/Bangers/bangers-backend/.env.example)
+```diff
++ SANCTUM_TOKEN_PREFIX=bangers_
+```
+
+This enables automatic secret scanning by GitHub/GitLab to flag accidentally committed tokens.
+
+---
+
+### A5 — Expand Test Coverage
+**Severity: 🟢 Low | Effort: High**
+
+#### [NEW] Tests to add:
+
+| Test File | Coverage |
+|-----------|----------|
+| `tests/Feature/Auth/RateLimitTest.php` | Verify rate limiting works on register (currently only login is tested) |
+| `tests/Feature/Authorization/StageAuthTest.php` | Verify unauthorized users can't create/update/delete stages |
+| `tests/Feature/Authorization/MediaAuthTest.php` | Verify media upload/delete authorization |
+| `tests/Feature/SearchValidationTest.php` | Test query length limits, malformed entities param |
+| `tests/Feature/PaginationTest.php` | Test per_page cap enforcement across endpoints |
+| `tests/Feature/UserPrivacyTest.php` | Test private profile endpoint returns limited data |
+| `tests/Feature/SoftDeleteTest.php` | Test soft-deleted records are excluded from normal queries but included in sync |
+
+---
+
+## Verification Plan
+
+### Automated Tests
+```bash
+# Run the full test suite after each phase
+php artisan test
+
+# Run with coverage to track improvement
+php artisan test --coverage
+```
+
+### Manual Verification
+1. **CORS (S1):** Use `curl` with `Origin: https://evil.com` header — should get CORS rejection
+2. **Mass assignment (S2):** Attempt `PUT /users/{id}` with `is_verified: true` — should be ignored
+3. **Pagination (Q3):** Request `?per_page=99999` — should cap at 100
+4. **Privacy (Q4):** View a private user's profile as non-friend — should get limited data
+5. **Dashboard (P1):** Flush cache, hit dashboard concurrently — verify no stampede
+
+---
+
+## Implementation Order
+
+```mermaid
+gantt
+    title SQA Implementation Roadmap
+    dateFormat  YYYY-MM-DD
+    
+    section Phase 1 - Security
+    S1 CORS Hardening          :s1, 2026-03-28, 1d
+    S2 Fillable Hardening      :s2, after s1, 1d
+    S3 Authorization Gaps      :s3, after s1, 2d
+    S4 Env Hardening           :s4, after s1, 1d
+    S5 Sanctum Expiration      :s5, after s1, 1d
+    
+    section Phase 2 - Code Quality
+    Q1 Form Requests           :q1, after s3, 3d
+    Q2 Debug Cleanup           :q2, after s3, 1d
+    Q3 Pagination Caps         :q3, after s3, 1d
+    Q4 Stub Implementations    :q4, after q1, 2d
+    Q5 Import Cleanup          :q5, after q2, 1d
+    
+    section Phase 3 - Performance
+    P1 Dashboard Cache         :p1, after q4, 1d
+    P2 Eager Loading           :p2, after q4, 1d
+    P3 Sync Pagination         :p3, after q4, 1d
+    P4 Admin Cache TTL         :p4, after q4, 1d
+    
+    section Phase 4 - Architecture
+    A1 SoftDeletes             :a1, after p1, 2d
+    A2 Controller Dedup        :a2, after a1, 2d
+    A3 Database Indexes        :a3, after a1, 1d
+    A4 Token Prefix            :a4, after a1, 1d
+    A5 Test Expansion          :a5, after a2, 3d
+```
+
+**Estimated total effort:** ~3-4 sprints (~15-20 working days)

@@ -1,3 +1,5 @@
+<?php
+
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -5,7 +7,7 @@ uses(RefreshDatabase::class);
 
 test('can fetch feature flags', function () {
     $user = User::factory()->create();
-    $response = $this->actingAs($user)->getJson('/api/mobile/config/features');
+    $response = $this->actingAs($user)->getJson('/api/mobile/v1/config/features');
 
     $response->assertStatus(200)
         ->assertJsonStructure([

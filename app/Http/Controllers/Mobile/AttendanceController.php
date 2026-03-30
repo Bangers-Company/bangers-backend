@@ -7,29 +7,27 @@ use App\Http\Resources\AttendanceResource;
 use App\Models\Event;
 use Illuminate\Http\Request;
 
+use App\Http\Requests\Attendance\UpdateAttendanceRequest;
+use App\Services\AttendanceService;
+
 class AttendanceController extends Controller
 {
-    public function update(Request $request, $eventId)
+    protected $attendanceService;
+
+    public function __construct(AttendanceService $attendanceService)
     {
-        $request->validate([
-            'status' => 'required|in:going,interested'
-        ]);
+        $this->attendanceService = $attendanceService;
+    }
 
-        $user = $request->user();
-        $event = Event::findOrFail($eventId);
-
-        $user->attendedEvents()->syncWithoutDetaching([
-            $eventId => ['status' => $request->status]
-        ]);
-
-        $attendance = $user->attendedEvents()->where('event_id', $eventId)->first()->pivot;
+    public function update(UpdateAttendanceRequest $request, $eventId)
+    {
+        $attendance = $this->attendanceService->updateAttendance($request->user(), $eventId, $request->status);
         return new AttendanceResource($attendance);
     }
 
     public function destroy(Request $request, $eventId)
     {
-        $user = $request->user();
-        $user->attendedEvents()->detach($eventId);
+        $this->attendanceService->removeAttendance($request->user(), $eventId);
         return response()->json(['message' => 'Attendance removed']);
     }
 
@@ -38,7 +36,7 @@ class AttendanceController extends Controller
      */
     public function index($eventId)
     {
-        $event = Event::findOrFail($eventId);
-        return \App\Http\Resources\UserResource::collection($event->attendees()->with('roles')->paginate());
+        $attendees = $this->attendanceService->getAttendees($eventId);
+        return \App\Http\Resources\UserResource::collection($attendees);
     }
 }
