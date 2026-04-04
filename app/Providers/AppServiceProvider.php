@@ -5,6 +5,15 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
+use App\Events\UserRegistered;
+use App\Events\AttendanceUpdated;
+use App\Events\GroupCreated;
+use App\Events\FriendshipAccepted;
+use App\Events\EventCreated;
+use App\Events\EventUpdated;
+use App\Events\EventDeleted;
+use App\Listeners\ClearDashboardCache;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,5 +53,10 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(\App\Models\Group::class, \App\Policies\GroupPolicy::class);
         Gate::policy(\App\Models\GroupTimetable::class, \App\Policies\GroupTimetablePolicy::class);
+
+        // Register multi-event listener
+        Event::listen(EventCreated::class, ClearDashboardCache::class);
+        Event::listen(EventUpdated::class, ClearDashboardCache::class);
+        Event::listen(EventDeleted::class, ClearDashboardCache::class);
     }
 }

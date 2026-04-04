@@ -19,7 +19,7 @@ class LogUserRegistration
     /**
      * Handle the event.
      */
-    public function handle(object $event): void
+    public function handle(UserRegistered $event): void
     {
         \Illuminate\Support\Facades\Log::info("User registered: {$event->user->email}", [
             'id' => $event->user->id,
