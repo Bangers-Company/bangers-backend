@@ -34,7 +34,7 @@ class FriendshipService
             return $existing;
         }
 
-        $status = $target->is_public ? 'accepted' : 'pending';
+        $status = 'pending';
 
         return Friendship::create([
             'user_id_1' => $u1,
