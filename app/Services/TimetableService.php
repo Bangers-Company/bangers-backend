@@ -53,12 +53,11 @@ class TimetableService
      */
     public function toggleFavorite(User $user, string $entryId): bool
     {
-        $favorite = UserTimetableFavorite::where('user_id', $user->id)
+        $deleted = UserTimetableFavorite::where('user_id', $user->id)
             ->where('timetable_entry_id', $entryId)
-            ->first();
+            ->delete();
 
-        if ($favorite) {
-            $favorite->delete();
+        if ($deleted) {
             return false;
         }
 

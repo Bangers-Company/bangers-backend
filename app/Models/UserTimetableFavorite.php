@@ -11,6 +11,10 @@ class UserTimetableFavorite extends Model
     use HasFactory;
 
     protected $table = 'user_timetable_favorites';
+
+    // Composite primary key — Eloquent does not support composite PKs natively for
+    // instance-level delete(), so always use query-builder deletes on this model.
+    protected $primaryKey = null;
     public $incrementing = false;
     public $timestamps = false;
 
