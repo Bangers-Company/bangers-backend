@@ -34,6 +34,11 @@ class Act extends Model
         return $this->belongsToMany(Artist::class, "act_artists");
     }
 
+    public function genres(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    {
+        return $this->morphToMany(Genre::class, 'genreable');
+    }
+
     public function stages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Stage::class, "event_stage_acts")

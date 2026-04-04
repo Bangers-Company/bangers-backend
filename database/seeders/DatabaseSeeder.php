@@ -16,5 +16,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RolesAndPermissionsSeeder::class);
         $this->call(FestivalSeeder::class);
+        $this->call(GenreSeeder::class);
     }
 }

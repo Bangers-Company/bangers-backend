@@ -31,9 +31,24 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $user = User::with(['roles', 'profileMedia'])->findOrFail($id);
+        
+        $isMe = $request->user()?->id === $user->id;
+        $isFriend = $user->isFriendWith($request->user());
+        $canSeeFullProfile = $user->is_public || $isMe || $isFriend;
+
+        if ($canSeeFullProfile) {
+            $user->load([
+                'upcomingEvents.banner',
+                'upcomingEvents.stages',
+                'pastEvents.banner',
+                'pastEvents.stages',
+                'genres'
+            ]);
+        }
+
         return new UserResource($user);
     }
 
@@ -47,14 +62,21 @@ class UserController extends Controller
 
         $request->validate([
             'email' => 'email|unique:users,email,' . $user->id,
-            'first_name' => 'string|max:100',
-            'last_name' => 'string|max:100',
+            'first_name' => 'nullable|string|max:100',
+            'last_name' => 'nullable|string|max:100',
             'bio' => 'nullable|string',
+            'dob' => 'nullable|date',
             'is_public' => 'boolean',
+            'genres' => 'array',
+            'genres.*' => 'exists:genres,id',
         ]);
 
-        $user->update($request->only(['email', 'first_name', 'last_name', 'bio', 'is_public']));
+        $user->update($request->only(['email', 'first_name', 'last_name', 'bio', 'dob', 'is_public']));
 
-        return new UserResource($user->load(['roles.permissions', 'profileMedia']));
+        if ($request->has('genres')) {
+            $user->genres()->sync($request->genres);
+        }
+
+        return new UserResource($user->load(['roles.permissions', 'profileMedia', 'genres']));
     }
 }

@@ -27,13 +27,19 @@ class MediaController extends Controller
      */
     public function store(StoreMediaRequest $request)
     {
-        Gate::authorize('manage_content');
+        $type = $request->type;
+        $isProfilePicture = $type === 'profile_picture';
+
+        // Allow profile picture upload for common users, others require manage_content
+        if (!$isProfilePicture) {
+            Gate::authorize('manage_content');
+        }
 
         $file = $request->file("file");
         $extension = $file->getClientOriginalExtension();
         $media = new Media([
             "owner_id" => $request->user()?->id,
-            "type" => $request->type,
+            "type" => $type,
             "mime_type" => $file->getMimeType(),
             "size_bytes" => $file->getSize(),
             "is_public" => $request->input("is_public", true),

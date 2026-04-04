@@ -46,5 +46,7 @@ Route::prefix('mobile/v1')->name('api.mobile.v1.')->group(function () {
         require __DIR__.'/mobile/FavoriteRoutes.php';
         require __DIR__.'/mobile/GroupRoutes.php';
         require __DIR__.'/mobile/ConfigRoutes.php';
+        require __DIR__.'/mobile/GenreRoutes.php';
+        require __DIR__.'/mobile/MediaRoutes.php';
     });
 });

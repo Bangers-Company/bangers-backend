@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 use Laravel\Sanctum\HasApiTokens;
 
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'bio',
         'profile_media_id',
         'is_public',
+        'last_login_at',
         'version',
     ];
 
@@ -37,6 +39,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'dob' => 'date',
+        'last_login_at' => 'datetime',
         'is_verified' => 'boolean',
         'is_public' => 'boolean',
     ];
@@ -124,5 +127,27 @@ class User extends Authenticatable
     {
         $this->is_verified = true;
         $this->save();
+    }
+
+    /**
+     * Music Genres selection.
+     */
+    public function genres(): MorphToMany
+    {
+        return $this->morphToMany(Genre::class, 'genreable');
+    }
+
+    /**
+     * Check if user is friends with another user.
+     */
+    public function isFriendWith(?User $user): bool
+    {
+        if (!$user) return false;
+
+        return Friendship::where(function($q) use ($user) {
+            $q->where('user_id_1', $this->id)->where('user_id_2', $user->id);
+        })->orWhere(function($q) use ($user) {
+            $q->where('user_id_1', $user->id)->where('user_id_2', $this->id);
+        })->where('status', 'accepted')->exists();
     }
 }

@@ -18,8 +18,8 @@ class RegisterRequest extends FormRequest
             'email' => 'required|email|unique:users',
             'username' => 'required|string|unique:users',
             'password' => ['required', Password::min(8)->mixedCase()->numbers()],
-            'first_name' => 'required|string',
-            'last_name' => 'required|string',
+            'first_name' => 'nullable|string',
+            'last_name' => 'nullable|string',
             'dob' => 'required|date',
         ];
     }

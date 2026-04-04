@@ -86,4 +86,9 @@ class Event extends Model
             ->where('is_official', true)
             ->where('is_public', true);
     }
+
+    public function genres(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    {
+        return $this->morphToMany(Genre::class, 'genreable');
+    }
 }

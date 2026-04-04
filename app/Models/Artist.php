@@ -29,6 +29,16 @@ class Artist extends Model
         return $this->belongsTo(Media::class, "image_media_id");
     }
 
+    public function banner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Media::class, "banner_media_id");
+    }
+
+    public function genres(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    {
+        return $this->morphToMany(Genre::class, 'genreable');
+    }
+
     public function acts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Act::class, "act_artists");

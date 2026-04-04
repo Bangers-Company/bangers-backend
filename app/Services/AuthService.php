@@ -20,8 +20,8 @@ class AuthService
             'email' => $data['email'],
             'username' => $data['username'],
             'password' => Hash::make($data['password']),
-            'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
+            'first_name' => $data['first_name'] ?? null,
+            'last_name' => $data['last_name'] ?? null,
             'dob' => $data['dob'],
         ]);
 
@@ -47,6 +47,10 @@ class AuthService
                 'email' => [__('auth.failed')],
             ]);
         }
+
+        $lastLoginAt = $user->last_login_at;
+        $user->update(['last_login_at' => now()]);
+        $user->last_login_at = $lastLoginAt;
 
         return $user;
     }
