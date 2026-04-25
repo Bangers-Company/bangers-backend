@@ -103,6 +103,45 @@ class FestivalSeeder extends Seeder
             ['name' => 'Omnya', 'genre' => 'Rawstyle'],
             ['name' => 'Element', 'genre' => 'Rawstyle'],
             ['name' => 'BMBERJCK', 'genre' => 'Rawstyle'],
+            ['name' => 'EZG', 'genre' => 'Hardcore/Rap'],
+            ['name' => 'Outsiders', 'genre' => 'EDM/Hardstyle'],
+            ['name' => 'Refold', 'genre' => 'Rawstyle'],
+            ['name' => 'Vexxed', 'genre' => 'Rawstyle'],
+            ['name' => 'Amigo', 'genre' => 'Uptempo'],
+            ['name' => 'Namara', 'genre' => 'Uptempo'],
+            ['name' => 'Silvio Aquila', 'genre' => 'Hardstyle'],
+            ['name' => 'The Pitcher', 'genre' => 'Hardstyle'],
+            ['name' => 'Hyperverb', 'genre' => 'Hardcore'],
+            ['name' => 'Chaos Project', 'genre' => 'Hardcore'],
+            ['name' => 'Karun', 'genre' => 'Hardcore'],
+            ['name' => 'Unfused', 'genre' => 'Hardcore'],
+            ['name' => 'Furyan', 'genre' => 'Hardcore'],
+            ['name' => 'Boogshe', 'genre' => 'MC'],
+            ['name' => 'D-Fence', 'genre' => 'Hardcore'],
+            ['name' => 'Never Surrender', 'genre' => 'Hardcore'],
+            ['name' => 'Gabber Syndrome', 'genre' => 'Hardcore'],
+            ['name' => 'Noxa', 'genre' => 'Hardcore'],
+            ['name' => 'Kasparov', 'genre' => 'Hardcore'],
+            ['name' => 'Mad Dog', 'genre' => 'Hardcore'],
+            ['name' => 'Art of Fighters', 'genre' => 'Hardcore'],
+            ['name' => 'Korsakoff', 'genre' => 'Hardcore'],
+            ['name' => 'Neophyte', 'genre' => 'Hardcore'],
+            ['name' => 'Drokz', 'genre' => 'Hardcore/Terror'],
+            ['name' => 'Dâvinø', 'genre' => 'Freestyle'],
+            ['name' => 'Patjoo', 'genre' => 'Freestyle'],
+            ['name' => 'Hans Glock', 'genre' => 'Freestyle'],
+            ['name' => 'Dr. Rude', 'genre' => 'Hardstyle/Freestyle'],
+            ['name' => 'DJ Jantje', 'genre' => 'Freestyle'],
+            ['name' => 'DIKKE BAAP', 'genre' => 'Hardcore/Party'],
+            ['name' => 'Pat B', 'genre' => 'Jumpstyle/Freestyle'],
+            ['name' => 'Potato', 'genre' => 'Freestyle'],
+            ['name' => 'Synergy', 'genre' => 'Host'],
+            ['name' => 'FLO', 'genre' => 'Host'],
+            ['name' => 'Robs', 'genre' => 'Host'],
+            ['name' => 'DV8', 'genre' => 'Host'],
+            ['name' => 'Tha Watcher', 'genre' => 'Host'],
+            ['name' => 'Alee', 'genre' => 'Host'],
+            ['name' => 'DL', 'genre' => 'Host'],
 
             // Rock & Metal
             ['name' => 'Metallica', 'genre' => 'Heavy Metal'],
@@ -402,6 +441,34 @@ class FestivalSeeder extends Seeder
             ['name' => 'OVERDRIVE SHOWCASE: ABADDON, DARK INDIVIDUAL, ROSBEEK, SCREECHER & THAROZA', 'artists' => ['Abaddon', 'Dark Individual', 'Rosbeek', 'Screecher', 'Tharoza']],
             ['name' => 'THERACORDS SPECIAL: DEGOS & RE-DONE, DJ THERA & GECK-O', 'artists' => ['Degos & Re-Done', 'DJ Thera', 'Geck-O']],
             ['name' => 'CLASSIFIED RECORDS SHOWCASE: COLDAX, DAMAXY, DETAILED & UNIQUE', 'artists' => ['Coldax', 'Damaxy', 'Detailed', 'Unique']],
+            
+            // Supersized Kingsday 2026 Specialized Acts
+            ['name' => 'Rejecta : SUPERSIZED', 'artists' => ['Rejecta']],
+            ['name' => 'Brennan Heart pres. Evolution of Style', 'artists' => ['Brennan Heart']],
+            ['name' => 'Paul Elstak ft. Boogshe', 'artists' => ['Paul Elstak', 'Boogshe']],
+            ['name' => 'Dr. Rude pres Jump Classics', 'artists' => ['Dr. Rude']],
+            ['name' => 'Hans Glock pres. Back2Basics', 'artists' => ['Hans Glock']],
+            ['name' => 'The Speed Team: Akimbo, Kili, Samynator, Revealer & Roosterz', 'artists' => ['Akimbo', 'Kili', 'Samynator', 'Revealer', 'Roosterz']],
+            ['name' => 'Gezellige Uptempo : SUPERSIZED', 'artists' => ['Gezellige Uptempo']],
+            ['name' => 'Nosferatu : SUPERSIZED', 'artists' => ['Nosferatu']],
+            ['name' => 'Coldax vs Omnya : SUPERSIZED', 'artists' => ['Coldax', 'Omnya']],
+            ['name' => 'Ran-D & Adaro : SUPERSIZED', 'artists' => ['Ran-D', 'Adaro']],
+            ['name' => 'Fantastic Four : SUPERSIZED', 'artists' => []],
+            ['name' => 'Larstig & Gasdrop : SUPERSIZED', 'artists' => ['Larstig', 'Gasdrop']],
+            ['name' => 'Drokz : Gabber Set', 'artists' => ['Drokz']],
+            ['name' => 'Patjoo\'s Royal Rave', 'artists' => ['Patjoo']],
+            ['name' => 'B-Front & Phuture Noize', 'artists' => ['B-Front', 'Phuture Noize']],
+            ['name' => 'Refold vs Re-Vane', 'artists' => ['Refold', 'Re-Vane']],
+            ['name' => 'Level One vs Nightcraft', 'artists' => ['Level One', 'Nightcraft']],
+            ['name' => 'Sanctuary vs Spitfire', 'artists' => ['Sanctuary', 'Spitfire']],
+            ['name' => 'Chapter V & Revelation', 'artists' => ['Chapter V', 'Revelation']],
+            ['name' => 'Dark Entities vs Unmute', 'artists' => ['Dark Entities', 'Unmute']],
+            ['name' => 'T.M.O. vs Amigo', 'artists' => ['T.M.O.', 'Amigo']],
+            ['name' => 'Complex vs Udow', 'artists' => ['Complex', 'Udow']],
+            ['name' => 'Abaddon vs Rosbeek', 'artists' => ['Abaddon', 'Rosbeek']],
+            ['name' => 'Zany & The Pitcher', 'artists' => ['Zany', 'The Pitcher']],
+            ['name' => 'Karun vs Unfused', 'artists' => ['Karun', 'Unfused']],
+            ['name' => 'D-Fence vs Never Surrender', 'artists' => ['D-Fence', 'Never Surrender']],
         ];
 
         // Add regular acts for each artist
@@ -453,6 +520,7 @@ class FestivalSeeder extends Seeder
             ['name' => 'EDC Las Vegas 2026', 'loc' => 'Motor Speedway, LV', 'start' => '2026-05-15', 'end' => '2026-05-17'],
             ['name' => 'Mysteryland 2026', 'loc' => 'Haarlemmermeer, Netherlands', 'start' => '2026-08-28', 'end' => '2026-08-30'],
             ['name' => 'Rebirth Festival 2026', 'loc' => 'Haaren, Netherlands', 'start' => '2026-04-10', 'end' => '2026-04-12'],
+            ['name' => 'Supersized Kingsday 2026', 'loc' => 'Aquabest, Best', 'start' => '2026-04-27', 'end' => '2026-04-27'],
         ];
 
         $eventModels = [];
@@ -509,6 +577,12 @@ class FestivalSeeder extends Seeder
             'REVELATION' => 'Progressive and Euphoric hardstyle.',
             'MADNESS SQUARE' => 'Pure party vibes.',
             'Beetje Dansen' => 'Cosy party stage.',
+            'Raw' => 'Rawstyle stage.',
+            'Uptempo' => 'Uptempo stage.',
+            'Hardstyle Classics' => 'Hardstyle Classics stage.',
+            'Hardcore' => 'Hardcore stage.',
+            'Hardcore Classics' => 'Hardcore Classics stage.',
+            'Dutch Style' => 'Dutch Style stage.',
         ];
 
         $stageModels = [];
@@ -536,6 +610,7 @@ class FestivalSeeder extends Seeder
             'EDC Las Vegas 2026' => ['Kinetic FIELD', 'Circuit GROUNDS'],
             'Mysteryland 2026' => ['Mainstage', 'Library'],
             'Rebirth Festival 2026' => ['REBIRTH', 'REBELLION', 'RESIST', 'REBORN RAW', 'RESET x REVENGE', 'REACTIVATE', 'REVELATION', 'MADNESS SQUARE', 'ROAD TO REBIRTH', 'Beetje Dansen'],
+            'Supersized Kingsday 2026' => ['Mainstage', 'Raw', 'Uptempo', 'Hardstyle Classics', 'Hardcore', 'Hardcore Classics', 'Dutch Style'],
         ];
 
         foreach ($eventStages as $eventName => $stageNames) {
@@ -863,6 +938,15 @@ class FestivalSeeder extends Seeder
                         'Mutant', 'LuckyNoise', 'Josha', 'Conspirator', 'Sickdog', 'Tob-E', 'Invicious', 'Illuszion', 'Ijgenweis'
                     ],
                 ],
+            ],
+            'Supersized Kingsday 2026' => [
+                'Mainstage' => ['Ecstatic', 'EZG', 'Atmozfears', 'Wildstylez', 'Outsiders', 'B-Front & Phuture Noize', 'D-Sturb', 'Brennan Heart', 'Rejecta : SUPERSIZED', 'Rebelion', 'Radical Redemption', 'Synergy'],
+                'Raw' => ['Refold vs Re-Vane', 'Coldax vs Omnya : SUPERSIZED', 'Vexxed', 'Infliction', 'Level One vs Nightcraft', 'Sanctuary vs Spitfire', 'Cryex', 'BMBERJCK', 'Chapter V & Revelation', 'Dark Entities vs Unmute', 'FLO'],
+                'Uptempo' => ['Josha', 'T.M.O. vs Amigo', 'Namara', 'Spitnoise', 'Satirized', 'Lekkerfaces', 'Gezellige Uptempo : SUPERSIZED', 'Complex vs Udow', 'Abaddon vs Rosbeek', 'Partyraiser', 'The Speed Team: Akimbo, Kili, Samynator, Revealer & Roosterz', 'Robs'],
+                'Hardstyle Classics' => ['Silvio Aquila', 'Josh & Wesz', 'Jones', 'Zany & The Pitcher', 'Brennan Heart pres. Evolution of Style', 'Coone', 'Noisecontrollers', 'Psyko Punkz', 'Ran-D & Adaro : SUPERSIZED', 'E-Force', 'DV8'],
+                'Hardcore' => ['Hyperverb', 'Chaos Project', 'Karun vs Unfused', 'Furyan', 'Promo', 'Nosferatu : SUPERSIZED', 'Miss K8', 'Paul Elstak ft. Boogshe', 'Endymion', 'D-Fence vs Never Surrender', 'Tha Watcher'],
+                'Hardcore Classics' => ['Gabber Syndrome', 'Noxa', 'Fantastic Four : SUPERSIZED', 'Kasparov', 'Mad Dog', 'Tha Playah', 'Art of Fighters', 'Korsakoff', 'Neophyte', 'Drokz : Gabber Set', 'Alee'],
+                'Dutch Style' => ['Dâvinø', 'Patjoo\'s Royal Rave', 'More Kords', 'Hans Glock pres. Back2Basics', 'Dr. Rude pres Jump Classics', 'DJ Jantje', 'Larstig & Gasdrop : SUPERSIZED', 'DIKKE BAAP', 'Pat B', 'Potato', 'DL'],
             ],
         ];
 
@@ -1304,7 +1388,144 @@ class FestivalSeeder extends Seeder
             }
         }
 
-        // 11. Assign events to admin user
+        // 11. Official Timetable for Supersized Kingsday 2026
+        $supersizedEvent = $eventModels['Supersized Kingsday 2026'];
+        $supersizedTimetable = EventTimetable::updateOrCreate(
+            ['event_id' => $supersizedEvent->id, 'is_official' => true],
+            ['name' => 'Official Timetable', 'is_public' => true]
+        );
+        $supersizedTimetable->entries()->delete();
+
+        $supersizedEntries = [
+            '2026-04-27' => [
+                'Mainstage' => [
+                    ['Ecstatic', '12:00', '13:30'],
+                    ['EZG', '13:30', '14:00'],
+                    ['Atmozfears', '14:00', '15:00'],
+                    ['Wildstylez', '15:00', '16:00'],
+                    ['Outsiders', '16:00', '17:00'],
+                    ['B-Front & Phuture Noize', '17:00', '18:00'],
+                    ['D-Sturb', '18:00', '19:00'],
+                    ['Brennan Heart', '19:00', '20:00'],
+                    ['Rejecta : SUPERSIZED', '20:00', '21:00'],
+                    ['Rebelion', '21:00', '22:00'],
+                    ['Radical Redemption', '22:00', '23:00'],
+                    ['Synergy', '23:00', '23:01'],
+                ],
+                'Raw' => [
+                    ['Refold vs Re-Vane', '12:00', '13:00'],
+                    ['Coldax vs Omnya : SUPERSIZED', '13:00', '14:00'],
+                    ['Vexxed', '14:00', '15:15'],
+                    ['Infliction', '15:15', '16:15'],
+                    ['Level One vs Nightcraft', '16:15', '17:30'],
+                    ['Sanctuary vs Spitfire', '17:30', '19:00'],
+                    ['Cryex', '19:00', '20:00'],
+                    ['BMBERJCK', '20:00', '21:00'],
+                    ['Chapter V & Revelation', '21:00', '22:00'],
+                    ['Dark Entities vs Unmute', '22:00', '23:00'],
+                    ['FLO', '23:00', '23:01'],
+                ],
+                'Uptempo' => [
+                    ['Josha', '12:00', '13:00'],
+                    ['T.M.O. vs Amigo', '13:00', '14:00'],
+                    ['Namara', '14:00', '15:00'],
+                    ['Spitnoise', '15:00', '16:00'],
+                    ['Satirized', '16:00', '17:00'],
+                    ['Lekkerfaces', '17:00', '18:00'],
+                    ['Gezellige Uptempo : SUPERSIZED', '18:00', '19:00'],
+                    ['Complex vs Udow', '19:00', '20:00'],
+                    ['Abaddon vs Rosbeek', '20:00', '21:00'],
+                    ['Partyraiser', '21:00', '22:00'],
+                    ['The Speed Team: Akimbo, Kili, Samynator, Revealer & Roosterz', '22:00', '23:00'],
+                    ['Robs', '23:00', '23:01'],
+                ],
+                'Hardstyle Classics' => [
+                    ['Silvio Aquila', '12:00', '13:00'],
+                    ['Josh & Wesz', '13:00', '14:00'],
+                    ['Jones', '14:00', '15:00'],
+                    ['Zany & The Pitcher', '15:00', '16:30'],
+                    ['Brennan Heart pres. Evolution of Style', '16:30', '17:15'],
+                    ['Coone', '17:15', '18:15'],
+                    ['Noisecontrollers', '18:15', '19:30'],
+                    ['Psyko Punkz', '19:30', '20:30'],
+                    ['Ran-D & Adaro : SUPERSIZED', '20:30', '22:00'],
+                    ['E-Force', '22:00', '23:00'],
+                    ['DV8', '23:00', '23:01'],
+                ],
+                'Hardcore' => [
+                    ['Hyperverb', '12:00', '13:00'],
+                    ['Chaos Project', '13:00', '14:00'],
+                    ['Karun vs Unfused', '14:00', '15:00'],
+                    ['Furyan', '15:00', '16:00'],
+                    ['Promo', '16:00', '17:00'],
+                    ['Nosferatu : SUPERSIZED', '17:00', '18:00'],
+                    ['Miss K8', '18:00', '19:30'],
+                    ['Paul Elstak ft. Boogshe', '19:30', '20:30'],
+                    ['Endymion', '20:30', '21:45'],
+                    ['D-Fence vs Never Surrender', '21:45', '23:00'],
+                    ['Tha Watcher', '23:00', '23:01'],
+                ],
+                'Hardcore Classics' => [
+                    ['Gabber Syndrome', '12:00', '13:30'],
+                    ['Noxa', '13:30', '14:30'],
+                    ['Fantastic Four : SUPERSIZED', '14:30', '16:00'],
+                    ['Kasparov', '16:00', '17:00'],
+                    ['Mad Dog', '17:00', '18:00'],
+                    ['Tha Playah', '18:00', '19:00'],
+                    ['Art of Fighters', '19:00', '20:00'],
+                    ['Korsakoff', '20:00', '21:00'],
+                    ['Neophyte', '21:00', '22:00'],
+                    ['Drokz : Gabber Set', '22:00', '23:00'],
+                    ['Alee', '23:00', '23:01'],
+                ],
+                'Dutch Style' => [
+                    ['Dâvinø', '12:00', '13:00'],
+                    ['Patjoo\'s Royal Rave', '13:00', '14:30'],
+                    ['More Kords', '14:30', '15:15'],
+                    ['Hans Glock pres. Back2Basics', '15:15', '16:15'],
+                    ['Dr. Rude pres Jump Classics', '16:15', '17:30'],
+                    ['DJ Jantje', '17:30', '19:00'],
+                    ['Larstig & Gasdrop : SUPERSIZED', '19:00', '20:00'],
+                    ['DIKKE BAAP', '20:00', '21:00'],
+                    ['Pat B', '21:00', '22:00'],
+                    ['Potato', '22:00', '23:00'],
+                    ['DL', '23:00', '23:01'],
+                ],
+            ],
+        ];
+
+        foreach ($supersizedEntries as $date => $stages) {
+            foreach ($stages as $stageName => $entries) {
+                if (!isset($stageModels[$stageName])) continue;
+                $stage = $stageModels[$stageName];
+
+                foreach ($entries as $entry) {
+                    $aName = $entry[0];
+                    $act = $actModels[$aName] ?? null;
+                    if (!$act) {
+                        $act = Act::firstOrCreate(['name' => $aName], ['is_live' => false]);
+                        $actModels[$aName] = $act;
+                    }
+
+                    $start = Carbon::parse($date . ' ' . $entry[1], 'Europe/Amsterdam')->utc();
+                    $end = Carbon::parse($date . ' ' . $entry[2], 'Europe/Amsterdam')->utc();
+
+                    if ($end->lt($start)) {
+                        $end->addDay();
+                    }
+
+                    TimetableEntry::create([
+                        'timetable_id' => $supersizedTimetable->id,
+                        'stage_id' => $stage->id,
+                        'act_id' => $act->id,
+                        'start_time' => $start,
+                        'end_time' => $end,
+                    ]);
+                }
+            }
+        }
+
+        // 12. Assign events to admin user
         $admin = \App\Models\User::where('email', 'admin@bangers.nl')->first();
         if ($admin) {
             $now = Carbon::now();

@@ -22,6 +22,7 @@ class GroupService
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
                 'owner_id' => $owner->id,
+                'event_id' => $data['event_id'] ?? null,
             ]);
 
             $group->members()->attach($owner->id, [
@@ -47,16 +48,22 @@ class GroupService
     }
 
     /**
-     * Get groups for a user, optionally filtered by invitation status.
+     * Get groups for a user, optionally filtered.
      */
-    public function getGroupsForUser(User $user, ?string $status = null): Collection
+    public function getGroupsForUser(User $user, array $filters = []): Collection
     {
+        $status = $filters['status'] ?? null;
+        
         $query = $user->groups()
             ->withCount('members')
             ->with(['owner', 'timetables.entries.stage', 'timetables.entries.act.artists']);
 
         if ($status) {
             $query->wherePivot('invitation_status', $status);
+        }
+
+        if (isset($filters['event_id'])) {
+            $query->where('event_id', $filters['event_id']);
         }
 
         return $query->get();

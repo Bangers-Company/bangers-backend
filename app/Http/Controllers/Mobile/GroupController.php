@@ -35,7 +35,9 @@ class GroupController extends Controller
      */
     public function index(Request $request)
     {
-        return response()->json($request->user()->groups()->with(['owner', 'timetables'])->get());
+        $groups = $this->groupService->getGroupsForUser($request->user(), $request->only(['status', 'event_id']));
+        
+        return response()->json($groups);
     }
 
     /**

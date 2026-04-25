@@ -18,6 +18,7 @@ class StoreGroupRequest extends FormRequest
             'description' => 'nullable|string',
             'user_ids' => 'nullable|array',
             'user_ids.*' => 'exists:users,id',
+            'event_id' => 'nullable|uuid|exists:events,id',
         ];
     }
 }
