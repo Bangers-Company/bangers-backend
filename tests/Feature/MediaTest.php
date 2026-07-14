@@ -7,44 +7,51 @@ use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
-test('can upload media', function () {
-    Storage::fake('public');
+beforeEach(function () {
+    $this->admin = \App\Models\User::factory()->admin()->create();
+    \Laravel\Sanctum\Sanctum::actingAs($this->admin);
+});
 
-    $file = UploadedFile::fake()->image('banner.jpg');
+test("can upload media", function () {
+    Storage::fake("public");
 
-    $response = $this->postJson(route('api.media.store'), [
-        'file' => $file,
-        'type' => 'festival_banner'
+    $file = UploadedFile::fake()->image("banner.png");
+
+    $response = $this->postJson(route('api.v1.media.store'), [
+        "file" => $file,
+        "type" => "event_banner",
     ]);
 
     $response->assertStatus(201);
 
-    $id = $response->json('id');
-    $storageKey = $response->json('storage_key');
+    $id = $response->json("data.id");
+    $media = Media::find($id);
 
-    Storage::disk('public')->assertExists($storageKey);
-    $this->assertDatabaseHas('media', ['id' => $id, 'type' => 'festival_banner']);
+    Storage::disk("public")->assertExists($media->storage_key);
+    $this->assertDatabaseHas("media", [
+        "id" => $id,
+        "type" => "event_banner",
+    ]);
 });
 
-test('can show media info', function () {
+test("can show media info", function () {
     $media = Media::factory()->create();
 
-    $response = $this->getJson(route('api.media.show', $media));
+    $response = $this->getJson(route('api.v1.media.show', $media));
 
-    $response->assertStatus(200)
-        ->assertJsonPath('id', $media->id);
+    $response->assertStatus(200)->assertJsonPath("data.id", $media->id);
 });
 
-test('can delete media', function () {
-    Storage::fake('public');
-    
-    // Manually create media with a valid storage key for the fake disk
-    $media = Media::factory()->create(['storage_key' => 'media/test.jpg']);
-    Storage::disk('public')->put('media/test.jpg', 'fake content');
+test("can delete media", function () {
+    Storage::fake("public");
 
-    $response = $this->deleteJson(route('api.media.destroy', $media));
+    // Manually create media with a valid storage key for the fake disk
+    $media = Media::factory()->create(["storage_key" => "media/test.jpg"]);
+    Storage::disk("public")->put("media/test.jpg", "fake content");
+
+    $response = $this->deleteJson(route('api.v1.media.destroy', $media));
 
     $response->assertStatus(204);
-    Storage::disk('public')->assertMissing('media/test.jpg');
-    $this->assertSoftDeleted('media', ['id' => $media->id]);
+    Storage::disk("public")->assertMissing("media/test.jpg");
+    $this->assertSoftDeleted("media", ["id" => $media->id]);
 });

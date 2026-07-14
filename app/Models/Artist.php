@@ -12,21 +12,35 @@ class Artist extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'bio',
-        'genre',
-        'image_media_id',
-        'version',
-    ];
+    protected $fillable = ["name", "bio", "genre", "image_media_id"];
 
-    public function image()
+    protected static function booted(): void
     {
-        return $this->belongsTo(Media::class, 'image_media_id');
+        static::deleting(function (Artist $artist) {
+            if ($artist->isForceDeleting()) {
+                return;
+            }
+            $artist->acts()->detach();
+        });
     }
 
-    public function acts()
+    public function image(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsToMany(Act::class, 'act_artists');
+        return $this->belongsTo(Media::class, "image_media_id");
+    }
+
+    public function banner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Media::class, "banner_media_id");
+    }
+
+    public function genres(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    {
+        return $this->morphToMany(Genre::class, 'genreable');
+    }
+
+    public function acts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Act::class, "act_artists");
     }
 }

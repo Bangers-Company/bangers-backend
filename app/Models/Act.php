@@ -12,21 +12,44 @@ class Act extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'description',
-        'version',
+    protected $fillable = ["name", "description", "is_live"];
+
+    protected $casts = [
+        "is_live" => "boolean",
     ];
 
-    public function artists()
+    protected static function booted(): void
     {
-        return $this->belongsToMany(Artist::class, 'act_artists');
+        static::deleting(function (Act $act) {
+            if ($act->isForceDeleting()) {
+                return;
+            }
+            $act->artists()->detach();
+            $act->stages()->detach();
+        });
     }
 
-    public function festivals()
+    public function artists(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(Festival::class, 'festival_acts')
-            ->withPivot('announcement_date')
+        return $this->belongsToMany(Artist::class, "act_artists");
+    }
+
+    public function genres(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    {
+        return $this->morphToMany(Genre::class, 'genreable');
+    }
+
+    public function stages(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Stage::class, "event_stage_acts")
+            ->withPivot('event_id', 'date')
+            ->withTimestamps();
+    }
+
+    public function events(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, "event_stage_acts")
+            ->withPivot('stage_id', 'date')
             ->withTimestamps();
     }
 }

@@ -5,59 +5,38 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Act;
 use App\Models\Artist;
-use App\Models\Festival;
+use App\Models\Event;
+use App\Models\User;
 use App\Http\Resources\SearchResource;
+use App\Http\Requests\SearchRequest;
 use Illuminate\Http\Request;
+
+use App\Services\SearchService;
 
 class SearchController extends Controller
 {
-    /**
-     * Search across multiple entities with filtering.
-     */
-    public function search(Request $request)
+    protected $searchService;
+
+    public function __construct(SearchService $searchService)
     {
-        $queryText = $request->input('query');
-        $date = $request->input('date');
-        $location = $request->input('location');
-        $entities = $request->input('entities', ['festivals', 'artists', 'acts']);
-        $perPage = $request->input('per_page', 15);
+        $this->searchService = $searchService;
+    }
 
-        if (is_string($entities)) {
-            $entities = explode(',', $entities);
-        }
+    public function search(SearchRequest $request)
+    {
+        $results = $this->searchService->search($request->validated());
 
-        $results = [];
+        return new SearchResource($results);
+    }
 
-        if (in_array('festivals', $entities)) {
-            $festivalQuery = Festival::query();
-            if ($queryText) {
-                $festivalQuery->where('name', 'like', "%{$queryText}%");
-            }
-            if ($date) {
-                $festivalQuery->whereDate('start_date', '<=', $date)
-                    ->whereDate('end_date', '>=', $date);
-            }
-            if ($location) {
-                $festivalQuery->where('location', 'like', "%{$location}%");
-            }
-            $results['festivals'] = $festivalQuery->paginate($perPage, ['*'], 'festivals_page');
-        }
-
-        if (in_array('artists', $entities)) {
-            $artistQuery = Artist::query();
-            if ($queryText) {
-                $artistQuery->where('name', 'like', "%{$queryText}%");
-            }
-            $results['artists'] = $artistQuery->paginate($perPage, ['*'], 'artists_page');
-        }
-
-        if (in_array('acts', $entities)) {
-            $actQuery = Act::query();
-            if ($queryText) {
-                $actQuery->where('name', 'like', "%{$queryText}%");
-            }
-            $results['acts'] = $actQuery->paginate($perPage, ['*'], 'acts_page');
-        }
+    /**
+     * Mobile search (with images)
+     */
+    public function mobileSearch(SearchRequest $request)
+    {
+        $filters = $request->validated();
+        $filters['with_media'] = true;
+        $results = $this->searchService->search($filters);
 
         return new SearchResource($results);
     }

@@ -7,21 +7,38 @@ use App\Models\Artist;
 use App\Http\Resources\ArtistResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
 
 class ArtistController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return ArtistResource::collection(Artist::all());
+        $query = Artist::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('name', 'ilike', "%{$search}%")
+                ->orWhere('genre', 'ilike', "%{$search}%");
+        }
+
+        $perPage = $request->query('per_page', 15);
+        $query->orderBy('name', 'asc');
+
+        if ($perPage == -1) {
+            return ArtistResource::collection($query->with('acts', 'image')->get());
+        }
+
+        return ArtistResource::collection($query->with('acts', 'image')->paginate($perPage));
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('manage_content');
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'bio' => 'nullable|string',
-            'genre' => 'nullable|string|max:255',
-            'image_media_id' => 'nullable|uuid|exists:media,id',
+            "name" => "required|string|max:255",
+            "bio" => "nullable|string",
+            "genre" => "nullable|string|max:255",
+            "image_media_id" => "nullable|uuid|exists:media,id",
         ]);
 
         if ($validator->fails()) {
@@ -30,21 +47,22 @@ class ArtistController extends Controller
 
         $artist = Artist::create($validator->validated());
 
-        return new ArtistResource($artist);
+        return (new ArtistResource($artist))->response()->setStatusCode(201);
     }
 
     public function show(Artist $artist)
     {
-        return new ArtistResource($artist->load('acts', 'image'));
+        return new ArtistResource($artist->load("acts", "image"));
     }
 
     public function update(Request $request, Artist $artist)
     {
+        Gate::authorize('manage_content');
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string|max:255',
-            'bio' => 'nullable|string',
-            'genre' => 'nullable|string|max:255',
-            'image_media_id' => 'nullable|uuid|exists:media,id',
+            "name" => "sometimes|required|string|max:255",
+            "bio" => "nullable|string",
+            "genre" => "nullable|string|max:255",
+            "image_media_id" => "nullable|uuid|exists:media,id",
         ]);
 
         if ($validator->fails()) {
@@ -58,6 +76,7 @@ class ArtistController extends Controller
 
     public function destroy(Artist $artist)
     {
+        Gate::authorize('manage_content');
         $artist->delete();
 
         return response()->json(null, 204);

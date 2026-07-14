@@ -1,0 +1,28 @@
+
+   INFO  Seeding database.  
+
+
+   Illuminate\Database\QueryException 
+
+  SQLSTATE[08006] [7] could not translate host name "bangers_db" to address: Name or service not known (Connection: pgsql, Host: bangers_db, Port: 5432, Database: bangers_backend, SQL: select * from "artists" where ("name" = Dimitri Vegas & Like Mike) and "artists"."deleted_at" is null limit 1)
+
+  at vendor/laravel/framework/src/Illuminate/Database/Connection.php:838
+    834▕             $exceptionType = $this->isUniqueConstraintError($e)
+    835▕                 ? UniqueConstraintViolationException::class
+    836▕                 : QueryException::class;
+    837▕ 
+  ➜ 838▕             throw new $exceptionType(
+    839▕                 $this->getNameWithReadWriteType(),
+    840▕                 $query,
+    841▕                 $this->prepareBindings($bindings),
+    842▕                 $e,
+
+      [2m+28 vendor frames [22m
+
+  29  database/seeders/FestivalSeeder.php:121
+      Illuminate\Database\Eloquent\Model::__callStatic()
+      [2m+23 vendor frames [22m
+
+  53  artisan:16
+      Illuminate\Foundation\Application::handleCommand()
+

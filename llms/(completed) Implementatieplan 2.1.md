@@ -80,12 +80,11 @@ CREATE TABLE act_artists (
     PRIMARY KEY (act_id, artist_id)
 );
 
-CREATE TABLE festival_acts (
-    festival_id UUID REFERENCES festivals(id) ON DELETE CASCADE,
-    act_id UUID REFERENCES acts(id) ON DELETE CASCADE,
-    announcement_date TIMESTAMP,
+CREATE TABLE stage_acts (
+    stage_id UUID NOT NULL REFERENCES stages(id) ON DELETE CASCADE,
+    act_id UUID NOT NULL REFERENCES acts(id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (festival_id, act_id)
+    PRIMARY KEY (stage_id, act_id)
 );
 ```
 

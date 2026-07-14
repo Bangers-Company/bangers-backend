@@ -12,15 +12,17 @@ class Stage extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    protected $fillable = [
-        'festival_id',
-        'name',
-        'description',
-        'version',
-    ];
+    protected $fillable = ["name", "description"];
 
-    public function festival()
+    public function events(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsTo(Festival::class);
+        return $this->belongsToMany(Event::class, 'event_stages');
+    }
+
+    public function acts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Act::class, "event_stage_acts")
+            ->withPivot('event_id', 'date')
+            ->withTimestamps();
     }
 }

@@ -1,0 +1,120 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\EventTimetable;
+use App\Models\TimetableEntry;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+use App\Http\Requests\Admin\StoreTimetableRequest;
+use App\Http\Requests\Admin\UpdateTimetableRequest;
+
+class TimetableController extends Controller
+{
+    /**
+     * GET /admin/timetables
+     */
+    public function index()
+    {
+        return response()->json(EventTimetable::withCount('entries')->get());
+    }
+
+    /**
+     * GET /admin/timetables/{id}
+     */
+    public function show($id)
+    {
+        $timetable = EventTimetable::with(['entries.stage', 'entries.act.artists'])->findOrFail($id);
+        return response()->json($timetable);
+    }
+
+    /**
+     * POST /admin/timetables
+     */
+    public function store(StoreTimetableRequest $request)
+    {
+        $timetable = EventTimetable::create([
+            'event_id' => $request->event_id,
+            'name' => $request->name,
+            'is_official' => $request->input('is_official', true),
+            'is_public' => $request->input('is_public', false),
+        ]);
+
+        return response()->json($timetable, 201);
+    }
+
+    /**
+     * PUT /admin/timetables/{id}
+     * Update entries and meta data.
+     */
+    public function update(UpdateTimetableRequest $request, $id)
+    {
+        $timetable = EventTimetable::findOrFail($id);
+
+        if ($request->has('name')) $timetable->name = $request->name;
+        if ($request->has('is_public')) $timetable->is_public = $request->is_public;
+
+        DB::transaction(function () use ($timetable, $request) {
+            $timetable->save();
+
+            if ($request->has('entries')) {
+                // Check for overlaps within the request itself for the same stage
+                $entriesByStage = [];
+                foreach ($request->entries as $e) {
+                    $stageId = $e['stage_id'];
+                    $start = new \DateTime($e['start_time']);
+                    $end = new \DateTime($e['end_time']);
+
+                    if (!isset($entriesByStage[$stageId])) $entriesByStage[$stageId] = [];
+
+                    foreach ($entriesByStage[$stageId] as $existing) {
+                        if ($start < $existing['end'] && $end > $existing['start']) {
+                            abort(409, "Overlap detected for stage {$stageId} between acts in request.");
+                        }
+                    }
+                    $entriesByStage[$stageId][] = ['start' => $start, 'end' => $end];
+                }
+
+                // Delete existing entries and recreate
+                $timetable->entries()->delete();
+
+                foreach ($request->entries as $eData) {
+                    $timetable->entries()->create([
+                        'stage_id' => $eData['stage_id'],
+                        'act_id' => $eData['act_id'],
+                        'start_time' => $eData['start_time'],
+                        'end_time' => $eData['end_time'],
+                        'version' => $timetable->entries()->withTrashed()->count() + 1
+                    ]);
+                }
+            }
+        });
+
+        return response()->json($timetable->load('entries.stage', 'entries.act.artists'));
+    }
+
+    /**
+     * PATCH /admin/timetables/{id}/publish
+     */
+    public function publish(Request $request, $id)
+    {
+        $timetable = EventTimetable::findOrFail($id);
+        $timetable->update(['is_public' => $request->input('is_public', true)]);
+
+        return response()->json($timetable);
+    }
+
+    /**
+     * DELETE /admin/timetables/{id}
+     */
+    public function destroy($id)
+    {
+        $timetable = EventTimetable::findOrFail($id);
+        $timetable->delete();
+
+        return response()->json(['message' => 'Timetable deleted']);
+    }
+}
