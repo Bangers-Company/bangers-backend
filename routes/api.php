@@ -48,5 +48,7 @@ Route::prefix('mobile/v1')->name('api.mobile.v1.')->group(function () {
         require __DIR__.'/mobile/ConfigRoutes.php';
         require __DIR__.'/mobile/GenreRoutes.php';
         require __DIR__.'/mobile/MediaRoutes.php';
+        require __DIR__.'/mobile/DeviceTokenRoutes.php';
+        require __DIR__.'/mobile/NotificationRoutes.php';
     });
 });

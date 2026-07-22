@@ -137,6 +137,19 @@ class User extends Authenticatable
         return $this->morphToMany(Genre::class, 'genreable');
     }
 
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class);
+    }
+
+    /**
+     * Specifies the user's FCM tokens for push notifications.
+     */
+    public function routeNotificationForFcm(): array
+    {
+        return $this->deviceTokens()->pluck('token')->toArray();
+    }
+
     /**
      * Check if user is friends with another user.
      */

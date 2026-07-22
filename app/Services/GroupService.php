@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use App\Events\GroupCreated;
+use App\Events\GroupInvitationSent;
+use App\Events\GroupInvitationAccepted;
 use App\Exceptions\GroupMembershipException;
 
 class GroupService
@@ -37,6 +39,11 @@ class GroupService
                             'role' => 'member',
                             'invitation_status' => 'pending'
                         ]);
+
+                        $invitedUser = User::find($invitedId);
+                        if ($invitedUser) {
+                            event(new GroupInvitationSent($group, $invitedUser, $owner));
+                        }
                     }
                 }
             }
@@ -88,7 +95,7 @@ class GroupService
     /**
      * Add a member to the group.
      */
-    public function addMember(Group $group, string $userId, string $role = 'member'): void
+    public function addMember(Group $group, string $userId, string $role = 'member', ?User $inviter = null): void
     {
         $group->members()->syncWithoutDetaching([
             $userId => [
@@ -96,6 +103,14 @@ class GroupService
                 'invitation_status' => 'pending'
             ]
         ]);
+
+        $invitedUser = User::find($userId);
+        if ($invitedUser) {
+            $inviterUser = $inviter ?? User::find($group->owner_id);
+            if ($inviterUser) {
+                event(new GroupInvitationSent($group, $invitedUser, $inviterUser));
+            }
+        }
     }
 
     /**
@@ -152,6 +167,11 @@ class GroupService
         $group->members()->updateExistingPivot($userId, [
             'invitation_status' => 'accepted'
         ]);
+
+        $user = User::find($userId);
+        if ($user) {
+            event(new GroupInvitationAccepted($group, $user));
+        }
     }
 
     /**

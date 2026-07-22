@@ -6,6 +6,7 @@ use App\Models\Friendship;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use App\Events\FriendshipAccepted;
+use App\Events\FriendRequestSent;
 
 class FriendshipService
 {
@@ -36,12 +37,16 @@ class FriendshipService
 
         $status = 'pending';
 
-        return Friendship::create([
+        $friendship = Friendship::create([
             'user_id_1' => $u1,
             'user_id_2' => $u2,
             'status' => $status,
             'requested_by' => $user->id,
         ]);
+
+        event(new FriendRequestSent($friendship));
+
+        return $friendship;
     }
 
     /**
