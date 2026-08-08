@@ -103,35 +103,49 @@ class TimetableService
         $timetable = GroupTimetable::with([
             'entries.stage', 
             'entries.act.artists',
-            'attendingUsers.profileMedia'
         ])
             ->where('group_id', $groupId)
             ->findOrFail($timetableId);
 
         $userId = $user->id;
-        $attendingUsers = $timetable->attendingUsers;
 
-        $timetable->entries->map(function ($entry) use ($attendingUsers, $userId) {
-            $entryAttendees = $attendingUsers->where('pivot.timetable_entry_id', $entry->id);
+        // Get all attending user_ids grouped by entry in a single query
+        $attendanceMap = \DB::table('group_timetable_attendance')
+            ->where('group_timetable_id', $timetable->id)
+            ->select('timetable_entry_id', 'user_id')
+            ->get()
+            ->groupBy('timetable_entry_id');
+
+        // Collect all unique user IDs that are attending any entry
+        $allUserIds = $attendanceMap->flatten()->pluck('user_id')->unique()->values()->all();
+        
+        // Single query to load all attending users with profile media
+        $usersById = !empty($allUserIds) 
+            ? User::with('profileMedia')->whereIn('id', $allUserIds)->get()->keyBy('id')
+            : collect();
+
+        $timetable->entries->map(function ($entry) use ($attendanceMap, $userId, $usersById) {
+            $entryAttendeeIds = $attendanceMap->get($entry->id, collect())->pluck('user_id');
             
-            $entry->pivot->is_attending = $entryAttendees->contains('id', $userId);
-            $entry->pivot->attending_count = $entryAttendees->count();
+            $entry->pivot->is_attending = $entryAttendeeIds->contains($userId);
+            $entry->pivot->attending_count = $entryAttendeeIds->count();
             
-            $entry->attendees = $entryAttendees->map(function ($u) {
+            $entry->attendees = $entryAttendeeIds->map(function ($uid) use ($usersById) {
+                $u = $usersById->get($uid);
+                if (!$u) return null;
                 return [
                     'id' => $u->id,
                     'name' => trim($u->first_name . ' ' . $u->last_name),
                     'profile_photo_path' => $u->profileMedia ? $u->profileMedia->url : null,
                 ];
-            })->values();
+            })->filter()->values();
 
             return $entry;
         });
 
-        $timetable->makeHidden('attendingUsers');
-
         return $timetable;
     }
+
 
     /**
      * Update entries for a group timetable.

@@ -61,9 +61,10 @@ class GroupService
     {
         $status = $filters['status'] ?? null;
         
+        // Only load lightweight metadata — entries are fetched on-demand per group timetable
         $query = $user->groups()
             ->withCount('members')
-            ->with(['owner', 'timetables.entries.stage', 'timetables.entries.act.artists']);
+            ->with(['owner', 'timetables:id,group_id,event_id,name']);
 
         if ($status) {
             $query->wherePivot('invitation_status', $status);
@@ -75,6 +76,7 @@ class GroupService
 
         return $query->get();
     }
+
 
     /**
      * Update group details.
