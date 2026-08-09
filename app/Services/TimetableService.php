@@ -101,8 +101,11 @@ class TimetableService
     public function getGroupTimetableWithAttendance(string $groupId, string $timetableId, User $user): GroupTimetable
     {
         $timetable = GroupTimetable::with([
-            'entries.stage', 
-            'entries.act.artists',
+            'entries' => function ($query) {
+                $query->with(['stage', 'act.artists'])
+                      ->whereNull('timetable_entries.deleted_at')
+                      ->orderBy('timetable_entries.start_time');
+            },
         ])
             ->where('group_id', $groupId)
             ->findOrFail($timetableId);
