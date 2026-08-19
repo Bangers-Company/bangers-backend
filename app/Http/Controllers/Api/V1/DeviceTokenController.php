@@ -18,6 +18,11 @@ class DeviceTokenController extends Controller
             'device_type' => 'required|string|in:ios,android,web',
         ]);
 
+        // Re-assign token to current user if previously linked to another user
+        \App\Models\UserDeviceToken::where('token', $validated['token'])
+            ->where('user_id', '!=', $request->user()->id)
+            ->delete();
+
         $token = $request->user()->deviceTokens()->updateOrCreate(
             ['token' => $validated['token']],
             [
@@ -25,6 +30,11 @@ class DeviceTokenController extends Controller
                 'last_used_at' => now(),
             ]
         );
+
+        // Delete older tokens for the same user to prevent sending duplicate pushes
+        $request->user()->deviceTokens()
+            ->where('id', '!=', $token->id)
+            ->delete();
 
         return response()->json([
             'message' => 'Device token registered successfully',

@@ -153,7 +153,12 @@ class User extends Authenticatable
      */
     public function routeNotificationForFcm(): array
     {
-        return $this->deviceTokens()->pluck('token')->toArray();
+        return $this->deviceTokens()
+            ->latest('last_used_at')
+            ->pluck('token')
+            ->unique()
+            ->values()
+            ->toArray();
     }
 
     /**

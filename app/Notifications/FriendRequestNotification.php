@@ -5,6 +5,8 @@ namespace App\Notifications;
 use App\Channels\FcmChannel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
+
 class FriendRequestNotification extends Notification
 {
 

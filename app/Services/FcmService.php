@@ -25,6 +25,11 @@ class FcmService
      */
     public function sendToToken(string $token, string $title, string $body, array $data = []): bool
     {
+        // Support Expo Push Tokens in dev/Expo environments
+        if (str_starts_with($token, 'ExponentPushToken') || str_starts_with($token, 'ExpoPushToken')) {
+            return $this->sendToExpo($token, $title, $body, $data);
+        }
+
         if (empty($this->projectId) || empty($this->clientEmail) || empty($this->privateKey)) {
             Log::warning('FCM Push Skipped: Firebase credentials not set in .env');
             return false;
@@ -55,7 +60,7 @@ class FcmService
                 'android' => [
                     'notification' => [
                         'sound' => 'default',
-                        'click_action' => 'TOP_STORY_ACTIVITY',
+                        'channel_id' => 'default',
                     ],
                 ],
                 'apns' => [
@@ -90,6 +95,32 @@ class FcmService
             UserDeviceToken::where('token', $token)->delete();
         }
 
+        return false;
+    }
+
+    /**
+     * Send push notification via Expo Push API for ExpoPushToken tokens.
+     */
+    protected function sendToExpo(string $token, string $title, string $body, array $data = []): bool
+    {
+        $payload = [
+            'to' => $token,
+            'title' => $title,
+            'body' => $body,
+            'data' => $data,
+            'sound' => 'default',
+            'channelId' => 'default',
+            'priority' => 'high',
+        ];
+
+        $response = Http::post('https://exp.host/--/api/v2/push/send', $payload);
+
+        if ($response->successful()) {
+            Log::info("Expo Push Sent Successfully to {$token}");
+            return true;
+        }
+
+        Log::error("Expo Push Send Failed [{$response->status()}]:", $response->json() ?? [$response->body()]);
         return false;
     }
 
