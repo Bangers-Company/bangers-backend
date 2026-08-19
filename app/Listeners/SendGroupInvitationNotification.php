@@ -4,12 +4,8 @@ namespace App\Listeners;
 
 use App\Events\GroupInvitationSent;
 use App\Notifications\GroupInvitationNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-
-class SendGroupInvitationNotification implements ShouldQueue
+class SendGroupInvitationNotification
 {
-    use InteractsWithQueue;
 
     public function handle(GroupInvitationSent $event): void
     {

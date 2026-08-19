@@ -6,12 +6,8 @@ use App\Channels\FcmChannel;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
-
-class GroupInvitationNotification extends Notification implements ShouldQueue
+class GroupInvitationNotification extends Notification
 {
-    use Queueable;
 
     public Group $group;
     public User $inviter;

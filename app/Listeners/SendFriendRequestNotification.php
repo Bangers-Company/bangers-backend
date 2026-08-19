@@ -5,12 +5,8 @@ namespace App\Listeners;
 use App\Events\FriendRequestSent;
 use App\Models\User;
 use App\Notifications\FriendRequestNotification;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-
-class SendFriendRequestNotification implements ShouldQueue
+class SendFriendRequestNotification
 {
-    use InteractsWithQueue;
 
     public function handle(FriendRequestSent $event): void
     {

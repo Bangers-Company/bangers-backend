@@ -5,12 +5,8 @@ namespace App\Notifications;
 use App\Channels\FcmChannel;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
-
-class FriendRequestNotification extends Notification implements ShouldQueue
+class FriendRequestNotification extends Notification
 {
-    use Queueable;
 
     public User $requester;
 

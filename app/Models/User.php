@@ -95,7 +95,13 @@ class User extends Authenticatable
     {
         return $this->attendedEvents()
             ->wherePivot('status', 'going')
-            ->where('end_date', '>=', now())
+            ->where(function ($query) {
+                $query->where('end_date', '>=', now()->startOfDay())
+                      ->orWhere(function ($sub) {
+                          $sub->whereNull('end_date')
+                              ->where('start_date', '>=', now()->startOfDay());
+                      });
+            })
             ->orderBy('start_date', 'asc');
     }
 
