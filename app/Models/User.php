@@ -95,7 +95,13 @@ class User extends Authenticatable
     {
         return $this->attendedEvents()
             ->wherePivot('status', 'going')
-            ->where('end_date', '>=', now())
+            ->where(function ($query) {
+                $query->where('end_date', '>=', now()->startOfDay())
+                      ->orWhere(function ($sub) {
+                          $sub->whereNull('end_date')
+                              ->where('start_date', '>=', now()->startOfDay());
+                      });
+            })
             ->orderBy('start_date', 'asc');
     }
 
@@ -135,6 +141,19 @@ class User extends Authenticatable
     public function genres(): MorphToMany
     {
         return $this->morphToMany(Genre::class, 'genreable');
+    }
+
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(UserDeviceToken::class);
+    }
+
+    /**
+     * Specifies the user's FCM tokens for push notifications.
+     */
+    public function routeNotificationForFcm(): array
+    {
+        return $this->deviceTokens()->pluck('token')->toArray();
     }
 
     /**

@@ -67,11 +67,12 @@ class UserController extends Controller
             'bio' => 'nullable|string',
             'dob' => 'nullable|date',
             'is_public' => 'boolean',
+            'profile_media_id' => 'nullable|uuid|exists:media,id',
             'genres' => 'array',
             'genres.*' => 'exists:genres,id',
         ]);
 
-        $user->update($request->only(['email', 'first_name', 'last_name', 'bio', 'dob', 'is_public']));
+        $user->update($request->only(['email', 'first_name', 'last_name', 'bio', 'dob', 'is_public', 'profile_media_id']));
 
         if ($request->has('genres')) {
             $user->genres()->sync($request->genres);

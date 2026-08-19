@@ -521,6 +521,7 @@ class FestivalSeeder extends Seeder
             ['name' => 'Mysteryland 2026', 'loc' => 'Haarlemmermeer, Netherlands', 'start' => '2026-08-28', 'end' => '2026-08-30'],
             ['name' => 'Rebirth Festival 2026', 'loc' => 'Haaren, Netherlands', 'start' => '2026-04-10', 'end' => '2026-04-12'],
             ['name' => 'Supersized Kingsday 2026', 'loc' => 'Aquabest, Best', 'start' => '2026-04-27', 'end' => '2026-04-27'],
+            ['name' => 'Decibel outdoor 2026', 'loc' => 'Beekse Bergen, Hilvarenbeek, Netherlands', 'start' => '2026-08-28', 'end' => '2026-08-30'],
         ];
 
         $eventModels = [];
@@ -583,6 +584,34 @@ class FestivalSeeder extends Seeder
             'Hardcore' => 'Hardcore stage.',
             'Hardcore Classics' => 'Hardcore Classics stage.',
             'Dutch Style' => 'Dutch Style stage.',
+            '1. MAINSTAGE' => 'Decibel Outdoor 1. MAINSTAGE',
+            '2. HARDCORE/UPTEMPO' => 'Decibel Outdoor 2. HARDCORE/UPTEMPO',
+            '3. HARD TECHNO' => 'Decibel Outdoor 3. HARD TECHNO',
+            '4. FUTURE DISTRICT' => 'Decibel Outdoor 4. FUTURE DISTRICT',
+            '5. NEW EARLY' => 'Decibel Outdoor 5. NEW EARLY',
+            '6. SOUND OF DECIBEL' => 'Decibel Outdoor 6. SOUND OF DECIBEL',
+            '7. RAW' => 'Decibel Outdoor 7. RAW',
+            'CITY HALL' => 'Decibel Outdoor CITY HALL',
+            'RAVE CAFÉ' => 'Decibel Outdoor RAVE CAFÉ',
+            '2. RAW' => 'Decibel Outdoor 2. RAW',
+            '3. HARDCORE' => 'Decibel Outdoor 3. HARDCORE',
+            '4. EUPHORIC' => 'Decibel Outdoor 4. EUPHORIC',
+            '5. INDUSTRIAL' => 'Decibel Outdoor 5. INDUSTRIAL',
+            '6. UPTEMPO' => 'Decibel Outdoor 6. UPTEMPO',
+            '7. HARDCORE CLASSICS' => 'Decibel Outdoor 7. HARDCORE CLASSICS',
+            '8. PARTYSTYLE BY BAR-LE-DUC' => 'Decibel Outdoor 8. PARTYSTYLE BY BAR-LE-DUC',
+            '9. HARDSTYLE CLASSICS BY BUD' => 'Decibel Outdoor 9. HARDSTYLE CLASSICS BY BUD',
+            '10. PUSSY LOUNGE' => 'Decibel Outdoor 10. PUSSY LOUNGE',
+            'FUTURE DISTRICT' => 'Decibel Outdoor FUTURE DISTRICT',
+            'PARADES' => 'Decibel Outdoor PARADES',
+            'BEACH CLUB' => 'Decibel Outdoor BEACH CLUB',
+            '2. RAW CLASSICS' => 'Decibel Outdoor 2. RAW CLASSICS',
+            '4. OLDSCHOOL' => 'Decibel Outdoor 4. OLDSCHOOL',
+            '5. TERROR' => 'Decibel Outdoor 5. TERROR',
+            '6. RAW' => 'Decibel Outdoor 6. RAW',
+            '7. MILLENNIUM HARDCORE' => 'Decibel Outdoor 7. MILLENNIUM HARDCORE',
+            '9. HARDCORE BY BUD' => 'Decibel Outdoor 9. HARDCORE BY BUD',
+            '10. UPTEMPO' => 'Decibel Outdoor 10. UPTEMPO',
         ];
 
         $stageModels = [];
@@ -611,6 +640,15 @@ class FestivalSeeder extends Seeder
             'Mysteryland 2026' => ['Mainstage', 'Library'],
             'Rebirth Festival 2026' => ['REBIRTH', 'REBELLION', 'RESIST', 'REBORN RAW', 'RESET x REVENGE', 'REACTIVATE', 'REVELATION', 'MADNESS SQUARE', 'ROAD TO REBIRTH', 'Beetje Dansen'],
             'Supersized Kingsday 2026' => ['Mainstage', 'Raw', 'Uptempo', 'Hardstyle Classics', 'Hardcore', 'Hardcore Classics', 'Dutch Style'],
+            'Decibel outdoor 2026' => [
+                '1. MAINSTAGE', '2. HARDCORE/UPTEMPO', '3. HARD TECHNO', '4. FUTURE DISTRICT',
+                '5. NEW EARLY', '6. SOUND OF DECIBEL', '7. RAW', 'CITY HALL', 'RAVE CAFÉ',
+                '2. RAW', '3. HARDCORE', '4. EUPHORIC', '5. INDUSTRIAL', '6. UPTEMPO',
+                '7. HARDCORE CLASSICS', '8. PARTYSTYLE BY BAR-LE-DUC', '9. HARDSTYLE CLASSICS BY BUD',
+                '10. PUSSY LOUNGE', 'FUTURE DISTRICT', 'PARADES', 'BEACH CLUB', '2. RAW CLASSICS',
+                '4. OLDSCHOOL', '5. TERROR', '6. RAW', '7. MILLENNIUM HARDCORE',
+                '9. HARDCORE BY BUD', '10. UPTEMPO',
+            ],
         ];
 
         foreach ($eventStages as $eventName => $stageNames) {
@@ -1507,10 +1545,14 @@ class FestivalSeeder extends Seeder
                         $actModels[$aName] = $act;
                     }
 
-                    $start = Carbon::parse($date . ' ' . $entry[1], 'Europe/Amsterdam')->utc();
-                    $end = Carbon::parse($date . ' ' . $entry[2], 'Europe/Amsterdam')->utc();
+                    $start = Carbon::parse($date . ' ' . $entry[1], 'Europe/Amsterdam');
+                    $end = Carbon::parse($date . ' ' . $entry[2], 'Europe/Amsterdam');
 
-                    if ($end->lt($start)) {
+                    if ((int)$start->format('H') < 8) {
+                        $start->addDay();
+                    }
+
+                    if ((int)$end->format('H') < 8 || $end->lt($start)) {
                         $end->addDay();
                     }
 
@@ -1518,14 +1560,494 @@ class FestivalSeeder extends Seeder
                         'timetable_id' => $supersizedTimetable->id,
                         'stage_id' => $stage->id,
                         'act_id' => $act->id,
-                        'start_time' => $start,
-                        'end_time' => $end,
+                        'start_time' => $start->utc(),
+                        'end_time' => $end->utc(),
                     ]);
                 }
             }
         }
 
-        // 12. Assign events to admin user
+        // 12. Official Timetable for Decibel outdoor 2026
+        $decibelEvent = $eventModels['Decibel outdoor 2026'];
+        $decibelTimetable = EventTimetable::updateOrCreate(
+            ['event_id' => $decibelEvent->id, 'is_official' => true],
+            ['name' => 'Official Timetable', 'is_public' => true]
+        );
+        $decibelTimetable->entries()->delete();
+
+        $decibelEntries = [
+            '2026-08-28' => [
+                '1. MAINSTAGE' => [
+                    ['PAT B & RUTHLESS PRES. FREESTYLE MADNESS', '15:00', '17:00'],
+                    ['ECSTATIC PRES. THE ESSENCE', '17:00', '18:00'],
+                    ['SOUND RUSH', '18:00', '19:00'],
+                    ['ADARO', '19:00', '20:00'],
+                    ['WARFACE', '20:00', '21:00'],
+                    ['ROOLER', '21:00', '22:00'],
+                    ['PHUTURE NOIZE [LIVE]', '22:00', '22:45'],
+                    ['D-BLOCK & S-TE-FAN', '22:45', '23:30'],
+                    ['DUAL DAMAGE', '23:30', '00:15'],
+                    ['PAUL ELSTAK & DYEN [CLOSING SESSION]', '00:15', '01:00'],
+                ],
+                '2. HARDCORE/UPTEMPO' => [
+                    ['HYPERVERB', '15:00', '16:00'],
+                    ['NAMARA & SAKYRA', '16:00', '17:30'],
+                    ['UNFUSED', '17:30', '19:00'],
+                    ['MAD DOG', '19:00', '20:00'],
+                    ['ANGERFIST: JOURNEY', '20:00', '21:30'],
+                    ['NEVER SURRENDER PRES. RAVE & PLUNDER [LIVE]', '21:30', '22:00'],
+                    ['PARTYRAISER', '22:00', '23:00'],
+                    ['GEZELLIGE UPTEMPO: SHIT HAPPENS [LIVE]', '23:00', '23:30'],
+                    ['BOMBSQUAD', '23:30', '00:30'],
+                    ['ABADDON & MC RECKLESS PRES. PURE DOMINATION [LIVE]', '00:30', '01:00'],
+                ],
+                '3. HARD TECHNO' => [
+                    ['LUKA', '15:00', '16:00'],
+                    ['DEVIN WILD: AMONG THE NOISE', '16:00', '17:00'],
+                    ['CYNTHIA SPIERING', '17:00', '18:00'],
+                    ['KRUELTY', '18:00', '19:00'],
+                    ['REBEKAH', '19:00', '20:30'],
+                    ['MAD DOG: DOWNTEMPO', '20:30', '21:30'],
+                    ['DIKKE BAAP', '21:30', '23:00'],
+                    ['KETTING', '23:00', '00:00'],
+                ],
+                '4. FUTURE DISTRICT' => [
+                    ['STATE OF DEVA', '15:00', '15:45'],
+                    ['LADY TESS', '15:45', '16:30'],
+                    ['TESTAROSSA', '16:30', '17:15'],
+                    ['OBLIVION', '17:15', '18:00'],
+                    ['EMERGENCE SHOWCASE BY NSIDE & NEW SIGNING', '18:00', '18:45'],
+                    ['HARDE KWARK', '18:45', '19:30'],
+                    ['DARK ENTITIES & VOIDRAGE', '19:30', '20:15'],
+                    ['DEJECTION', '20:15', '21:00'],
+                    ['DIMMA', '21:00', '21:45'],
+                    ['KEMAL', '21:45', '22:30'],
+                    ['MT', '22:30', '23:15'],
+                    ['MISSY', '23:15', '00:00'],
+                ],
+                '5. NEW EARLY' => [
+                    ['JUNO-B', '15:00', '16:30'],
+                    ['T-GO', '16:30', '18:00'],
+                    ['GABBER SYNDROME', '18:00', '19:30'],
+                    ['EXERTION', '19:30', '21:00'],
+                    ['NOXA', '21:00', '22:30'],
+                    ['GA-OSZ', '22:30', '00:00'],
+                ],
+                '6. SOUND OF DECIBEL' => [
+                    ['PAVO', '15:00', '17:00'],
+                    ['BASS MODULATORS & DEMI KANON', '17:00', '18:30'],
+                    ['PSYKO PUNKZ', '18:30', '20:00'],
+                    ['BRENNAN HEART', '20:00', '21:15'],
+                    ['RAN-D', '21:15', '22:30'],
+                    ['D-STURB', '22:30', '23:45'],
+                    ['UNRESOLVED', '23:45', '01:00'],
+                ],
+                '7. RAW' => [
+                    ['DISTRESS', '15:00', '16:00'],
+                    ['REPELLER', '16:00', '17:00'],
+                    ['DISASTER', '17:00', '17:45'],
+                    ['SPITFIRE [LIVE]', '17:45', '18:15'],
+                    ['SPARKZ', '18:15', '19:00'],
+                    ['COLDAX', '19:00', '19:45'],
+                    ['ONYX [LIVE]', '19:45', '20:15'],
+                    ['THE SMILER', '20:15', '21:00'],
+                    ['UNLOAD & INCULT', '21:00', '21:45'],
+                    ['OMNYA', '21:45', '22:30'],
+                    ['INFLICTION', '22:30', '23:15'],
+                    ['DARK ENTITIES [LIVE]', '23:15', '23:45'],
+                    ['EZG', '23:45', '00:30'],
+                ],
+                'CITY HALL' => [
+                    ['ELEMENT', '01:00', '02:00'],
+                    ['RADICAL REDEMPTION', '02:00', '03:00'],
+                    ['THA PLAYAH: JOURNEY', '03:00', '04:00'],
+                ],
+                'RAVE CAFÉ' => [
+                    ['RANSOM', '01:00', '02:00'],
+                    ['GENIUS', '02:00', '03:00'],
+                    ['RICARDO MORENO', '03:00', '04:00'],
+                ],
+            ],
+            '2026-08-29' => [
+                '1. MAINSTAGE' => [
+                    ['GECK-O PRES. NATURE\'S RHYTHM', '13:00', '14:30'],
+                    ['D-CHARGED & SERZO', '14:30', '16:00'],
+                    ['GALACTIXX', '16:00', '17:00'],
+                    ['FRONTLINER PRES. THE MELODYMAN', '17:00', '18:00'],
+                    ['NOISECONTROLLERS: 20 YEARS', '18:00', '19:00'],
+                    ['ICONS', '19:00', '19:15'],
+                    ['B-FRONT', '19:15', '20:15'],
+                    ['VERTILE', '20:15', '21:00'],
+                    ['BRENNAN HEART', '21:00', '22:00'],
+                    ['REBELION [LIVE]', '22:00', '22:50'],
+                    ['D-STURB PRES. UNIVERSE [LIVE]', '22:50', '23:20'],
+                    ['GUNZ FORE HIRE: 15 YEARS [LIVE]', '23:20', '00:00'],
+                    ['NEOPHYTE & PANIC [CLOSING SESSION]', '00:00', '00:45'],
+                    ['SATURDAY ENDSHOW', '00:45', '01:00'],
+                ],
+                '2. RAW' => [
+                    ['H4H SHOWCASE: UDEX & ROGUE ZERO & DEPRIVED', '13:00', '14:30'],
+                    ['BIG K [LIVE]', '14:30', '15:00'],
+                    ['REVOLVE & COLD CONFUSION PRESENT THE ANCIENTS [LIVE]', '15:00', '15:30'],
+                    ['WOLV [LIVE]', '15:30', '16:00'],
+                    ['E-FORCE', '16:00', '17:00'],
+                    ['SANCTUARY [LIVE]', '17:00', '17:30'],
+                    ['CRYEX PRES. RESURGENCE [LIVE]', '17:30', '18:15'],
+                    ['REGAIN & NIGHTCRAFT: FORSAKEN TWO [LIVE]', '18:15', '18:45'],
+                    ['ACT OF RAGE', '18:45', '19:45'],
+                    ['COLDAX & DETAILED: MARATHON [LIVE]', '19:45', '20:15'],
+                    ['DAMAXY', '20:15', '21:00'],
+                    ['ADJUZT', '21:00', '21:45'],
+                    ['THE STRAIKERZ', '21:45', '22:45'],
+                    ['REVELATION [LIVE]', '22:45', '23:30'],
+                    ['ANDEREX', '23:30', '00:15'],
+                    ['CHAPTER V & INFLICTION [LIVE]', '00:15', '01:00'],
+                ],
+                '3. HARDCORE' => [
+                    ['INVADE', '13:00', '14:30'],
+                    ['RESTRAINED', '14:30', '16:00'],
+                    ['CHAOS PROJECT PRES. NEW AGE OF RAVE', '16:00', '16:45'],
+                    ['KORSDAKOFF', '16:45', '17:45'],
+                    ['GRIDKILLER', '17:45', '18:45'],
+                    ['THA PLAYAH', '18:45', '20:00'],
+                    ['D-FENCE', '20:00', '21:00'],
+                    ['NOSFERATU', '21:00', '22:15'],
+                    ['DITHER', '22:15', '23:30'],
+                    ['CRYOGENIC', '23:30', '00:30'],
+                ],
+                '4. EUPHORIC' => [
+                    ['DAVINØ', '13:00', '14:00'],
+                    ['DIGITAL MADNESS', '14:00', '15:00'],
+                    ['ANDY SVGE', '15:00', '16:15'],
+                    ['PRIMESHOCK', '16:15', '17:30'],
+                    ['SOLSTICE', '17:30', '18:45'],
+                    ['ADRENALIZE', '18:45', '20:00'],
+                    ['JAY REEVE', '20:00', '21:15'],
+                    ['THE PITCHER', '21:15', '22:30'],
+                    ['AUDIOTRICZ', '22:30', '23:45'],
+                    ['MORE KORDS PRES. ZAAGPHORIC', '23:45', '00:30'],
+                ],
+                '5. INDUSTRIAL' => [
+                    ['ALIIENMIA', '13:00', '14:30'],
+                    ['STRANGE ARRIVAL', '14:30', '16:00'],
+                    ['MINDUSTRIES', '16:00', '17:30'],
+                    ['KHAOZ ENGINE', '17:30', '19:00'],
+                    ['THE OUTSIDE AGENCY', '19:00', '20:30'],
+                    ['TRIPPED & STARVING INSECT', '20:30', '22:30'],
+                    ['TRASHMACHINE', '22:30', '00:30'],
+                ],
+                '6. UPTEMPO' => [
+                    ['DMRC & DEVIATION', '13:00', '14:00'],
+                    ['REVELLERS, BÖSSELS & ERAIZED', '14:00', '15:00'],
+                    ['UDOW [LIVE]', '15:00', '15:30'],
+                    ['JULIËX & THE DOPE DOCTOR', '15:30', '16:30'],
+                    ['AKIMBO - SWITCHING SIDES [DECIBEL SPECIAL]', '16:30', '17:30'],
+                    ['AMIGO PRES. UPTEMPO FIESTA [LIVE]', '17:30', '18:00'],
+                    ['ROOSTERZ PRES. GOOSEBUMPS [LIVE]', '18:00', '18:30'],
+                    ['MAJOR CONSPIRACY', '18:30', '19:30'],
+                    ['T.M.O. [LIVE]', '19:30', '20:00'],
+                    ['ROSBEEK', '20:00', '20:45'],
+                    ['PINOTELLO', '20:45', '21:30'],
+                    ['UNPROVEN PRES. SYMBIOSIS [LIVE]', '21:30', '22:00'],
+                    ['KILI PRES. LOCKED & LOADED [LIVE]', '22:00', '22:30'],
+                    ['LUNAKORPZ & REVEALER', '22:30', '23:30'],
+                    ['99PRBLMZ [LIVE]', '23:30', '00:00'],
+                    ['NOXIOUZ', '00:00', '01:00'],
+                ],
+                '7. HARDCORE CLASSICS' => [
+                    ['STANTON', '13:00', '14:30'],
+                    ['UZI', '14:30', '15:30'],
+                    ['MD&A [LIVE]', '15:30', '16:00'],
+                    ['PAINBRINGER', '16:00', '17:30'],
+                    ['SCOTT BROWN', '17:30', '18:30'],
+                    ['RUFFNECK', '18:30', '20:00'],
+                    ['THE VIPER & G-TOWN MADNESS', '20:00', '21:30'],
+                    ['CATSCAN', '21:30', '22:30'],
+                    ['VINCE', '22:30', '23:30'],
+                    ['PARTYRAISER', '23:30', '00:30'],
+                ],
+                '8. PARTYSTYLE BY BAR-LE-DUC' => [
+                    ['JIXXX', '13:00', '13:45'],
+                    ['ONESIE BRIGADE', '13:45', '14:30'],
+                    ['ELEVATION', '14:30', '15:30'],
+                    ['COENFETTI CLASSICS', '15:30', '16:15'],
+                    ['BASSFEEST', '16:15', '17:00'],
+                    ['MAFKLAPPERZ', '17:00', '17:45'],
+                    ['FEESTNATION', '17:45', '18:30'],
+                    ['OTTO WUNDERBAR', '18:30', '19:00'],
+                    ['GLADJAKKERS - ONMEUNIG BREKK\'N', '19:00', '19:30'],
+                    ['LARSTIG & GASDROP X DAANI', '19:30', '20:15'],
+                    ['LARSTIG & GASDROP X ANDY SVGE', '20:15', '21:00'],
+                    ['LARSTIG & GASDROP X A-MOTION', '21:00', '21:30'],
+                    ['LARSTIG & GASDROP X ROOSTERZ', '21:30', '22:00'],
+                    ['CRAZY JACK', '22:00', '22:30'],
+                    ['WORST KAAS SCENARION', '22:30', '23:15'],
+                    ['BUURMAN BRANCO', '23:15', '00:00'],
+                ],
+                '9. HARDSTYLE CLASSICS BY BUD' => [
+                    ['EMS & NSCLT', '13:00', '14:30'],
+                    ['JOSH & WESZ', '14:30', '15:45'],
+                    ['AUDIOFREQ', '15:45', '17:00'],
+                    ['DEEPACK', '17:00', '18:15'],
+                    ['ZANY', '18:15', '19:30'],
+                    ['WASTED PENGUINZ', '19:30', '20:30'],
+                    ['JONES', '20:30', '21:30'],
+                    ['ATMOZFEARS', '21:30', '22:30'],
+                    ['BASS CHASERZ: 15 YEARS SPECIAL', '22:30', '23:30'],
+                    ['ALPHA TWINS', '23:30', '00:30'],
+                ],
+                '10. PUSSY LOUNGE' => [
+                    ['[LOVELY LAUNCH] POTATO', '13:00', '14:30'],
+                    ['[BELGIAN BEATS] PAT B', '14:30', '15:30'],
+                    ['[FREESTYLE FANATICS] DR. RUDE & HANS GLOCK', '15:30', '17:00'],
+                    ['[HARDSTYLE HERO] COONE', '17:00', '18:30'],
+                    ['[DOUBLE TROUBLE] OUTSIDERS & DARKRAVER', '18:30', '20:00'],
+                    ['[JUMPING JACKS] RUTHLESS & LNY TNZ', '20:00', '21:30'],
+                    ['[HARDCORE HEAVYWEIGHT] PAUL ELSTAK FT. BOOGSHE', '21:30', '22:30'],
+                    ['[MILLENNIUM MAYHEM] ENDYMION', '22:30', '00:00'],
+                    ['[FREAKY FINALE] MISS K8', '00:00', '01:00'],
+                ],
+                'FUTURE DISTRICT' => [
+                    ['RESILIENCE', '13:00', '14:00'],
+                    ['SAVELLIX PRES. THE SUMMER OF MELODIES', '14:00', '14:45'],
+                    ['ARK8', '14:45', '15:30'],
+                    ['ERABREAK', '15:30', '16:15'],
+                    ['SVANE', '16:15', '17:00'],
+                    ['REFOLD', '17:00', '17:45'],
+                    ['MISS ISA', '17:45', '18:30'],
+                    ['DAN ZERO', '18:30', '19:15'],
+                    ['DARK PHOENIX', '19:15', '20:00'],
+                    ['IJGENWEIS', '20:00', '20:45'],
+                    ['BOUNSTER', '20:45', '21:30'],
+                    ['CONSPIRATOR', '21:30', '22:15'],
+                    ['MISTOFZ', '22:15', '23:00'],
+                    ['GUIBERZ & SILKY NOIZE', '23:00', '00:00'],
+                ],
+                'PARADES' => [
+                    ['PUSSY LOUNGE PARADE: DARKRAVER & ZANY', '16:30', '17:15'],
+                    ['LIVE LOUD PARADE: RAN-D', '20:30', '21:15'],
+                ],
+                'CITY HALL' => [
+                    ['BROODJE', '11:00', '12:00'],
+                    ['DIRTY LIL MONKEYZ', '12:00', '13:00'],
+                    ['ECSTATIC VS GALACTIXX', '01:00', '02:00'],
+                    ['D-STURB', '02:00', '03:00'],
+                    ['SOULBLAST PRES. UPTEMPO JOURNEY', '03:00', '04:00'],
+                ],
+                'BEACH CLUB' => [
+                    ['NEILIO', '10:00', '11:00'],
+                    ['JAY REEVE', '11:00', '12:00'],
+                    ['DEMI KANON', '12:00', '13:00'],
+                ],
+                'RAVE CAFÉ' => [
+                    ['ENDURANCE & INTELLECTUAL', '10:00', '11:00'],
+                    ['KNOEZ & MAMMOTH RAW', '11:00', '12:00'],
+                    ['ORACLE & JOE GRESSIVE', '12:00', '13:00'],
+                    ['JULIA ROMMY', '01:00', '02:00'],
+                    ['XRTN', '02:00', '03:00'],
+                    ['RØØTZ', '03:00', '04:00'],
+                ],
+            ],
+            '2026-08-30' => [
+                '1. MAINSTAGE' => [
+                    ['ZANY & MAX ENFORCER PRES. SOUND INTENSE CITY', '13:00', '14:30'],
+                    ['WILDSTYLEZ', '14:30', '15:30'],
+                    ['ATMOZFEARS [SUNDAY MARATHON]', '15:30', '16:00'],
+                    ['ATMOZFEARS & DEVIN WILD [SUNDAY MARATHON]', '16:00', '16:30'],
+                    ['DEVIN WILD [SUNDAY MARATHON]', '16:30', '17:00'],
+                    ['DEVIN WILD & THE PURGE [SUNDAY MARATHON]', '17:00', '17:15'],
+                    ['THE PURGE [SUNDAY MARATHON]', '17:15', '17:45'],
+                    ['THE PURGE & THE SAINTS [SUNDAY MARATHON]', '17:45', '18:00'],
+                    ['THE SAINTS [SUNDAY MARATHON]', '18:00', '18:30'],
+                    ['OUTSIDERS', '18:30', '19:30'],
+                    ['RAN-D PRES. RESONANCE', '19:30', '20:30'],
+                    ['SUB ZERO PROJECT', '20:30', '21:30'],
+                    ['RADICAL REDEMPTION: 15 YEARS [LIVE]', '21:30', '22:00'],
+                    ['REJECTA PRES. BEST OF LIVE [CLOSING SESSION]', '22:00', '22:45'],
+                    ['SUNDAY ENDSHOW', '22:45', '23:00'],
+                ],
+                '2. RAW CLASSICS' => [
+                    ['SUB SONIK', '13:00', '14:30'],
+                    ['DEGOS & RE-DONE PRES. TRANSITIONS ARE KEY', '14:30', '15:30'],
+                    ['ADARO', '15:30', '16:30'],
+                    ['CHAIN REACTION & LUNA PRES. CLASSIC JOURNEY', '16:30', '18:00'],
+                    ['B-FRONT', '18:00', '19:00'],
+                    ['E-FRONT VS CRYPSIS', '19:00', '20:30'],
+                    ['REGAIN', '20:30', '21:30'],
+                    ['JASON PAYNE & DEETOX', '21:30', '23:00'],
+                ],
+                '4. OLDSCHOOL' => [
+                    ['GIZMO', '13:00', '14:30'],
+                    ['DJ YVES', '14:30', '16:00'],
+                    ['FRANCOIS', '16:00', '17:30'],
+                    ['RUTHLESS', '17:30', '19:00'],
+                    ['DARKRAVER', '19:00', '20:30'],
+                    ['MARC ACARDIPANE', '20:30', '21:30'],
+                    ['DJ ROB & MC JOE', '21:30', '23:00'],
+                ],
+                '5. TERROR' => [
+                    ['HELLCREATOR', '13:00', '14:30'],
+                    ['RECHARGE', '14:30', '16:00'],
+                    ['BRUHZE', '16:00', '17:30'],
+                    ['AKIRA', '17:30', '19:00'],
+                    ['DROKZ', '19:00', '20:30'],
+                    ['EXECRATE', '20:30', '21:45'],
+                    ['SRB', '21:45', '23:00'],
+                ],
+                '6. RAW' => [
+                    ['CARDINATION', '13:00', '14:00'],
+                    ['VEXXED [LIVE]', '14:00', '14:30'],
+                    ['DIGITAL PUNK & LEVEL ONE', '14:30', '15:30'],
+                    ['DELUZION', '15:30', '16:30'],
+                    ['AVERSION', '16:30', '17:30'],
+                    ['BLOODLUST', '17:30', '18:30'],
+                    ['MISH', '18:30', '19:15'],
+                    ['MUTILATOR', '19:15', '20:00'],
+                    ['FACELESS & VASTO', '20:00', '20:45'],
+                    ['BMBERJCK', '20:45', '21:30'],
+                    ['KRUELTY', '21:30', '22:15'],
+                    ['CLASSIFIED SHOWCASE: DETAILED & UNIQUE & UNMUTE', '22:15', '23:00'],
+                ],
+                '7. MILLENNIUM HARDCORE' => [
+                    ['KASPAROV', '13:00', '14:30'],
+                    ['J.D.A.', '14:30', '15:30'],
+                    ['KORSAKOFF', '15:30', '16:30'],
+                    ['ART OF FIGHTERS PRES. NEW MILLENNIUM', '16:30', '17:30'],
+                    ['PROMO', '17:30', '18:30'],
+                    ['PANIC', '18:30', '20:00'],
+                    ['OPHIDIAN', '20:00', '21:00'],
+                    ['MAD DOG', '21:00', '22:00'],
+                    ['DISTORTION', '22:00', '23:00'],
+                ],
+                '8. PARTYSTYLE BY BAR-LE-DUC' => [
+                    ['DECIBEL GOT TALENT', '13:00', '14:00'],
+                    ['DELFTSCHE HELDEN', '14:00', '14:45'],
+                    ['DAVINØ B2B DJ BRNT', '14:45', '15:30'],
+                    ['MATT ARDEO', '15:30', '16:00'],
+                    ['LOUD & FOUT PRES. LOUD, OUD & GOUD', '16:00', '16:45'],
+                    ['RANSOM PRES. FREESTYLE RAVE', '16:45', '17:30'],
+                    ['HANNES CROELL', '17:30', '18:15'],
+                    ['HANS GLOCK PRES. HANS IN THE HOUSE [LIVE]', '18:15', '20:30'],
+                    ['BERNAL BOUNCE', '20:30', '21:15'],
+                    ['BLURRED MOVEMENT', '21:15', '22:15'],
+                    ['DJ PHILEMON', '22:15', '23:00'],
+                ],
+                '9. HARDCORE BY BUD' => [
+                    ['AFTERMATH', '13:00', '14:00'],
+                    ['KARUN PRES. MIRAGE', '14:00', '15:00'],
+                    ['N-VITRAL: INDUSTRIAL RAVE', '15:00', '16:00'],
+                    ['HYSTA', '16:00', '17:00'],
+                    ['THE VIPER PRES. RETURN OF THE RAVE', '17:00', '18:00'],
+                    ['NOSFERATU & THA PLAYAH: COMBINED FORCES', '18:00', '19:00'],
+                    ['MISS K8', '19:00', '20:00'],
+                    ['ANIME', '20:00', '21:00'],
+                    ['DR DONK', '21:00', '22:00'],
+                    ['F.NOIZE PRES. EARLY UPTEMPO', '22:00', '23:00'],
+                ],
+                '10. UPTEMPO' => [
+                    ['DOUBLE TROUBLE', '13:00', '13:45'],
+                    ['JOSHA', '13:45', '14:30'],
+                    ['BULLETPROOF: JOURNEY', '14:30', '15:15'],
+                    ['SAMYNATOR [LIVE]', '15:15', '15:45'],
+                    ['COMPLEX', '15:45', '16:30'],
+                    ['BARBER', '16:30', '17:15'],
+                    ['SATIRIZED [SAVAGE MARATHON]', '17:15', '18:00'],
+                    ['SATIRIZED & LEKKERFACES [SAVAGE MARATHON]', '18:00', '18:15'],
+                    ['LEKKERFACES [SAVAGE MARATHON]', '18:15', '19:00'],
+                    ['LEKKERFACES & SPITNOISE [SAVAGE MARATHON]', '19:00', '19:15'],
+                    ['SPITNOISE [SAVAGE MARATHON]', '19:15', '20:00'],
+                    ['SPITNOISE & MANIFEST DESTINY [SAVAGE MARATHON]', '20:00', '20:15'],
+                    ['MANIFEST DESTINY [SAVAGE MARATHON]', '20:15', '21:00'],
+                    ['DIMITRI K', '21:00', '21:45'],
+                    ['KRACH CREW (NOISEFLOW, RWF, VANE, SCHLOT)', '21:45', '22:30'],
+                    ['NOISEFLOW VS CYBER GUNZ', '22:30', '23:00'],
+                ],
+                'FUTURE DISTRICT' => [
+                    ['TWSTD', '13:00', '14:00'],
+                    ['ALLEVIATE & REKALL', '14:00', '14:45'],
+                    ['JACKRO', '14:45', '15:30'],
+                    ['BEAT CONDUCTORS', '15:30', '16:15'],
+                    ['ANTERGY', '16:15', '17:00'],
+                    ['ESSIVE', '17:00', '17:45'],
+                    ['NOCTURNAL', '17:45', '18:30'],
+                    ['B-STRUCT', '18:30', '19:15'],
+                    ['XRIMINALS', '19:15', '20:00'],
+                    ['VALHALLA', '20:00', '20:45'],
+                    ['DYZO', '20:45', '21:30'],
+                    ['MAINTREX', '21:30', '22:15'],
+                    ['TOB-E & UNDIVIDED', '22:15', '23:00'],
+                ],
+                'PARADES' => [
+                    ['SAVAGE PARADE: COMPLEX', '12:45', '13:45'],
+                    ['SAVAGE PARADE: GEZELLIGE UPTEMPO', '21:00', '21:45'],
+                ],
+                'CITY HALL' => [
+                    ['DAMAXY & MISSY PRES. KOFFIE PAUZE', '11:00', '12:00'],
+                    ['BAKLAVA BANGERS BY KEMAL', '12:00', '13:00'],
+                    ['NIGHTCRAFT', '23:00', '00:30'],
+                    ['GEZELLIGE UPTEMPO', '00:30', '01:30'],
+                    ['THE SAFARI TRIP: THAROZA VS SCREECHER VS DARK INDIVIDUAL', '01:30', '03:00'],
+                ],
+                'BEACH CLUB' => [
+                    ['CONSEQUENT', '10:00', '11:00'],
+                    ['ARTIFACT', '11:00', '12:00'],
+                    ['DIGITAL PUNK', '12:00', '13:00'],
+                ],
+                'RAVE CAFÉ' => [
+                    ['GENETIK', '10:00', '11:00'],
+                    ['AESTROBASS', '11:00', '12:00'],
+                    ['DUCAL', '12:00', '13:00'],
+                    ['PLN-B', '23:00', '00:00'],
+                    ['RETRACK', '00:00', '01:00'],
+                    ['EKVALAYZER B2B E-VOLITION PRES. DUTCH HARDBASS', '01:00', '02:00'],
+                    ['BLYATSQUAD PRES DUTCH HARDBASS: KICKZ & DONKZ', '02:00', '03:00'],
+                ],
+            ],
+        ];
+
+        foreach ($decibelEntries as $date => $stages) {
+            foreach ($stages as $stageName => $entries) {
+                if (!isset($stageModels[$stageName])) continue;
+                $stage = $stageModels[$stageName];
+
+                foreach ($entries as $entry) {
+                    $aName = $entry[0];
+                    $act = $actModels[$aName] ?? null;
+                    if (!$act) {
+                        $act = Act::firstOrCreate(['name' => $aName], ['is_live' => false]);
+                        $actModels[$aName] = $act;
+                    }
+
+                    $start = Carbon::parse($date . ' ' . $entry[1], 'Europe/Amsterdam');
+                    $end = Carbon::parse($date . ' ' . $entry[2], 'Europe/Amsterdam');
+
+                    if ((int)$start->format('H') < 8) {
+                        $start->addDay();
+                    }
+
+                    if ((int)$end->format('H') < 8 || $end->lt($start)) {
+                        $end->addDay();
+                    }
+
+                    TimetableEntry::create([
+                        'timetable_id' => $decibelTimetable->id,
+                        'stage_id' => $stage->id,
+                        'act_id' => $act->id,
+                        'start_time' => $start->utc(),
+                        'end_time' => $end->utc(),
+                    ]);
+
+                    $decibelEvent->acts()->syncWithoutDetaching([
+                        $act->id => [
+                            'stage_id' => $stage->id,
+                            'date' => $start->format('Y-m-d'),
+                        ]
+                    ]);
+                }
+            }
+        }
+
+        // 13. Assign events to admin user
         $admin = \App\Models\User::where('email', 'admin@bangers.nl')->first();
         if ($admin) {
             $now = Carbon::now();
